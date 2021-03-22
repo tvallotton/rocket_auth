@@ -6,4 +6,27 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+[features]
+sqlite-db = ["rusqlite"]
+postgres-db = ["postgres"]
+
+
+
 [dependencies]
+rand = "0.8.3"
+rust-argon2 = "0.8.3"
+rocket = "0.4.7"
+lazy_static = "1.4.0"
+regex = "1"
+serde = {version = "1.0.124", features = ["derive"]}
+serde_json = "1.0.59"
+
+
+[dependencies.postgres]
+version = "0.19.0"
+optional = true
+
+[dependencies.rusqlite]
+version = "0.24.1"
+optional = true
