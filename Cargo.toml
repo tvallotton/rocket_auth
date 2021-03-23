@@ -8,10 +8,11 @@ edition = "2018"
 
 
 [features]
+default = ["sqlite-db", "postgres-db", "redis-session"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres"]
-# mysql-db = []
 redis-session = ["redis"]
+# mysql-db = [...]
 
 
 
@@ -34,7 +35,6 @@ optional = true
 [dependencies.rusqlite]
 version = "0.24.1"
 optional = true
-
 
 [dependencies.redis]
 version = "0.20.0"

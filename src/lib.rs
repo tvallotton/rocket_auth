@@ -9,11 +9,9 @@ mod user;
 #[cfg(test)]
 mod tests;
 
-
+pub use cookies::Session;
 pub use error::Error;
 pub use user::{User, Users};
-pub use cookies::Session;
-
 
 use std::error::Error as ErrorTrait;
 

@@ -6,7 +6,7 @@ use std::fmt::{self, Display, Formatter};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ErrorKind {
     MutexPoisonError,
-    SystemTimeError,
+    SystemTimeError(Duration),
     SQLiteError,
     NoneError,
     Argon2ParsingError,
@@ -55,33 +55,8 @@ impl<T, E: Into<Error> + ErrorTrait> SetErrorMessage for std::result::Result<T, 
     }
 }
 
-// impl<T> SetErrorMessage for Option<T> {
-//     type Ok = T;
-//     fn msg(self, msg: &str) -> std::result::Result<T, Error> {
-//         match self {
-//             Some(val) => Ok(val),
-//             None => {
-//                 let error = Error {
-//                     message: msg.into(),
-//                     kind: NoneError.,
-//                 };
-//                 Err(error)
-//             }
-//         }
-//     }
-// }
 
 /*****  CONVERSIONS  *****/
-
-// impl<E: ErrorTrait> From<E> for Error {
-//     fn from(error: E) -> Error {
-//         Error {
-//             message: "PoisonError: Mutex was poisoned".into(),
-//             source: Some(Box::new(error))
-//         }
-//     }
-// }
-
 use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
     fn from(_: PoisonError<T>) -> Error {
@@ -107,39 +82,17 @@ impl From<SystemTimeError> for Error {
     fn from(error: SystemTimeError) -> Error {
         Error {
             message: "".into(),
-            kind: ErrorKind::SystemTimeError,
+            kind: ErrorKind::SystemTimeError(error.duration()),
         }
     }
 }
-// use std::convert::Infallible;
-// impl From<Infallible> for Error {
-//     fn from(error: Infallible) -> Error {
-//         Error {
-//             message: "Infallible".into(),
-//             kind:ErrorKind::Infallible,
-//         }
-//     }
-// }
+
 
 impl From<argon2::Error> for Error {
-    fn from(error: argon2::Error) -> Error {
+    fn from(_: argon2::Error) -> Error {
         Error {
             message: "".into(),
             kind: ErrorKind::Argon2ParsingError,
         }
     }
 }
-
-// type RocketError = (rocket::http::Status, std::result::Result<(), Error>);
-// impl From<RocketError> for Result<(), (rocket::http::Status, Error)> {
-
-// }
-// use rocket::request::FormParseError;
-// impl<'f> From<FormParseError<'f>> for Error {
-//     fn from(error: FormParseError) -> Error {
-//         Error {
-//             message: format!("{:?}", error),
-//             source: None,
-//         }
-//     }
-// }

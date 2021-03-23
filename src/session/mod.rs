@@ -1,8 +1,10 @@
 use crate::prelude::*;
 use std::time::Duration;
 pub mod default;
+
 #[cfg(feature = "redis-session")]
 pub mod redis;
+
 
 pub trait SessionManager: Send + Sync {
     fn insert(&self, id: u64, key: String) -> Result<()>;

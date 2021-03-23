@@ -1,6 +1,7 @@
 
 
-// mod sqlite;
+#[cfg(feature = "sqlite-db")]
+mod sqlite;
 // mod postgres;
 
 use crate::prelude::*;

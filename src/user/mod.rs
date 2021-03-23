@@ -17,11 +17,12 @@ pub struct Users {
 
 impl Users {
     #[cfg(feature = "sqlite-db")]
-    fn open_sqlite(path: &str) -> Resut<Self> {
-        Users {
-            conn: Box::new(rusqlite::Connection::open(path)?),
+    pub fn open_sqlite(path: &str) -> Result<Self> {
+        use std::sync::Mutex;
+        Ok(Users {
+            conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
             sess: Box::new(chashmap::CHashMap::new()),
-        }
+        })
     }
 }
 

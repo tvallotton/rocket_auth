@@ -1,13 +1,25 @@
-use crate::prelude::*;
 use super::SessionManager;
+use crate::prelude::*;
+
 use redis::Client;
 
-
-
-
-//impl SessionManager for 
-
-
-
-
-
+impl SessionManager for Client {
+    fn insert(&self, id: u64, key: String) -> Result<()> {
+        todo!()
+    }
+    fn insert_for(&self, id: u64, key: String, time: Duration) -> Result<()> {
+        todo!()
+    }
+    fn remove(&self, id: u64) -> Result<()> {
+        todo!()
+    }
+    fn get(&self, id: u64) -> Option<String> {
+        todo!()
+    }
+    fn flush(&self) -> Result<()> {
+        todo!()
+    }
+    fn clear_expired(&self) -> Result<()> {
+        todo!()
+    }
+}
