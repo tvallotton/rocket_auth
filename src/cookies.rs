@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use rocket::http::Status;
+use rocket::http::{Status, Cookies};
 use rocket::request::{FromForm, FromRequest, Outcome, Request};
 
 #[derive(FromForm)]
@@ -12,14 +12,8 @@ pub struct Session {
 
 impl<'a, 'r> FromRequest<'a, 'r> for Session {
     type Error = Error;
-    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {
-        let mut cookies = request.cookies();
-        let id = cookies.get_private("id");
-        let email = cookies.get_private("email");
-        let auth_key = cookies.get_private("auth_key");
-        let time_stamp = cookies.get_private("time_stamp");
-
-        let fields = [id, email, auth_key, time_stamp];
+    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {    
+        let fields = get_fields(&mut request.cookies());
         if are_all_some(&fields) {
             if let Some(session) = session(fields) {
                 Outcome::Success(session)
@@ -46,6 +40,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for Session {
 }
 
 type OptionCookie<'a> = Option<rocket::http::Cookie<'a>>;
+
+fn get_fields<'a>(cookies: &mut Cookies) -> [OptionCookie<'a>; 4]{
+    let id = cookies.get_private("id");
+    let email = cookies.get_private("email");
+    let auth_key = cookies.get_private("auth_key");
+    let time_stamp = cookies.get_private("time_stamp");
+    [id, email, auth_key, time_stamp]
+}
+
 
 fn are_all_some(array: &[OptionCookie]) -> bool {
     array
