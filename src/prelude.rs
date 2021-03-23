@@ -5,5 +5,6 @@ pub use crate::forms::{Login, Signup};
 pub use crate::session::SessionManager;
 pub use crate::user::{User, Users};
 pub use crate::Result;
+pub use std::time::Duration;
 pub use serde::{Deserialize, Serialize};
 pub use std::ops::Deref;

@@ -9,7 +9,10 @@ edition = "2018"
 
 [features]
 sqlite-db = ["rusqlite"]
-postgres-db = ["postgres"]
+postgres-db = ["tokio-postgres"]
+# mysql-db = []
+# redis-session = []
+
 
 
 
@@ -21,10 +24,11 @@ lazy_static = "1.4.0"
 regex = "1"
 serde = {version = "1.0.124", features = ["derive"]}
 serde_json = "1.0.59"
+chashmap = "2.2.2"
 
 
-[dependencies.postgres]
-version = "0.19.0"
+[dependencies.tokio-postgres]
+version = "0.7.0"
 optional = true
 
 [dependencies.rusqlite]

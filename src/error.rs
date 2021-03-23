@@ -6,8 +6,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug)]
 pub struct Error {
-    message: String,
-    source: Option<Box<dyn ErrorTrait>>,
+    pub message: String,
+    pub source: Option<Box<dyn ErrorTrait>>,
 }
 impl ErrorTrait for Error {}
 
@@ -123,6 +123,10 @@ impl From<argon2::Error> for Error {
     }
 }
 
+// type RocketError = (rocket::http::Status, std::result::Result<(), Error>);
+// impl From<RocketError> for Result<(), (rocket::http::Status, Error)> {
+
+// }
 // use rocket::request::FormParseError;
 // impl<'f> From<FormParseError<'f>> for Error {
 //     fn from(error: FormParseError) -> Error {
