@@ -1,31 +1,38 @@
-
+use crate::prelude::*;
 use std::error::Error as ErrorTrait;
-use std::
-    fmt::{self, Display, Formatter};
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+use std::fmt::{self, Display, Formatter};
 
-#[derive(Debug)]
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum ErrorKind {
+    MutexPoisonError,
+    SystemTimeError,
+    SQLiteError,
+    NoneError,
+    Argon2ParsingError,
+    ClientSessionError,
+    Unspecified,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Error {
     pub message: String,
-    pub source: Option<Box<dyn ErrorTrait>>,
+    pub kind: ErrorKind,
 }
+
 impl ErrorTrait for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Original error: {:?}\nError message: {}",
-            self.source, self.message
-        )
+        write!(f, "{:?}: {}", self.kind, self.message)
     }
 }
 
 pub fn raise<T>(msg: &str) -> Result<T> {
-    Err(Error {
+    Err(Box::new(Error {
         message: msg.into(),
-        source: None,
-    })
+        kind: ErrorKind::Unspecified,
+    }))
 }
 
 /*****  MESSAGE PASSING  *****/
@@ -48,21 +55,21 @@ impl<T, E: Into<Error> + ErrorTrait> SetErrorMessage for std::result::Result<T, 
     }
 }
 
-impl<T> SetErrorMessage for Option<T> {
-    type Ok = T;
-    fn msg(self, msg: &str) -> std::result::Result<T, Error> {
-        match self {
-            Some(val) => Ok(val),
-            None => {
-                let error = Error {
-                    message: msg.into(),
-                    source: None,
-                };
-                Err(error)
-            }
-        }
-    }
-}
+// impl<T> SetErrorMessage for Option<T> {
+//     type Ok = T;
+//     fn msg(self, msg: &str) -> std::result::Result<T, Error> {
+//         match self {
+//             Some(val) => Ok(val),
+//             None => {
+//                 let error = Error {
+//                     message: msg.into(),
+//                     kind: NoneError.,
+//                 };
+//                 Err(error)
+//             }
+//         }
+//     }
+// }
 
 /*****  CONVERSIONS  *****/
 
@@ -79,18 +86,18 @@ use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
     fn from(_: PoisonError<T>) -> Error {
         Error {
-            message: "PoisonError: Mutex was poisoned".into(),
-            source: None,
+            message: "".into(),
+            kind: ErrorKind::MutexPoisonError,
         }
     }
 }
 
-#[cfg(feature = "sqlite")]
+#[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {
     fn from(error: rusqlite::Error) -> Error {
         Error {
-            message: "SQLiteError".into(),
-            source: Some(Box::new(error)),
+            message: "".into(),
+            kind: ErrorKind::SQLiteError,
         }
     }
 }
@@ -99,26 +106,26 @@ use std::time::SystemTimeError;
 impl From<SystemTimeError> for Error {
     fn from(error: SystemTimeError) -> Error {
         Error {
-            message: "SystemTimeError".into(),
-            source: Some(Box::new(error)),
+            message: "".into(),
+            kind: ErrorKind::SystemTimeError,
         }
     }
 }
-use std::convert::Infallible;
-impl From<Infallible> for Error {
-    fn from(error: Infallible) -> Error {
-        Error {
-            message: "Infallible".into(),
-            source: Some(Box::new(error)),
-        }
-    }
-}
+// use std::convert::Infallible;
+// impl From<Infallible> for Error {
+//     fn from(error: Infallible) -> Error {
+//         Error {
+//             message: "Infallible".into(),
+//             kind:ErrorKind::Infallible,
+//         }
+//     }
+// }
 
 impl From<argon2::Error> for Error {
     fn from(error: argon2::Error) -> Error {
         Error {
-            message: "Argon2Error".into(),
-            source: Some(Box::new(error)),
+            message: "".into(),
+            kind: ErrorKind::Argon2ParsingError,
         }
     }
 }

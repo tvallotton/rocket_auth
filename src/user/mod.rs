@@ -24,6 +24,7 @@ impl Users {
         }
     }
 }
+
 // User API
 impl Users {
     pub fn login(&self, form: &impl Deref<Target = Login>) -> Result<String> {
@@ -111,9 +112,3 @@ fn rand_string(size: usize) -> String {
         .take(size)
         .collect()
 }
-
-#[cfg(feature = "sqlite-db")]
-impl Users {}
-
-#[cfg(feature = "postgres-db")]
-impl Users {}

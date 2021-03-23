@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use rocket::http::Status;
-use rocket::request::{self, FromForm, FromRequest, Outcome, Request};
+use rocket::request::{FromForm, FromRequest, Outcome, Request};
 
 #[derive(FromForm)]
 pub struct Session {
@@ -10,34 +10,83 @@ pub struct Session {
     pub time_stamp: u32,
 }
 
-use std::convert::TryInto;
-
 impl<'a, 'r> FromRequest<'a, 'r> for Session {
     type Error = Error;
-
-    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Error> {
+    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {
         let mut cookies = request.cookies();
         let id = cookies.get_private("id");
         let email = cookies.get_private("email");
         let auth_key = cookies.get_private("auth_key");
         let time_stamp = cookies.get_private("time_stamp");
 
-        let clear = &[id, email, auth_key, time_stamp]
-            .iter()
-            .map(|x| x.is_some())
-            .fold(true, |x, y| x && y);
-        if !clear {
-            return Outcome::Failure((
+        let fields = [id, email, auth_key, time_stamp];
+        if are_all_some(&fields) {
+            if let Some(session) = session(fields) {
+                Outcome::Success(session)
+            } else {
+                Outcome::Failure((
+                    Status::Unauthorized,
+                    Error {
+                        message: "Request cookies fields could't be parsed to its proper types."
+                            .into(),
+                        kind: ErrorKind::ClientSessionError,
+                    },
+                ))
+            }
+        } else {
+            Outcome::Failure((
                 Status::Unauthorized,
                 Error {
                     message: "Request cookies didn't have the requeired fields.".into(),
-                    source: None,
+                    kind: ErrorKind::ClientSessionError,
                 },
-            ));
+            ))
         }
-        todo!()
-        // return Outcome::Success([id, email, auth_key, time_stamp].into());
     }
 }
 
+type OptionCookie<'a> = Option<rocket::http::Cookie<'a>>;
 
+fn are_all_some(array: &[OptionCookie]) -> bool {
+    array
+        .iter()
+        .map(|x| x.is_some())
+        .fold(true, |x, y| x && y)
+}
+
+fn session([id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Session> {
+    let result = id?.value().parse();
+    let id;
+    if let Ok(id_) = result {
+        id = id_;
+    } else {
+        return None;
+    }
+    let result = email?.value().parse();
+    let email;
+    if let Ok(email_) = result {
+        email = email_;
+    } else {
+        return None;
+    }
+    let result = auth_key?.value().parse();
+    let auth_key;
+    if let Ok(auth_key_) = result {
+        auth_key = auth_key_;
+    } else {
+        return None;
+    }
+    let result = time_stamp?.value().parse();
+    let time_stamp;
+    if let Ok(time_stamp_) = result {
+        time_stamp = time_stamp_;
+    } else {
+        return None;
+    }
+    Some(Session {
+        id,
+        email,
+        auth_key,
+        time_stamp,
+    })
+}
