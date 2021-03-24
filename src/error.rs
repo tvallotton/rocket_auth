@@ -29,10 +29,10 @@ impl Display for Error {
 }
 
 pub fn raise<T>(msg: &str) -> Result<T> {
-    Err(Box::new(Error {
+    Err(Error {
         message: msg.into(),
         kind: ErrorKind::Unspecified,
-    }))
+    })
 }
 
 /*****  MESSAGE PASSING  *****/
@@ -69,7 +69,7 @@ impl<T> From<PoisonError<T>> for Error {
 
 #[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {
-    fn from(error: rusqlite::Error) -> Error {
+    fn from(_: rusqlite::Error) -> Error {
         Error {
             message: "".into(),
             kind: ErrorKind::SQLiteError,

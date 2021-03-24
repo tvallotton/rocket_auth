@@ -13,6 +13,6 @@ pub use cookies::Session;
 pub use error::Error;
 pub use user::{User, Users};
 
-use std::error::Error as ErrorTrait;
 
-pub type Result<T, E = Box<dyn ErrorTrait>> = std::result::Result<T, E>;
+
+pub type Result<T, E = Error> = std::result::Result<T, E>;

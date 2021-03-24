@@ -6,8 +6,8 @@ mod sqlite;
 
 use crate::prelude::*;
 
-pub trait DBConnection: Send + Sync {
-    fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<u32>;
+pub trait DBConnection {
+    fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error>;
     fn update_user(&self, user: User) -> Result<()>;
     fn delete_user(&self, user_id: u32) -> Result<()>;
     fn get_user_by_id(&self, user_id: u32) -> Result<User>;
