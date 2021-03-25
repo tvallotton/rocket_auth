@@ -12,7 +12,8 @@ pub enum ErrorKind {
     Argon2ParsingError,
     ClientSessionError,
     Unspecified,
-    QueryError
+    QueryError,
+    UnmanagedStateError,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
