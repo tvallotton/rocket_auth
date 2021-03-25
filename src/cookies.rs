@@ -2,23 +2,23 @@ use crate::prelude::*;
 use rocket::http::{Status, Cookies, Cookie};
 use rocket::request::{FromForm, FromRequest, Outcome, Request};
 
-#[derive(Debug)]
-pub struct Session<'a> {
-    pub cookies: Cookies<'a>,
-    pub id: u64,
+#[derive(Debug, Clone)]
+pub struct Session {
+    // pub cookies: Cookies<'a>,
+    pub id: u32,
     pub email: String,
     pub auth_key: String,
     pub time_stamp: u32,
 }
 
 
-impl<'a, 'r> FromRequest<'a, 'r> for Session<'a> {
+impl<'a, 'r> FromRequest<'a, 'r> for Session {
     type Error = Error;
-    fn from_request(request: &'a Request<'r>) -> Outcome<Session<'a>, Self::Error> {    
+    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {    
         let fields = get_fields(&mut request.cookies());
 
         if are_all_some(&fields) {
-            if let Some(session) = session(request.cookies(), fields) {
+            if let Some(session) = session(fields) {
                 Outcome::Success(session)
             } else {
                 Outcome::Failure((
@@ -60,7 +60,7 @@ fn are_all_some(array: &[OptionCookie]) -> bool {
         .fold(true, |x, y| x && y)
 }
 
-fn session<'a>(cookies: Cookies<'a>, [id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Session<'a>> {
+fn session<'a>([id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Session> {
     let result = id?.value().parse();
     let id;
     if let Ok(id_) = result {
@@ -90,7 +90,7 @@ fn session<'a>(cookies: Cookies<'a>, [id, email, auth_key, time_stamp]: [OptionC
         return None;
     }
     Some(Session {
-        cookies,
+        // cookies,
         id,
         email,
         auth_key,

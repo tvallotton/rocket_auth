@@ -16,6 +16,7 @@ use rocket::FromForm;
 
 pub use cookies::Session;
 pub use error::Error;
+pub use crate::user::auth::Auth;
 
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

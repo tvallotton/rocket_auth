@@ -19,7 +19,7 @@ impl Users {
     }
 
     /******** FORMS ********/
-    pub fn login(&self, form: &impl Deref<Target = Login>) -> Result<String> {
+    pub fn login(&self, form: &Login) -> Result<String> {
         
         let form_pwd = &form.password.as_bytes();
         let user = self.conn.get_user_by_email(&form.email)?;
@@ -38,7 +38,7 @@ impl Users {
         Ok(())
     }
 
-    pub fn signup(&self, form: &impl Deref<Target = Signup>) -> Result<()> {
+    pub fn signup(&self, form: &Signup) -> Result<()> {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
@@ -46,7 +46,7 @@ impl Users {
         Ok(())
     }
 
-    pub fn login_for(&self, form: &impl Deref<Target = Login>, time: Duration) -> Result<String> {
+    pub fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
         let form_pwd = &form.password.as_bytes();
         let user = self.conn.get_user_by_email(&form.email)?;
         let user_pwd = &user.password;

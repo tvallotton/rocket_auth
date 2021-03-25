@@ -1,5 +1,5 @@
 [package]
-name = "rocket-auth"
+name = "rocketauth"
 version = "0.1.0"
 authors = ["tvallotton@uc.cl"]
 edition = "2018"
@@ -23,10 +23,12 @@ rust-argon2 = "0.8.3"
 rocket = "0.4.7"
 lazy_static = "1.4.0"
 regex = "1"
-serde = {version = "1.0.125", features = ["derive"]}
 serde_json = "1.0.59"
 chashmap = "2.2.2"
 
+[dependencies.serde]
+version = "1.0.125"
+features = ["derive"]
 
 [dependencies.tokio-postgres]
 version = "0.7.0"

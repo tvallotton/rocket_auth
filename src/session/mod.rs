@@ -7,10 +7,10 @@ pub mod redis;
 
 
 pub trait SessionManager: Send + Sync {
-    fn insert(&self, id: u64, key: String) -> Result<()>;
-    fn insert_for(&self, id: u64, key: String, time: Duration) -> Result<()>;
-    fn remove(&self, id: u64) -> Result<()>;
-    fn get(&self, id: u64) -> Option<String>;
+    fn insert(&self, id: u32, key: String) -> Result<()>;
+    fn insert_for(&self, id: u32, key: String, time: Duration) -> Result<()>;
+    fn remove(&self, id: u32) -> Result<()>;
+    fn get(&self, id: u32) -> Option<String>;
     fn flush(&self) -> Result<()>;
     fn clear_expired(&self) -> Result<()>;
 }

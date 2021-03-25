@@ -8,20 +8,20 @@ use super::AuthKey;
 use chashmap::CHashMap;
 use super::SessionManager;
 
-impl SessionManager for CHashMap<u64, AuthKey> {
+impl SessionManager for CHashMap<u32, AuthKey> {
 
     // Unnecesary Result
-    fn insert(&self, id: u64, key: String) -> Result<()> {
+    fn insert(&self, id: u32, key: String) -> Result<()> {
         self.insert(id, key.into());
         Ok(())
     }
     // Unnecesary Result
-    fn remove(&self, id: u64) -> Result<()> {
+    fn remove(&self, id: u32) -> Result<()> {
         self.remove(&id);
         Ok(())
     }
 
-    fn get(&self, id: u64) -> Option<String> {
+    fn get(&self, id: u32) -> Option<String> {
         let key = self.get(&id)?;
         Some(key.secret.clone())
     }
@@ -31,7 +31,7 @@ impl SessionManager for CHashMap<u64, AuthKey> {
         Ok(())
     }
 
-    fn insert_for(&self, id: u64, key: String, time: Duration) -> Result<()> {
+    fn insert_for(&self, id: u32, key: String, time: Duration) -> Result<()> {
         let key = AuthKey {
             expires: time.as_secs(),
             secret: key,

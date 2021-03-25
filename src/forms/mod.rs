@@ -37,3 +37,12 @@ impl Signup {
         }
     }
 }
+
+impl From<&Signup> for Login {
+    fn from(form: &Signup) -> Login {
+        Login {
+            email: form.email.clone(),
+            password: form.password.clone(),
+        }
+    }
+}
