@@ -18,10 +18,11 @@ use rocket::FromForm;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
     pub id: u32,
     pub email: String,
+    #[serde(skip_serializing)]
     password: String,
     pub is_admin: bool,
 }

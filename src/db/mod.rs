@@ -7,7 +7,7 @@ mod sqlite;
 
 use crate::prelude::*;
 
-pub trait DBConnection {
+pub trait DBConnection: Send + Sync {
     fn init(&self) -> Result<()>;
     fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error>;
     fn update_user(&self, user: User) -> Result<()>;

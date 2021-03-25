@@ -1,17 +1,9 @@
 use crate::prelude::*;
 use argon2::verify_encoded as verify;
 use std::time::Duration;
+mod user;
 
 
-impl User {
-    pub fn reset_password(&mut self, new: &str) {
-        let password = new.as_bytes();
-        let salt = rand_string(10);
-        let config = argon2::Config::default();
-        let hash = argon2::hash_encoded(password, &salt.as_bytes(), &config).unwrap();
-        self.password = hash;
-    }
-}
 
 
 impl Users {
