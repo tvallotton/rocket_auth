@@ -12,6 +12,7 @@ pub enum ErrorKind {
     Argon2ParsingError,
     ClientSessionError,
     Unspecified,
+    QueryError
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -19,6 +20,8 @@ pub struct Error {
     pub message: String,
     pub kind: ErrorKind,
 }
+
+
 
 impl ErrorTrait for Error {}
 

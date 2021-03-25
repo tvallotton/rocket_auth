@@ -1,33 +1,24 @@
+pub use crate::{Login, Signup};
 use lazy_static::lazy_static;
 use regex::Regex;
-use rocket::FromForm;
 
 const EMAIL_REGEX: &str = r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
 
-
-#[derive(FromForm, Debug)]
-pub struct Login {
-    pub email: String,
-    pub password: String,
-}
-
-#[derive(FromForm, Debug)]
-pub struct Signup {
-    pub email: String,
-    pub password: String,
-}
-
 impl Signup {
     pub fn is_valid(&self) -> bool {
-        self.is_valid_password() && self.is_valid_email()
+        self.password_is_secure() && self.is_valid_email()
     }
-    fn is_valid_password(&self) -> bool {
-        self.password.len() > 8
+    fn password_is_secure(&self) -> bool {
+        let mut out = self.password.len() > 8;
+        // out &= self.is_not_similar_to_email();
+        // out &= self.not_common_password();
+        out
     }
+    
     fn is_valid_email(&self) -> bool {
         lazy_static! {
-            static ref re: Regex = Regex::new(EMAIL_REGEX).unwrap();
+            static ref RE: Regex = Regex::new(EMAIL_REGEX).unwrap();
         }
-        re.is_match(&self.email)
+        RE.is_match(&self.email)
     }
 }
