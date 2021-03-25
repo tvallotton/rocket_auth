@@ -14,6 +14,7 @@ pub enum ErrorKind {
     Unspecified,
     QueryError,
     UnmanagedStateError,
+    FormValidationError,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -50,6 +50,12 @@ impl<'a> Auth<'a> {
     pub fn signup(form: impl Deref<Target=Login>) -> Result<()> {
         todo!()
     }
+    pub fn is_auth() -> Result<bool> {
+        todo!()
+    }
+    pub fn get_user() -> Result<User> {
+        todo!()
+    }
 
     pub fn logout() -> Result<()> {
         todo!()

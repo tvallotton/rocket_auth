@@ -20,6 +20,7 @@ impl Users {
 
     /******** FORMS ********/
     pub fn login(&self, form: &impl Deref<Target = Login>) -> Result<String> {
+        
         let form_pwd = &form.password.as_bytes();
         let user = self.conn.get_user_by_email(&form.email)?;
         let user_pwd = &user.password;
@@ -38,6 +39,7 @@ impl Users {
     }
 
     pub fn signup(&self, form: &impl Deref<Target = Signup>) -> Result<()> {
+        form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
         self.create_user(email, password, false)?;
