@@ -99,3 +99,14 @@ impl From<argon2::Error> for Error {
         }
     }
 }
+
+
+
+impl From<()> for Error {
+    fn from(_: ()) -> Error {
+        Error {
+            message: "".into(),
+            kind: ErrorKind::Unspecified,
+        }
+    }
+}

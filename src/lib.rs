@@ -11,9 +11,12 @@ mod tests;
 
 
 use prelude::*;
+use rocket::FromForm;
+
+
 pub use cookies::Session;
 pub use error::Error;
-use rocket::FromForm;
+
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -26,6 +29,7 @@ pub struct User {
     password: String,
     pub is_admin: bool,
 }
+
 
 
 pub struct Users {

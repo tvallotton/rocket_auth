@@ -2,7 +2,7 @@ use crate::prelude::*;
 use argon2::verify_encoded as verify;
 use std::time::Duration;
 mod user;
-
+pub mod auth;
 
 
 
