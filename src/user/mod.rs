@@ -3,9 +3,6 @@ use argon2::verify_encoded as verify;
 use std::time::Duration;
 
 
-
-
-
 impl User {
     pub fn reset_password(&mut self, new: &str) {
         let password = new.as_bytes();
@@ -21,10 +18,12 @@ impl Users {
     #[cfg(feature = "sqlite-db")]
     pub fn open_sqlite(path: &str) -> Result<Self> {
         use std::sync::Mutex;
-        Ok(Users {
+        let users = Users {
             conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
             sess: Box::new(chashmap::CHashMap::new()),
-        })
+        };
+        users.conn.init()?;
+        Ok(users)
     }
 
     /******** FORMS ********/
