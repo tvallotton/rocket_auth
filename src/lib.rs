@@ -34,13 +34,13 @@ pub struct Users {
 
 
 
-#[derive(FromForm, Debug)]
+#[derive(FromForm, Deserialize, Debug)]
 pub struct Login {
     pub email: String,
     password: String,
 }
 
-#[derive(FromForm, Debug)]
+#[derive(FromForm, Deserialize, Debug)]
 pub struct Signup {
     pub email: String,
     password: String,
