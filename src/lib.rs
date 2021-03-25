@@ -34,7 +34,6 @@ pub struct Users {
 }
 
 
-
 #[derive(FromForm, Deserialize, Debug)]
 pub struct Login {
     pub email: String,

@@ -1,21 +1,24 @@
 use crate::prelude::*;
-use rocket::http::{Status, Cookies};
+use rocket::http::{Status, Cookies, Cookie};
 use rocket::request::{FromForm, FromRequest, Outcome, Request};
 
-#[derive(FromForm)]
-pub struct Session {
+#[derive(Debug)]
+pub struct Session<'a> {
+    pub cookies: Cookies<'a>,
     pub id: u64,
     pub email: String,
     pub auth_key: String,
     pub time_stamp: u32,
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for Session {
+
+impl<'a, 'r> FromRequest<'a, 'r> for Session<'a> {
     type Error = Error;
-    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {    
+    fn from_request(request: &'a Request<'r>) -> Outcome<Session<'a>, Self::Error> {    
         let fields = get_fields(&mut request.cookies());
+
         if are_all_some(&fields) {
-            if let Some(session) = session(fields) {
+            if let Some(session) = session(request.cookies(), fields) {
                 Outcome::Success(session)
             } else {
                 Outcome::Failure((
@@ -57,7 +60,7 @@ fn are_all_some(array: &[OptionCookie]) -> bool {
         .fold(true, |x, y| x && y)
 }
 
-fn session([id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Session> {
+fn session<'a>(cookies: Cookies<'a>, [id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Session<'a>> {
     let result = id?.value().parse();
     let id;
     if let Ok(id_) = result {
@@ -87,9 +90,22 @@ fn session([id, email, auth_key, time_stamp]: [OptionCookie; 4]) -> Option<Sessi
         return None;
     }
     Some(Session {
+        cookies,
         id,
         email,
         auth_key,
         time_stamp,
     })
+}
+
+
+
+use std::time::{SystemTime, UNIX_EPOCH};
+fn now() -> u128 {
+    use crate::error::SetErrorMessage;
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .msg("Error computing SystemTime")
+        .unwrap_or(Duration::from_secs(0))
+        .as_millis()
 }
