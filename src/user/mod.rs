@@ -87,11 +87,13 @@ impl Users {
     }
 
     pub fn delete(&self, id: u32) -> Result<()> {
-        todo!()
+        self.conn.delete_user_by_id(id)?;
+        Ok(())
     }
 
     pub fn modify(&self, user: User) -> Result<()> {
-        todo!()
+        self.conn.update_user(user)?;
+        Ok(())
     }
 
     /******* HELPERS ********/
@@ -102,7 +104,7 @@ impl Users {
     }
 
     fn set_auth_key(&self, user_id: u32) -> Result<String> {
-        let key = rand_string(10);
+        let key = rand_string(15);
         self.sess.insert(user_id.into(), key.clone())?;
         Ok(key)
     }
@@ -110,12 +112,12 @@ impl Users {
 
 use rand::random;
 pub fn rand_string(size: usize) -> String {
-    let dissallowed = ['\\', '"', '{', '}', '(', ')', '`', '\''];
+    // let dissallowed = ['\\', '"', '{', '}', '(', ')', '`', '\''];
     (0..)
         .map(|_| random::<u8>())
         .filter(|n| 31 < *n && *n < 126)
         .map(|n| char::from(n))
-        .filter(|c| !dissallowed.contains(c))
+        // .filter(|c| !dissallowed.contains(c))
         .take(size)
         .collect()
 }

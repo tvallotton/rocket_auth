@@ -3,8 +3,6 @@
 
 
 use crate::prelude::*;
-use argon2::verify_encoded as verify;
-use std::time::Duration;
 use super::rand_string;
 
 impl User {

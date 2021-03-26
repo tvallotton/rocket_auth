@@ -52,10 +52,9 @@ impl SessionManager for CHashMap<u32, AuthKey> {
 
 
 use std::time::{SystemTime, UNIX_EPOCH};
-fn now() -> Result<u128> {
-    use crate::error::SetErrorMessage;
+fn now() -> Result<u64> {
     Ok(SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .msg("Error computing SystemTime")?
-        .as_millis())
+        .as_secs())
 }

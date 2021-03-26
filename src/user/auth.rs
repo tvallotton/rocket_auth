@@ -5,6 +5,7 @@ use rocket::request::FromRequest;
 use rocket::request::Outcome;
 use rocket::Request;
 use rocket::State;
+use serde_json::json;
 
 pub struct Auth<'a> {
     pub users: State<'a, Users>,
@@ -41,12 +42,14 @@ impl<'a> Auth<'a> {
     pub fn login(&mut self, form: &Login) -> Result<()> {
         let key = self.users.login(&form)?;
         let user = self.users.get_by_email(&form.email)?;
-        self.cookies.add_private(Cookie::new("auth_key", key));
-        self.cookies.add_private(Cookie::new("email", user.email));
-        self.cookies
-            .add_private(Cookie::new("id", format!("{}", user.id)));
-        self.cookies
-            .add_private(Cookie::new("time_stamp", format!("{}", now())));
+        let session = Session {
+            id: user.id,
+            email: user.email,
+            auth_key: key,
+            time_stamp: now() as u32,
+        };
+        let to_str = format!("{}", json!(session));
+        self.cookies.add_private(Cookie::new("rocket_auth", to_str));
         Ok(())
     }
 
@@ -65,10 +68,11 @@ impl<'a> Auth<'a> {
     pub fn get_user(&self) -> Option<User> {
         let id = self.session.clone()?.id;
         if let Ok(user) = self.users.get_by_id(id) {
-                Some(user)
-            } else {
-                None
-            }
+            println!("{:?}", user);
+            Some(user)
+        } else {
+            None
+        }
     }
 
     pub fn logout() -> Result<()> {
@@ -80,10 +84,10 @@ impl<'a> Auth<'a> {
 }
 
 use std::time::{SystemTime, UNIX_EPOCH};
-fn now() -> u128 {
+fn now() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .msg("Error computing SystemTime")
         .unwrap_or(Duration::from_secs(0))
-        .as_millis()
+        .as_secs()
 }
