@@ -59,10 +59,10 @@ impl<'a> Auth<'a> {
         Ok(())
     }
     ///
-    /// 
+    ///
     /// It allows to know if the current client is authenticated or not.
     /// ```rust
-    /// #[get("/am-I-authenticated")] 
+    /// #[get("/am-I-authenticated")]
     /// fn is_auth(auth: Auth) -> &'static str {
     ///     if auth.is_auth() {
     ///         "Yes you are."
@@ -89,17 +89,41 @@ impl<'a> Auth<'a> {
     }
 
     pub fn logout(&self) -> Result<()> {
-        todo!()
+        let session = self.get_session()?;
+        self.users.logout(session)?;
+        Ok(())
     }
+
     pub fn delete(&self) -> Result<()> {
-        todo!()
+        let session = self.get_session()?;
+        self.users.delete(session.id)?;
+        Ok(())
     }
 
     pub fn change_password(&self, password: String) -> Result<()> {
-        todo!()
+        if self.is_auth() {
+            let session = self.get_session()?;
+            let mut user = self.users.get_by_id(session.id)?;
+            user.reset_password(&password);
+            self.users.modify(user)?;
+            Ok(())
+        } else {
+            Err(Error {
+                message: "Unauthorized.".into(),
+                kind: ErrorKind::UnauthenticatedClientError,
+            })
+        }
     }
     pub fn change_email(&self, email: String) -> Result<()> {
         todo!()
+    }
+
+    pub fn get_session(&self) -> Result<&Session> {
+        let session = self.session.as_ref().ok_or(Error {
+            message: "Client is not authenticated".into(),
+            kind: ErrorKind::UnauthenticatedClientError,
+        })?;
+        Ok(session)
     }
 }
 

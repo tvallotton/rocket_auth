@@ -15,6 +15,8 @@ pub enum ErrorKind {
     QueryError,
     UnmanagedStateError,
     FormValidationError,
+    UnauthenticatedClientError,
+    UnsafePasswordError,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -103,12 +105,17 @@ impl From<argon2::Error> for Error {
 }
 
 
-
 impl From<()> for Error {
     fn from(_: ()) -> Error {
         Error {
             message: "".into(),
             kind: ErrorKind::Unspecified,
         }
+    }
+}
+
+impl From<&Error> for Error {
+    fn from(error: &Error) -> Error {
+        error.clone()
     }
 }

@@ -7,7 +7,7 @@
 //! 
 //! By default this crate stores sessions on a concurrent hashmap. 
 //! As a result, sessions will only be stored as long as the rocket application runs uninterrupted. 
-//! In order to store sessions more robustly, it is recommended to connect the [`Users`] instance to a redis server.
+//! In order to store persistent sessions, it is recommended to connect the [`Users`] instance to a redis server.
 //! This requires the `redis-session` feature to be enabled. 
 //! 
 //! `rocket_auth` uses private cookies to store session data. 
@@ -28,6 +28,7 @@
 //! This crate provides two guards:
 //! * [`Auth`]: manages authentication.
 //! * [`Session`]: retrieves session data from client cookies.
+//! * [`User`]: It restricts content, so it can be viewed by authenticated clients only.
 //! 
 //! It also includes two structs to be parsed from forms and json data: 
 //! * [`Signup`]: used to create new users.
@@ -83,7 +84,12 @@
 //!     Ok(())
 //! }
 //! ```
-//! # Users struct
+//! 
+//! ## Session guard
+//! It is not recommended to be used simultaneously with [`Auth`], since the session data is already retrieved and stored in a public field. 
+//! 
+//! 
+//! ## Users struct
 //! The [`Users`] struct administers interactions with the database. 
 //! It lets you query, create, modify and delete users.
 //! Unlike the [`Auth`] guard, a [`Users`] is instance can manage any user in the database.
@@ -99,6 +105,7 @@
 //! 
 //! A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
 //! [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection. 
+//! 
 
 
 
