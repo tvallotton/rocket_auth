@@ -6,6 +6,7 @@ use rocket::request::Outcome;
 use rocket::Request;
 use rocket::State;
 use serde_json::json;
+use std::time::Duration;
 use crate::forms::ValidEmail;
 
 pub struct Auth<'a> {
@@ -40,6 +41,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
 }
 
 impl<'a> Auth<'a> {
+    /// Logs in the user through a form. The session is set to expire in one year by default.
+    /// for a custom expiration date use [`Auth::login_for`].
     pub fn login(&mut self, form: &Login) -> Result<()> {
         let key = self.users.login(&form)?;
         let user = self.users.get_by_email(&form.email)?;
@@ -51,6 +54,21 @@ impl<'a> Auth<'a> {
         };
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
+        Ok(())
+    }
+
+    pub fn login_for(&mut self, form: &Login, time: Duration) -> Result<()> {
+        let key = self.users.login_for(&form, time)?;
+        let user = self.users.get_by_email(&form.email)?;
+        let session = Session {
+            id: user.id,
+            email: user.email,
+            auth_key: key,
+            time_stamp: now() as u32,
+        };
+        let to_str = format!("{}", json!(session));
+        let cookie = Cookie::new("rocket_auth", to_str);
+        self.cookies.add_private(cookie);
         Ok(())
     }
 

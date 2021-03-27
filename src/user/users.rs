@@ -5,6 +5,19 @@ use super::rand_string;
 use std::path::Path;
 
 impl Users {
+
+
+    /// It creates a `Users instance by connecting  it to a redis database. 
+    /// If the database does not yet exist it will be created. By default,
+    /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
+    /// the method (User::open_redis)[`open_redis`].
+    /// ```rust 
+    /// let users = Users::open_sqlite("database.db")?;
+    /// 
+    /// rocket::ignite()
+    ///     .manage(users)
+    ///     .launch();
+    /// ```
     #[cfg(feature = "sqlite-db")]
     pub fn open_sqlite(path: impl AsRef<Path>) -> Result<Self> {
         use std::sync::Mutex;
@@ -16,7 +29,16 @@ impl Users {
         Ok(users)
     }
 
-
+    /// Opens a redis connection. It allows for sessions to be stored persistendtly across
+    /// different launches. 
+    /// ```rust 
+    /// let users = Users::open_sqlite("database.db")?;
+    /// users.open_redis("redis://127.0.0.1/")?;
+    /// 
+    /// rocket::ignite()
+    ///     .manage(users)
+    ///     .launch();
+    /// ```
     #[cfg(feature = "redis-session")]
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
         let client = redis::Client::open(path)?;
@@ -27,23 +49,18 @@ impl Users {
     
 
     /// Logs a user in for the amout of time specified. 
-    pub fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
-        let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email)?;
-        let user_pwd = &user.password;
-        if verify(user_pwd, form_pwd)? {
-            let key = self.set_auth_key_for(user.id, time)?;
-            Ok(key)
-        } else {
-            raise(ErrorKind::Unauthorized, "Incorrect password.")
-        }
-    }
+    
 
     
     pub fn get_by_id(&self, user_id: u32) -> Result<User> {
         self.conn.get_user_by_id(user_id)
     }
 
+    /// It querys a user by their email. 
+    /// #[get("/user-information/<email>")]
+    /// fn user_information(email: String) -> String {
+    ///     
+    /// }
     pub fn get_by_email(&self, email: &str) -> Result<User> {
         self.conn.get_user_by_email(email)
     }

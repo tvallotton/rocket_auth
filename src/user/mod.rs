@@ -63,4 +63,16 @@ impl Users {
         self.create_user(email, password, false)?;
         Ok(())
     }
+
+    fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
+        let form_pwd = &form.password.as_bytes();
+        let user = self.conn.get_user_by_email(&form.email)?;
+        let user_pwd = &user.password;
+        if verify(user_pwd, form_pwd)? {
+            let key = self.set_auth_key_for(user.id, time)?;
+            Ok(key)
+        } else {
+            raise(ErrorKind::Unauthorized, "Incorrect password.")
+        }
+    }
 }
