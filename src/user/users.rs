@@ -68,15 +68,6 @@ impl Users {
     }
 
 
-    
-    fn is_auth(&self, session: &Session) -> bool {
-        let option = self.sess.get(session.id);
-        if let Some(auth_key) = option {
-            auth_key == session.auth_key
-        } else {
-            false
-        }
-    }
 
     /********* MANAGE USERS *********/
 

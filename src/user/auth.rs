@@ -115,6 +115,8 @@ impl<'a> Auth<'a> {
         }
     }
     pub fn change_email(&self, email: String) -> Result<()> {
+        
+        
         todo!()
     }
 
