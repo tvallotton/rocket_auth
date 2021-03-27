@@ -15,7 +15,7 @@ pub trait SessionManager: Send + Sync {
     fn clear_expired(&self) -> Result<()>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthKey {
     expires: u64,
     secret: String,

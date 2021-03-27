@@ -44,4 +44,5 @@ optional = true
 
 [dependencies.redis]
 version = "0.20.0"
+features = ["aio", "tokio-comp"]
 optional = true

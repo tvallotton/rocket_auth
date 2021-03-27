@@ -2,11 +2,11 @@ use crate::prelude::*;
 use argon2::verify_encoded as verify;
 use std::time::Duration;
 use super::rand_string;
-
+use std::path::Path;
 
 impl Users {
     #[cfg(feature = "sqlite-db")]
-    pub fn open_sqlite(path: &str) -> Result<Self> {
+    pub fn open_sqlite(path: impl AsRef<Path>) -> Result<Self> {
         use std::sync::Mutex;
         let users = Users {
             conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
@@ -16,34 +16,15 @@ impl Users {
         Ok(users)
     }
 
-    /******** FORMS ********/
-    pub fn login(&self, form: &Login) -> Result<String> {
-        
-        let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email)?;
-        let user_pwd = &user.password;
-        if verify(user_pwd, form_pwd)? {
-            let key = self.set_auth_key(user.id)?;
-            Ok(key)
-        } else {
-            raise(ErrorKind::Unauthorized, "Incorrect password.")
-        }
-    }
-    pub fn logout(&self, session: &Session) -> Result<()> {
-        if self.is_auth(session) {
-            self.sess.remove(session.id)?;
-        }
+
+    #[cfg(feature = "redis-session")]
+    pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
+        let client = redis::Client::open(path)?;
+        self.sess = Box::new(client);
         Ok(())
     }
 
-    pub fn signup(&self, form: &Signup) -> Result<()> {
-        form.is_valid()?;
-        let email = &form.email;
-        let password = &form.password;
-        self.create_user(email, password, false)?;
-        Ok(())
-    }
-
+    
 
     /// Logs a user in for the amout of time specified. 
     pub fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
@@ -89,30 +70,24 @@ impl Users {
         Ok(())
     }
 
-    /// Deletes a user from de database. Note that this method won't delete the session. To do that use `Auth::delete`.
-    /// 
-
-
+    /// Deletes a user from de database. Note that this method won't delete the session. 
+    /// To do that use [`Auth::delete`].
+    /// #[get("/delete_user/<id>")] 
+    /// fn delete_user(id: u32, users: State<Users>) -> Result<String> {
+    ///     users.delete(id)?;
+    ///     Ok("The user has been deleted.")
+    /// }
     pub fn delete(&self, id: u32) -> Result<()> {
         self.conn.delete_user_by_id(id)?;
         Ok(())
     }
 
+    
     pub fn modify(&self, user: User) -> Result<()> {
         self.conn.update_user(user)?;
         Ok(())
     }
 
-    /******* HELPERS ********/
-    fn set_auth_key_for(&self, user_id: u32, time: Duration) -> Result<String> {
-        let key = rand_string(10);
-        self.sess.insert_for(user_id.into(), key.clone(), time)?;
-        Ok(key)
-    }
+    
 
-    fn set_auth_key(&self, user_id: u32) -> Result<String> {
-        let key = rand_string(15);
-        self.sess.insert(user_id.into(), key.clone())?;
-        Ok(key)
-    }
 }

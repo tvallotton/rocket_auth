@@ -2,7 +2,6 @@ use crate::prelude::*;
 use std::error::Error as ErrorTrait;
 use std::fmt::{self, Display, Formatter};
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ErrorKind {
     MutexPoisonError,
@@ -18,15 +17,18 @@ pub enum ErrorKind {
     UnauthenticatedClientError,
     UnsafePasswordError,
     Unauthorized,
+    RedisError,
+    JsonParsingError,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Error {
     pub message: String,
     pub kind: ErrorKind,
+    // #[serde(skip_serializing)]
+    
+    
 }
-
-
 
 impl ErrorTrait for Error {}
 
@@ -63,13 +65,12 @@ impl<T, E: Into<Error> + ErrorTrait> SetErrorMessage for std::result::Result<T, 
     }
 }
 
-
 /*****  CONVERSIONS  *****/
 use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
-    fn from(_: PoisonError<T>) -> Error {
+    fn from(error: PoisonError<T>) -> Error {
         Error {
-            message: "".into(),
+            message: format!("{}", error),
             kind: ErrorKind::MutexPoisonError,
         }
     }
@@ -77,9 +78,9 @@ impl<T> From<PoisonError<T>> for Error {
 
 #[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {
-    fn from(_: rusqlite::Error) -> Error {
+    fn from(error: rusqlite::Error) -> Error {
         Error {
-            message: "".into(),
+            message: format!("{}", error),
             kind: ErrorKind::SQLiteError,
         }
     }
@@ -89,22 +90,20 @@ use std::time::SystemTimeError;
 impl From<SystemTimeError> for Error {
     fn from(error: SystemTimeError) -> Error {
         Error {
-            message: "".into(),
+            message: format!("{}", error),
             kind: ErrorKind::SystemTimeError(error.duration()),
         }
     }
 }
 
-
 impl From<argon2::Error> for Error {
-    fn from(_: argon2::Error) -> Error {
+    fn from(error: argon2::Error) -> Error {
         Error {
-            message: "".into(),
+            message: format!("{}", error),
             kind: ErrorKind::Argon2ParsingError,
         }
     }
 }
-
 
 impl From<()> for Error {
     fn from(_: ()) -> Error {
@@ -118,5 +117,23 @@ impl From<()> for Error {
 impl From<&Error> for Error {
     fn from(error: &Error) -> Error {
         error.clone()
+    }
+}
+
+impl From<redis::RedisError> for Error {
+    fn from(error: redis::RedisError) -> Error {
+        Error {
+            message: format!("{}", error),
+            kind: ErrorKind::RedisError,
+        }
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Error {
+        Error {
+            message: format!("{}", error),
+            kind: ErrorKind::JsonParsingError,
+        }
     }
 }

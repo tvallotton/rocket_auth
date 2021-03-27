@@ -6,6 +6,11 @@ use regex::Regex;
 const EMAIL_REGEX: &str = r"^[\w\-\.]+@([\w-]+\.)+[\w\-]{2,4}$";
 
 impl Signup {
+
+    /// It checks whether the form is valid. 
+    /// It is not necesay to check if a form is valid when
+    /// using [`Auth::signup`], since that function already
+    /// checks whether the form is valid before signup.
     pub fn is_valid(&self) -> Result<()> {
         self.password.is_secure()?;
         self.email.is_valid()?;

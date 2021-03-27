@@ -31,6 +31,15 @@ impl User {
         self.password = hash;
         Ok(())
     }
+
+    fn signup(&self, form: &Signup) -> Result<()> {
+        form.is_valid()?;
+        let email = &form.email;
+        let password = &form.password;
+        self.create_user(email, password, false)?;
+        Ok(())
+    }
+
 }
 
 use std::fmt::{self, Debug};

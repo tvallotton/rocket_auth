@@ -26,7 +26,7 @@ impl SessionManager for CHashMap<u32, AuthKey> {
         Some(key.secret.clone())
     }
 
-    fn flush(&self) -> Result<()> {
+    fn clear_all(&self) -> Result<()> {
         self.clear();
         Ok(())
     }
