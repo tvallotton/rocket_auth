@@ -58,6 +58,19 @@ impl<'a> Auth<'a> {
         self.login(&form.into())?;
         Ok(())
     }
+    ///
+    /// 
+    /// It allows to know if the current client is authenticated or not.
+    /// ```rust
+    /// #[get("/am-I-authenticated")] 
+    /// fn is_auth(auth: Auth) -> &'static str {
+    ///     if auth.is_auth() {
+    ///         "Yes you are."
+    ///     } else {
+    ///         "nope."
+    ///     }
+    /// }
+    /// ```
     pub fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
             self.users.is_auth(session)
@@ -75,10 +88,17 @@ impl<'a> Auth<'a> {
         }
     }
 
-    pub fn logout() -> Result<()> {
+    pub fn logout(&self) -> Result<()> {
         todo!()
     }
-    pub fn delete() -> Result<()> {
+    pub fn delete(&self) -> Result<()> {
+        todo!()
+    }
+
+    pub fn change_password(&self, password: String) -> Result<()> {
+        todo!()
+    }
+    pub fn change_email(&self, email: String) -> Result<()> {
         todo!()
     }
 }
