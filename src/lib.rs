@@ -1,6 +1,6 @@
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
-//! rocket_auth provides a backend agnostic API for authentication management.
+//! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
 //! * `sqlite-db`: for interacting with a SQLite database. 
@@ -9,7 +9,7 @@
 //! 
 //! By default this crate stores sessions on a concurrent hashmap. 
 //! As a result, sessions will only be stored as long as the rocket application runs uninterrupted. 
-//! In order to store persistent sessions, it is recommended to connect the [`Users`] instance to a redis server.
+//! In order to store persistent sessions, it is recommended to connect the [`Users`](`Users::open_redis`) instance to a [redis server](https://redis.io/) .
 //! This requires the `redis-session` feature to be enabled. 
 //! 
 //! `rocket_auth` uses private cookies to store session data. 
@@ -62,25 +62,12 @@
 //! fn logout(auth: Auth) {
 //!     auth.logout();
 //! }
-//! //! #[get("/delete_account")] 
-//! fn delete(auth: Auth) {
-//!     auth.delete();
-//! }
-//! 
-//! #[get("/am-I-authenticated")] 
-//! fn is_auth(auth: Auth) -> &'static str {
-//!     if auth.is_auth() {
-//!         "Yes you are."
-//!     } else {
-//!         "nope."
-//!     }
-//! }
 //! 
 //! fn main() -> Result<(), Error>{
 //!     let users = Users::open_sqlite("mydb.db")?;
 //! 
 //!     rocket::ignite()
-//!         .mount("/", routes![signup, login, logout, delete, is_auth])
+//!         .mount("/", routes![signup, login, logout])
 //!         .manage(users)
 //!         .launch();
 //!     Ok(())
@@ -133,7 +120,7 @@ pub use error::Error;
 pub use crate::user::auth::Auth;
 
 
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+
 
 
 

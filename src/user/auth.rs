@@ -41,8 +41,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
 }
 
 impl<'a> Auth<'a> {
-    /// Logs in the user through a form. The session is set to expire in one year by default.
+    /// Logs in the user through a parsed form or json. The session is set to expire in one year by default.
     /// for a custom expiration date use [`Auth::login_for`].
+    /// ```rust
+    /// #[post("/login", data="<form>")] 
+    /// fn login(form: Form<Login>, auth: Auth) {
+    ///     auth.login(&form);
+    /// }
+    /// ```
     pub fn login(&mut self, form: &Login) -> Result<()> {
         let key = self.users.login(&form)?;
         let user = self.users.get_by_email(&form.email)?;
@@ -57,6 +63,14 @@ impl<'a> Auth<'a> {
         Ok(())
     }
 
+    /// Logs a user in for the specified period of time. 
+    /// ```rust
+    /// #[post("/login", data="<form>")] 
+    /// fn login(form: Form<Login>, auth: Auth) {
+    ///     let one_hour = Duration::from_secs(60 * 60);
+    ///     auth.login_for(&form, one_hour);
+    /// }
+    /// ```
     pub fn login_for(&mut self, form: &Login, time: Duration) -> Result<()> {
         let key = self.users.login_for(&form, time)?;
         let user = self.users.get_by_email(&form.email)?;

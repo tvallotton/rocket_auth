@@ -29,7 +29,7 @@ impl Users {
         Ok(users)
     }
 
-    /// Opens a redis connection. It allows for sessions to be stored persistendtly across
+    /// Opens a redis connection. It allows for sessions to be stored persistently across
     /// different launches. 
     /// ```rust 
     /// let users = Users::open_sqlite("database.db")?;

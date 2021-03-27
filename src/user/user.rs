@@ -31,9 +31,6 @@ impl User {
         self.password = hash;
         Ok(())
     }
-
-   
-
 }
 
 use std::fmt::{self, Debug};
@@ -55,10 +52,13 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
         if let Some(user) = auth.get_user() {
             Outcome::Success(user)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error {
-                kind: ErrorKind::Unauthorized,
-                message: "Unauthorized".into(),
-            }))
+            Outcome::Failure((
+                Status::Unauthorized,
+                Error {
+                    kind: ErrorKind::Unauthorized,
+                    message: "Unauthorized".into(),
+                },
+            ))
         }
     }
 }

@@ -11,7 +11,7 @@ pub trait SessionManager: Send + Sync {
     fn insert_for(&self, id: u32, key: String, time: Duration) -> Result<()>;
     fn remove(&self, id: u32) -> Result<()>;
     fn get(&self, id: u32) -> Option<String>;
-    fn flush(&self) -> Result<()>;
+    fn clear_all(&self) -> Result<()>;
     fn clear_expired(&self) -> Result<()>;
 }
 
@@ -38,3 +38,4 @@ impl From<&str> for AuthKey {
         }
     }
 }
+
