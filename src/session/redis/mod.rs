@@ -1,6 +1,6 @@
 use super::SessionManager;
 use crate::prelude::*;
-use serde_json::to_string;
+
 
 use redis::{Commands, Client};
 
@@ -38,11 +38,3 @@ impl SessionManager for Client {
 }
 
 
-
-use std::time::{SystemTime, UNIX_EPOCH};
-fn now() -> Result<u64> {
-    Ok(SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .msg("Error computing SystemTime")?
-        .as_secs())
-}

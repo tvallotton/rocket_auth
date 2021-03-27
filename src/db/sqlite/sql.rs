@@ -22,7 +22,7 @@ UPDATE table SET
     password = ?3,
     is_admin = ?4,
 WHERE
-    id = ?1
+    id = ?1;
 ";
 
 pub const SELECT_BY_ID: &str = "

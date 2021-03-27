@@ -10,7 +10,7 @@ edition = "2018"
 [features]
 default = ["sqlite-db", "postgres-db", "redis-session"]
 sqlite-db = ["rusqlite"]
-postgres-db = ["tokio-postgres"]
+postgres-db = ["tokio-postgres", "futures"]
 redis-session = ["redis"]
 # mysql-db = [...]
 
@@ -44,4 +44,9 @@ optional = true
 [dependencies.redis]
 version = "0.20.0"
 features = ["aio", "tokio-comp"]
+optional = true
+
+[dependencies.futures]
+version = "*"
+# features = []
 optional = true

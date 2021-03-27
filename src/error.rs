@@ -19,6 +19,7 @@ pub enum ErrorKind {
     Unauthorized,
     RedisError,
     JsonParsingError,
+    PostgresqlError,
 }
 
 #[derive(Debug, Clone)]
@@ -134,6 +135,16 @@ impl From<serde_json::Error> for Error {
         Error {
             message: format!("{}", error),
             kind: ErrorKind::JsonParsingError,
+        }
+    }
+}
+
+impl From<tokio_postgres::Error> for Error {
+
+    fn from(error: tokio_postgres::Error) -> Error {
+        Error {
+            message: format!("{}", error),
+            kind: ErrorKind::PostgresqlError,
         }
     }
 }
