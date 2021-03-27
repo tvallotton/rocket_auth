@@ -19,7 +19,7 @@ impl DBConnection for Mutex<Connection> {
     }
     fn update_user(&self, user: User) -> Result<()> {
         let db = self.lock()?;
-        db.execute(INSERT_USER, params![user.email, user.password, user.is_admin])?;
+        db.execute(UPDATE_USER, params![user.id, user.email, user.password, user.is_admin])?;
         Ok(())
     }
     fn delete_user_by_id(&self, user_id: u32) -> Result<()> {

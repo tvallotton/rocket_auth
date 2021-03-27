@@ -56,10 +56,10 @@ impl SafePassword for str {
         if self.len() > 8 {
             Ok(())
         } else {
-            Err(Error {
-                message: "Unsafe password. It must be at least 8 characters long.".into(),
-                kind: ErrorKind::UnsafePasswordError,
-            })
+            raise(
+                ErrorKind::UnsafePasswordError,
+                "Unsafe password. It must be at least 8 characters long.",
+            )
         }
     }
 }

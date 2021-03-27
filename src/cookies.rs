@@ -1,7 +1,7 @@
 use crate::prelude::*;
-use rocket::http::{Cookie, Cookies, Status};
-use rocket::request::{FromForm, FromRequest, Outcome, Request};
-use serde_json::{from_str, Value};
+use rocket::http::{Cookies, Status};
+use rocket::request::{FromRequest, Outcome, Request};
+use serde_json::{from_str};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
@@ -90,11 +90,11 @@ fn get_session(cookies: &mut Cookies) -> Option<Session> {
 //     })
 // }
 
-use std::time::{SystemTime, UNIX_EPOCH};
-fn now() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .msg("Error computing SystemTime")
-        .unwrap_or(Duration::from_secs(0))
-        .as_secs()
-}
+// use std::time::{SystemTime, UNIX_EPOCH};
+// fn now() -> u64 {
+//     SystemTime::now()
+//         .duration_since(UNIX_EPOCH)
+//         .msg("Error computing SystemTime")
+//         .unwrap_or(Duration::from_secs(0))
+//         .as_secs()
+// }

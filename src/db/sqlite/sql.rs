@@ -18,8 +18,9 @@ INSERT INTO users (email, password, is_admin) VALUES (?1, ?2, ?3);
 
 pub const UPDATE_USER: &str = "
 UPDATE table SET 
-    email = ?1,
-    is_admin = ?2,
+    email = ?2,
+    password = ?3,
+    is_admin = ?4,
 WHERE
     id = ?1
 ";
@@ -33,8 +34,8 @@ SELECT * FROM users WHERE email = ?1;
 ";
 
 pub const REMOVE_BY_ID: &str = "
-REMOVE FROM table WHERE id =?1;
+DELETE FROM users WHERE id =?1;
 ";
 pub const REMOVE_BY_EMAIL: &str = "
-REMOVE FROM table WHERE email =?1;
+DELETE FROM users WHERE email =?1;
 ";

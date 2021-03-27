@@ -26,7 +26,7 @@ impl Users {
             let key = self.set_auth_key(user.id)?;
             Ok(key)
         } else {
-            raise("Contraseña incorrecta.")
+            raise(ErrorKind::Unauthorized, "Incorrect password.")
         }
     }
     pub fn logout(&self, session: &Session) -> Result<()> {
@@ -54,11 +54,11 @@ impl Users {
             let key = self.set_auth_key_for(user.id, time)?;
             Ok(key)
         } else {
-            raise("Contraseña incorrecta.")
+            raise(ErrorKind::Unauthorized, "Incorrect password.")
         }
     }
 
-    /******* ACCESSING *******/
+    
     pub fn get_by_id(&self, user_id: u32) -> Result<User> {
         self.conn.get_user_by_id(user_id)
     }
@@ -69,7 +69,7 @@ impl Users {
 
 
 
-    /********* MANAGE USERS *********/
+    
 
     /// Inserts a user in the database. 
     /// # Example 

@@ -6,6 +6,7 @@ use rocket::request::Outcome;
 use rocket::Request;
 use rocket::State;
 use serde_json::json;
+use crate::forms::ValidEmail;
 
 pub struct Auth<'a> {
     pub users: State<'a, Users>,
@@ -104,20 +105,24 @@ impl<'a> Auth<'a> {
         if self.is_auth() {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id)?;
-            user.reset_password(&password);
+            user.reset_password(&password)?;
             self.users.modify(user)?;
             Ok(())
         } else {
-            Err(Error {
-                message: "Unauthorized.".into(),
-                kind: ErrorKind::UnauthenticatedClientError,
-            })
+            raise(ErrorKind::Unauthorized, "Unauthorized.")
         }
     }
     pub fn change_email(&self, email: String) -> Result<()> {
-        
-        
-        todo!()
+        if self.is_auth() {
+            email.is_valid()?;
+            let session = self.get_session()?;
+            let mut user = self.users.get_by_id(session.id)?;
+            user.email = email;
+            self.users.modify(user)?;
+            Ok(())
+        } else {
+            raise(ErrorKind::Unauthorized, "Unauthorized.")
+        }
     }
 
     pub fn get_session(&self) -> Result<&Session> {

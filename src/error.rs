@@ -17,6 +17,7 @@ pub enum ErrorKind {
     FormValidationError,
     UnauthenticatedClientError,
     UnsafePasswordError,
+    Unauthorized,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -35,10 +36,10 @@ impl Display for Error {
     }
 }
 
-pub fn raise<T>(msg: &str) -> Result<T> {
+pub fn raise<T>(kind: ErrorKind, msg: &str) -> Result<T> {
     Err(Error {
         message: msg.into(),
-        kind: ErrorKind::Unspecified,
+        kind,
     })
 }
 
