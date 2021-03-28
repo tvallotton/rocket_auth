@@ -147,9 +147,11 @@ impl<'a> Auth<'a> {
         }
     }
     pub fn get_user(&self) -> Option<User> {
+        if !self.is_auth() {
+            return None
+        }
         let id = self.session.clone()?.id;
         if let Ok(user) = self.users.get_by_id(id) {
-            println!("{:?}", user);
             Some(user)
         } else {
             None
