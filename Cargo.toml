@@ -14,7 +14,7 @@ readme = "README.md"
 
 
 [features]
-default = ["sqlite-db", "postgres-db", "redis-session"]
+# default = ["sqlite-db", "postgres-db", "redis-session"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres", "futures", "tokio"]
 redis-session = ["redis"]
@@ -51,11 +51,11 @@ features = ["aio", "tokio-comp"]
 optional = true
 
 [dependencies.futures]
-version = "*"
+version = "0.3.13"
 # features = []
 optional = true
 
 [dependencies.tokio]
-version = "*"
+version = "1.4.0"
 features = ["rt", "rt-multi-thread"]
 optional = true
