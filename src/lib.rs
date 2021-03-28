@@ -40,6 +40,40 @@
 //! * [`User`]: it is the response of a query.
 //! 
 
+//! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
+//! For more information see [`Auth`]. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
+//! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
+//!  A working example: 
+//! ```rust,no_run
+//! use rocket::{get, post, Form};
+//! use rocket_auth::{Users, Error, Auth, Signup, Login};
+//! 
+//! #[post("/signup", data="<form>")] 
+//! fn signup(form: Form<Signup>, mut auth: Auth) {
+//!     // users are automatically logged in after signing up.
+//!     auth.signup(&form);
+//! }
+//! 
+//! #[post("/login", data="<form>")] 
+//! fn login(form: Form<Login>, mut auth: Auth) {
+//!     auth.login(&form);
+//! }
+//! 
+//! #[get("/logout")] 
+//! fn logout(mut auth: Auth) {
+//!     auth.logout();
+//! }
+//! 
+//! fn main() -> Result<(), Error>{
+//!     let users = Users::open_sqlite("mydb.db")?;
+//! 
+//!     rocket::ignite()
+//!         .mount("/", routes/[signup, login, logout])
+//!         .manage(users)
+//!         .launch();
+//!     Ok(())
+//! }
+//! ```
 //! 
 //! ## Users struct
 //! The [`Users`] struct administers interactions with the database. 
