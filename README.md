@@ -27,17 +27,17 @@ features = ["sqlite-db"]
 ```
 # Quick overview
 This crate provides two guards:
-* [`Auth`]: manages authentication.
-* [`Session`]: retrieves session data from client cookies.
-* [`User`]: It restricts content, so it can be viewed by authenticated clients only.
+* `Auth`: manages authentication.
+* `Session`: retrieves session data from client cookies.
+* `User`: It restricts content, so it can be viewed by authenticated clients only.
 
 It also includes two structs to be parsed from forms and json data: 
-* [`Signup`]: used to create new users.
-* [`Login`]: used to authenticate users.
+* `Signup`: used to create new users.
+* `Login`: used to authenticate users.
 
 Finally it has two structures for queries: 
-* [`Users`]: it allows to query users to the database.
-* [`User`]: it is the response of a query.
+* `Users`: it allows to query users to the database.
+* `User`: it is the response of a query.
 
 
 The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
