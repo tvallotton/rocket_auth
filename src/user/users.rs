@@ -1,5 +1,7 @@
 use super::rand_string;
 use crate::prelude::*;
+
+#[cfg(feature = "sqlite-db")]
 use std::path::Path;
 
 impl Users {

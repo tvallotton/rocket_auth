@@ -121,7 +121,7 @@ impl From<&Error> for Error {
         error.clone()
     }
 }
-
+#[cfg(feature="redis-session")]
 impl From<redis::RedisError> for Error {
     fn from(error: redis::RedisError) -> Error {
         Error {
@@ -139,7 +139,7 @@ impl From<serde_json::Error> for Error {
         }
     }
 }
-
+#[cfg(feature="postgres-db")]
 impl From<tokio_postgres::Error> for Error {
 
     fn from(error: tokio_postgres::Error) -> Error {
