@@ -5,6 +5,7 @@ use std::convert::{TryInto, TryFrom};
 
 impl DBConnection for Client {
     fn init(&self) -> Result<()> {
+        println!("INITIALIZING");
         futures::executor::block_on(
             self.execute(sql::CREATE_TABLE, &[])
         )?;

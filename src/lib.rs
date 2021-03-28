@@ -1,5 +1,4 @@
-// #![warn(missing_docs)]
-// #![warn(missing_doc_code_examples)]
+
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
@@ -40,43 +39,7 @@
 //! * [`Users`]: it allows to query users to the database.
 //! * [`User`]: it is the response of a query.
 //! 
-//! ## Auth guard
-//! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
-//! For more information see [`Auth`]. A working example: 
-//! ```rust,no_run
-//! use rocket::{get, post, Form};
-//! use rocket_auth::{Users, Error, Auth, Signup, Login};
-//! 
-//! #[post("/signup", data="<form>")] 
-//! fn signup(form: Form<Signup>, auth: Auth) {
-//!     // users are automatically logged in after signing up.
-//!     auth.signup(&form);
-//! }
-//! 
-//! #[post("/login", data="<form>")] 
-//! fn login(form: Form<Login>, auth: Auth) {
-//!     auth.login(&form);
-//! }
-//! 
-//! #[get("/logout")] 
-//! fn logout(auth: Auth) {
-//!     auth.logout();
-//! }
-//! 
-//! fn main() -> Result<(), Error>{
-//!     let users = Users::open_sqlite("mydb.db")?;
-//! 
-//!     rocket::ignite()
-//!         .mount("/", routes![signup, login, logout])
-//!         .manage(users)
-//!         .launch();
-//!     Ok(())
-//! }
-//! ```
-//! 
-//! ## Session guard
-//! It is not recommended to be used simultaneously with [`Auth`], since the session data is already retrieved and stored in a public field. 
-//! 
+
 //! 
 //! ## Users struct
 //! The [`Users`] struct administers interactions with the database. 
@@ -127,8 +90,13 @@ pub use crate::user::auth::Auth;
 
 
 
-
-
+/// The `User` guard can be used to restrict content so it can only be viewed my authenticated users. 
+/// ```rust
+/// #[get("/private-content/")]
+/// fn private_content(user: User) -> &'static str {
+///     "If you can see this, you are logged in."
+/// }
+/// ```
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
     pub id: u32,
@@ -139,19 +107,13 @@ pub struct User {
 }
 
 
-/// The user guard can be used to restrict content so it can only be viewed my authenticated users. 
-/// ```rust
-/// #[get("/private-content/")]
-/// fn private_content(user: User) -> &'static str {
-///     "If you can see this, you are logged in."
-/// }
-/// ```
+/// The `Users` struct is used to query users from the database, as well as to create, modify and delete them.
 pub struct Users {
     conn: Box<dyn DBConnection>,
     sess: Box<dyn SessionManager>,
 }
 
-
+/// The login form is used along with the [`Auth`] guard to authenticate users. 
 #[derive(FromForm, Deserialize, Debug)]
 pub struct Login {
     pub email: String,
@@ -159,8 +121,8 @@ pub struct Login {
 }
 
 
-/// The signup form is used to create new users. 
-/// 
+/// The login form is used along with the [`Auth`] guard to create new users. 
+
 #[derive(FromForm, Deserialize, Debug)]
 pub struct Signup {
     pub email: String,

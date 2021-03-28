@@ -20,6 +20,7 @@ pub enum ErrorKind {
     RedisError,
     JsonParsingError,
     PostgresqlError,
+    IOError
 }
 
 #[derive(Debug, Clone)]
@@ -145,6 +146,16 @@ impl From<tokio_postgres::Error> for Error {
         Error {
             message: format!("{}", error),
             kind: ErrorKind::PostgresqlError,
+        }
+    }
+}
+
+impl From<std::io::Error> for Error {
+
+    fn from(error: std::io::Error) -> Error {
+        Error {
+            message: format!("{}", error),
+            kind: ErrorKind::IOError,
         }
     }
 }
