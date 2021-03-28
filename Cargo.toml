@@ -5,10 +5,10 @@ authors = ["tvallotton@uc.cl"]
 edition = "2018"
 license = "MIT"
 description = "A high level authentication management library for Rocket applications. It supports both SQLite and Postgres."
-# homepage = ""
+
 # documentation
 # repository
-# readme
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
