@@ -1,3 +1,4 @@
+use crate::forms::ValidEmail;
 use crate::prelude::*;
 use rocket::http::Status;
 use rocket::http::{Cookie, Cookies};
@@ -7,35 +8,34 @@ use rocket::Request;
 use rocket::State;
 use serde_json::json;
 use std::time::Duration;
-use crate::forms::ValidEmail;
 
-/// The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
+/// The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
 /// For more information see [`Auth`]. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
 /// simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
-///  A working example: 
+///  A working example:
 /// ```rust,no_run
 /// use rocket::{get, post, Form};
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
-/// 
-/// #[post("/signup", data="<form>")] 
+///
+/// #[post("/signup", data="<form>")]
 /// fn signup(form: Form<Signup>, mut auth: Auth) {
 ///     // users are automatically logged in after signing up.
 ///     auth.signup(&form);
 /// }
-/// 
-/// #[post("/login", data="<form>")] 
+///
+/// #[post("/login", data="<form>")]
 /// fn login(form: Form<Login>, mut auth: Auth) {
 ///     auth.login(&form);
 /// }
-/// 
-/// #[get("/logout")] 
+///
+/// #[get("/logout")]
 /// fn logout(mut auth: Auth) {
 ///     auth.logout();
 /// }
-/// 
+///
 /// fn main() -> Result<(), Error>{
 ///     let users = Users::open_sqlite("mydb.db")?;
-/// 
+///
 ///     rocket::ignite()
 ///         .mount("/", routes/[signup, login, logout])
 ///         .manage(users)
@@ -44,7 +44,6 @@ use crate::forms::ValidEmail;
 /// }
 /// ```
 pub struct Auth<'a> {
-
     pub users: State<'a, Users>,
     pub cookies: Cookies<'a>,
     pub session: Option<Session>,
@@ -79,7 +78,7 @@ impl<'a> Auth<'a> {
     /// Logs in the user through a parsed form or json. The session is set to expire in one year by default.
     /// for a custom expiration date use [`Auth::login_for`].
     /// ```rust
-    /// #[post("/login", data="<form>")] 
+    /// #[post("/login", data="<form>")]
     /// fn login(form: Form<Login>, mut auth: Auth) {
     ///     auth.login(&form);
     /// }
@@ -98,9 +97,9 @@ impl<'a> Auth<'a> {
         Ok(())
     }
 
-    /// Logs a user in for the specified period of time. 
+    /// Logs a user in for the specified period of time.
     /// ```rust
-    /// #[post("/login", data="<form>")] 
+    /// #[post("/login", data="<form>")]
     /// fn login(form: Form<Login>, mut auth: Auth) {
     ///     let one_hour = Duration::from_secs(60 * 60);
     ///     auth.login_for(&form, one_hour);
@@ -148,7 +147,7 @@ impl<'a> Auth<'a> {
     }
     pub fn get_user(&self) -> Option<User> {
         if !self.is_auth() {
-            return None
+            return None;
         }
         let id = self.session.clone()?.id;
         if let Ok(user) = self.users.get_by_id(id) {
@@ -165,9 +164,16 @@ impl<'a> Auth<'a> {
     }
 
     pub fn delete(&self) -> Result<()> {
-        let session = self.get_session()?;
-        self.users.delete(session.id)?;
-        Ok(())
+        if self.is_auth() {
+            let session = self.get_session()?;
+            self.users.delete(session.id)?;
+            Ok(())
+        } else {
+            Err(Error {
+                message: "Client is not logged in.".into(),
+                kind: ErrorKind::UnauthenticatedClientError,
+            })
+        }
     }
 
     pub fn change_password(&self, password: String) -> Result<()> {

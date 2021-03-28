@@ -114,6 +114,7 @@ impl Users {
     ///     Ok("The user has been deleted.")
     /// }
     pub fn delete(&self, id: u32) -> Result<()> {
+        self.sess.remove(id)?;
         self.conn.delete_user_by_id(id)?;
         Ok(())
     }
