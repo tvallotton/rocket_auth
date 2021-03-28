@@ -8,7 +8,7 @@ The available features are:
 
 By default this crate stores sessions on a concurrent hashmap. 
 As a result, sessions will only be stored as long as the rocket application runs uninterrupted. 
-In order to store persistent sessions, it is recommended to connect the [`Users`](`Users::open_redis`) instance to a [redis server](https://redis.io/) .
+In order to store persistent sessions, it is recommended to connect the `Users`(`Users::open_redis`) instance to a [redis server](https://redis.io/) .
 This requires the `redis-session` feature to be enabled. 
 
 `rocket_auth` uses private cookies to store session data. 
@@ -40,9 +40,9 @@ Finally it has two structures for queries:
 * `User`: it is the response of a query.
 
 
-The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
-For more information see [`Auth`]. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
-simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
+The `Auth` guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user. 
+For more information see `Auth`. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the `Auth` guard
+simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field `Auth::cookies`.
 A working example: 
 ```rust,no_run
 use rocket::{get, post, Form};
@@ -76,12 +76,12 @@ fn main() -> Result<(), Error>{
 ```
 
 ## Users struct
-The [`Users`] struct administers interactions with the database. 
+The `Users` struct administers interactions with the database. 
 It lets you query, create, modify and delete users.
-Unlike the [`Auth`] guard, a [`Users`] is instance can manage any user in the database.
-Note that the [`Auth`] guards includes a `Users` instance stored on the public `users` field.
+Unlike the `Auth` guard, a `Users` is instance can manage any user in the database.
+Note that the `Auth` guards includes a `Users` instance stored on the public `users` field.
 So it is not necesary to retrieve Users when using `Auth`.
-A simple example of how to query a user with the [`Users`] struct:
+A simple example of how to query a user with the `Users` struct:
 
 ```rust 
 #[get("see-user/<id>")]
@@ -91,8 +91,8 @@ fn see_user(id: u32, users: State<Users>) -> String {
 }
 ```
 
-A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
-[`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection. 
+A `Users` instance can be constructed by connecting it to the database with the methods `open_sqlite`(Users::open_sqlite),
+`open_postgres`(Users::open_postgres). Furthermore, it can be constructed from a working connection. 
 
 
 
