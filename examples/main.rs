@@ -3,7 +3,7 @@ use rocket::{request::Form, response::Redirect, *};
 use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_contrib::templates::{tera, Template};
 use serde_json::json;
-use std::collections::HashMap;
+
 
 #[get("/login")]
 fn get_login() -> Template {
@@ -18,7 +18,7 @@ fn post_login(mut auth: Auth, form: Form<Login>) -> Redirect {
 
 #[get("/signup")]
 fn get_signup() -> Template {
-    let mut cnxt = tera::Context::new();
+    let cnxt = tera::Context::new();
     Template::render("signup", cnxt)
 }
 
