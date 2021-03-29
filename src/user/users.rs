@@ -5,10 +5,10 @@ use crate::prelude::*;
 use std::path::Path;
 
 impl Users {
-    /// It creates a `Users instance by connecting  it to a redis database.
+    /// It creates a `Users` instance by connecting  it to a redis database.
     /// If the database does not yet exist it will be created. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
-    /// the method (User::open_redis)[`open_redis`].
+    /// the method [`open_redis`](User::open_redis).
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # fn main() -> Result <(), Error> {
@@ -52,7 +52,7 @@ impl Users {
     }
 
     /// It opens a postgres database connection. I've got to admit I haven't tested this feature yet, so
-    /// don't waste your time if it doesn't. 
+    /// don't waste your time debugging if it doesn't work. 
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # fn main() -> Result<(), Error> {
@@ -86,9 +86,6 @@ impl Users {
         Ok(users)
     }
 
-    pub fn get_by_id(&self, user_id: u32) -> Result<User> {
-        self.conn.get_user_by_id(user_id)
-    }
 
     /// It querys a user by their email.
     /// ```
@@ -107,8 +104,25 @@ impl Users {
         self.conn.get_user_by_email(email)
     }
 
-    /// Inserts a user in the database.
-    /// # Example
+    /// It querys a user by their email.
+    /// ```
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{State, get};
+    /// # use rocket_auth::{Error, Users};
+    /// # #[get("/user-information/<email>")]
+    /// # fn user_information(email: String, users: State<Users>) -> Result<String, Error> { 
+    ///  let user = users.get_by_id(3)?;
+    ///  format!("{:?}", user)
+    /// # }
+    /// # fn main() {}
+    /// ```
+    pub fn get_by_id(&self, user_id: u32) -> Result<User> {
+        self.conn.get_user_by_id(user_id)
+    }
+
+
+
+    /// Inserts a new user in the database. It will fail if the user already exists. 
     /// ```rust
     /// #![feature(decl_macro)]
     /// # use rocket::{State, get};
@@ -130,7 +144,7 @@ impl Users {
     }
 
     /// Deletes a user from de database. Note that this method won't delete the session.
-    /// To do that use [`Auth::delete`].
+    /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// #[get("/delete_user/<id>")]
     /// fn delete_user(id: u32, users: State<Users>) -> Result<String> {
     ///     users.delete(id)?;
@@ -143,13 +157,41 @@ impl Users {
     }
 
 
-    /// Modifies a user retrieved from a 
-
+    /// Modifies a user in the database. 
+    /// ```
+    /// # use rocket_auth::{Users, Error};
+    /// # fn func(users: Users) -> Result<(), Error> {
+    /// let mut user = users.get_by_id(4)?;
+    /// user.set_email("new@email.com");
+    /// user.set_password("new password");
+    /// users.modify(&user)?;
+    /// # Ok(())}
+    /// ```
     pub fn modify(&self, user: &User) -> Result<()> {
         self.conn.update_user(user)?;
         Ok(())
     }
 }
 
-// #[cfg(feature = "postgres-db")]
-// impl From<client>
+
+
+impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> for Users {
+    fn from((db, ss): (T0, T1)) -> Users {
+        Users {
+            conn: Box::from(db),
+            sess: Box::new(ss)
+        }
+    }
+
+}
+
+// #[cfg(feature = "sqlite-db")]
+pub fn open_sqlite(path: impl AsRef<Path>) -> Result<Users> {
+        use std::sync::Mutex;
+        let x = Mutex::new(rusqlite::Connection::open(path)?);
+        let y = chashmap::CHashMap::new();
+        let users: Users = (x, y).into();
+
+
+        Ok(users)
+}

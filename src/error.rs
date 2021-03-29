@@ -22,7 +22,7 @@ pub enum ErrorKind {
     PostgresqlError,
     IOError
 }
-
+#[allow(missing_docs)]
 #[derive(Debug, Clone)]
 pub struct Error {
     pub message: String,

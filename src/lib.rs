@@ -132,7 +132,7 @@ pub use crate::user::auth::Auth;
 
 
 
-/// The `User` guard can be used to restrict content so it can only be viewed my authenticated users. 
+/// The `User` guard can be used to restrict content so it can only be viewed by authenticated users. 
 /// ```rust
 /// # #![feature(decl_macro)]
 /// # use rocket::{get};
@@ -146,7 +146,7 @@ pub use crate::user::auth::Auth;
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
     id: u32,
-    pub email: String,
+    email: String,
     #[serde(skip_serializing)]
     password: String,
     pub is_admin: bool,
@@ -159,7 +159,7 @@ pub struct Users {
     sess: Box<dyn SessionManager>,
 }
 
-/// The login form is used along with the [`Auth`] guard to authenticate users. 
+/// The `Login` form is used along with the [`Auth`] guard to authenticate users. 
 #[derive(FromForm, Deserialize, Debug)]
 pub struct Login {
     pub email: String,
@@ -167,7 +167,7 @@ pub struct Login {
 }
 
 
-/// The login form is used along with the [`Auth`] guard to create new users. 
+/// The `Signup` form is used along with the [`Auth`] guard to create new users. 
 
 #[derive(FromForm, Deserialize, Debug)]
 pub struct Signup {

@@ -5,10 +5,11 @@ use serde_json::{from_str};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// The Session guard can be used to retrieve user session data. 
-/// Unlike Users, using session does not verify that the session data is 
+/// Unlike User, using session does not verify that the session data is 
 /// still valid. Since the client could have logged out, or their session
 /// may have expired. The Session guard is intended for purposes where
 /// verifying the validity of the session data is unnecessary. 
+/// 
 /// 
 /// Note that, 
 /// session data is already captured by the [`Auth`] guard and stored in the public `session` field. 

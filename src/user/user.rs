@@ -19,13 +19,13 @@ impl User {
     /// #[get("/reset-password/<id>/<new_password>")]
     /// fn reset_password(id: u32, new_password: String, users: State<Users>) -> Result<(), Error> {
     ///     let mut user = users.get_by_id(id)?;
-    ///     user.reset_password(&new_password);
+    ///     user.set_password(&new_password);
     ///     users.modify(&user)?;
     ///     Ok(())
     /// }
     /// ```
 
-    pub fn reset_password(&mut self, new: &str) -> Result<()> {
+    pub fn set_password(&mut self, new: &str) -> Result<()> {
         new.is_secure()?;
         let password = new.as_bytes();
         let salt = rand_string(10);
@@ -49,8 +49,8 @@ impl User {
     pub fn id(&self) -> u32 {
         self.id
     }
-    /// This is an accessor field for the private email field. 
-    /// This field is private so an email cannot be updated without checking it is valid. 
+    /// This is an accessor field for the private `email` field. 
+    /// This field is private so an email cannot be updated without checking whether it is valid. 
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
@@ -66,6 +66,7 @@ impl User {
 
     /// This functions allows to easily modify the email of a user. 
     /// In case the input is not a valid email, it will return an error. 
+    /// In case the user corresponds to the authenticated client, it's easier to use [`Auth::change_email`].
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};

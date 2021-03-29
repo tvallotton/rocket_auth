@@ -44,7 +44,9 @@ use std::time::Duration;
 ///     Ok(())
 /// }
 /// ```
+#[allow(missing_docs)]
 pub struct Auth<'a> {
+    /// `Auth` includes in its fields a [`Users`] instance. Therefore, it is not necessary to retrieve `Users` when using this guard.
     pub users: State<'a, Users>,
     pub cookies: Cookies<'a>,
     pub session: Option<Session>,
@@ -76,8 +78,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
 }
 
 impl<'a> Auth<'a> {
-    /// Logs in the user through a parsed form or json. The session is set to expire in one year by default.
-    /// for a custom expiration date use [`Auth::login_for`].
+    /// Logs in the user through a parsed form or json. 
+    /// The session is set to expire in one year by default.
+    /// For a custom expiration date use [`Auth::login_for`].
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{get, post, request::Form};
@@ -129,18 +132,17 @@ impl<'a> Auth<'a> {
     }
 
     /// Creates a new user from a form or a json.
-    /// The cliend will be automatically logged in.
+    /// The client will be authenticated automatically.
     /// Their session will be set to expire in a year.
-    /// In order to customize the expiration date use [`signup_for`].
+    /// In order to customize the expiration date use [`signup_for`](Auth::signup_for).
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{post, request::Form};
-    /// # use rocket_auth::{Auth, Login};
+    /// # use rocket_auth::{Auth, Signup};
     /// # use std::time::Duration;
-    /// #[post("/login", data="<form>")]
-    /// fn login(form: Form<Login>, mut auth: Auth) {
-    ///     let one_hour = Duration::from_secs(60 * 60);
-    ///     auth.login_for(&form, one_hour);
+    /// #[post("/signup", data="<form>")]
+    /// fn signup(form: Form<Signup>, mut auth: Auth) {
+    ///     auth.signup(&form);
     /// }
     /// ```
     pub fn signup(&mut self, form: &Signup) -> Result<()> {
@@ -151,16 +153,15 @@ impl<'a> Auth<'a> {
 
     /// Creates a new user from a form or a json.
     /// The session will last the specified period of time. 
-    /// In order to customize the expiration date use [`signup_for`].
     /// ```rust
-    /// #![feature(decl_macro)]
+    /// # #![feature(decl_macro)]
     /// # use rocket::{post, request::Form};
-    /// # use rocket_auth::{Auth, Login};
+    /// # use rocket_auth::{Auth, Signup};
     /// # use std::time::Duration;
-    /// #[post("/login", data="<form>")]
-    /// fn login(form: Form<Login>, mut auth: Auth) {
+    /// #[post("/signup", data="<form>")]
+    /// fn signup_for(form: Form<Signup>, mut auth: Auth) {
     ///     let one_hour = Duration::from_secs(60 * 60);
-    ///     auth.login_for(&form, one_hour);
+    ///     auth.signup_for(&form, one_hour);
     /// }
     /// ```
     pub fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
@@ -194,8 +195,7 @@ impl<'a> Auth<'a> {
         }
     }
 
-    /// It retrieves the current logged user. 
-    /// This will fail on expired sessions. 
+    /// It retrieves the current logged user.  
     /// ```
     /// # #![feature(decl_macro)]
     /// # use rocket::get;
@@ -217,16 +217,38 @@ impl<'a> Auth<'a> {
         }
     }
 
-    pub fn logout(&self) -> Result<()> {
+
+    /// Logs the currently authenticated user out.
+    /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::get;
+    /// # use rocket_auth::Auth;
+    /// #[get("/logout")]
+    /// fn logout(mut auth: Auth)  {
+    ///     auth.logout();
+    /// }
+    /// ```
+    pub fn logout(&mut self) -> Result<()> {
         let session = self.get_session()?;
         self.users.logout(session)?;
+        self.cookies.remove_private(Cookie::named("rocket_auth"));
         Ok(())
     }
+    /// Deletes the account of the currently authenticated user.
+    /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::get;
+    /// # use rocket_auth::Auth;
+    /// #[get("/delete-my-account")]
+    /// fn delete(mut auth: Auth)  {
+    ///     auth.delete();
+    /// }```
 
-    pub fn delete(&self) -> Result<()> {
+    pub fn delete(&mut self) -> Result<()> {
         if self.is_auth() {
             let session = self.get_session()?;
             self.users.delete(session.id)?;
+            self.cookies.remove_private(Cookie::named("rocket_auth"));
             Ok(())
         } else {
             Err(Error {
@@ -236,17 +258,29 @@ impl<'a> Auth<'a> {
         }
     }
 
-    pub fn change_password(&self, password: String) -> Result<()> {
+
+    /// Changes the password of the currently authenticated user
+    /// ```
+    /// auth.change_password("new password");
+    /// ```
+
+    pub fn change_password(&self, password: &str) -> Result<()> {
         if self.is_auth() {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id)?;
-            user.reset_password(&password)?;
+            user.set_password(password)?;
             self.users.modify(&user)?;
             Ok(())
         } else {
             raise(ErrorKind::Unauthorized, "Unauthorized.")
         }
     }
+
+    /// Changes the email of the currently authenticated user
+    /// ```
+    /// auth.change_password("new@email.com");
+    /// ```
+    
     pub fn change_email(&self, email: String) -> Result<()> {
         if self.is_auth() {
             email.is_valid()?;
@@ -260,6 +294,13 @@ impl<'a> Auth<'a> {
         }
     }
 
+
+    /// This method is useful when the function returns a Result type. 
+    /// It is intended to be used primarily 
+    /// with the `?` operator. 
+    /// ```
+    /// users.get_session()?
+    /// ```
     pub fn get_session(&self) -> Result<&Session> {
         let session = self.session.as_ref().ok_or(Error {
             message: "Client is not authenticated".into(),

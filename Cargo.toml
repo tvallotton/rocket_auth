@@ -5,12 +5,14 @@ authors = ["tvallotton@uc.cl"]
 edition = "2018"
 license = "MIT"
 description = "A high level authentication management library for Rocket applications. It supports both SQLite and Postgres."
-
-# documentation
 repository = "https://github.com/tvallotton/rocket_auth"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[package.metadata.docs.rs]
+rustc-args = ["--all-features"]
 
 
 [features]
