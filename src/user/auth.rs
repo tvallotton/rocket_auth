@@ -60,9 +60,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
         } else {
             None
         };
+        println!("Trying to load users");
         let users: State<Users> = if let Outcome::Success(users) = req.guard() {
+            
             users
         } else {
+            
             return Outcome::Failure((Status::Unauthorized, Error {
                 message: "Attempted to load Users, but it was not being managed. Possible fix:  add `.manage(users)` to your rocket apllication.".into(),
                 kind: ErrorKind::UnmanagedStateError,
