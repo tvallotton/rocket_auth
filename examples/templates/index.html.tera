@@ -12,16 +12,16 @@
     Hello there, your email is {{ user.email }}.
     <br>
     <a href="/logout">Log out from your account.</a>
-    <br><a href="/signup">Delete your account.</a>
+    <br><a href="/delete">Delete your account.</a>
 
-        {% endif %}
-        {% if not user %}
-        Hello, anonymous user.
-        <br>
-        <a href="/signup">Signup here.</a>
-        <br>
-        <a href="/login">Login here</a>
-        {% endif %}
+    {% endif %}
+    {% if not user %}
+    Hello, anonymous user.
+    <br>
+    <a href="/signup">Signup here.</a>
+    <br>
+    <a href="/login">Login here</a>
+    {% endif %}
 </body>
 
 </html>
