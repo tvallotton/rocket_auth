@@ -12,7 +12,7 @@ readme = "README.md"
 
 
 [package.metadata.docs.rs]
-rustc-args = ["--all-features"]
+all-features = true
 
 
 [features]

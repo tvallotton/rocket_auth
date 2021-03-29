@@ -184,14 +184,3 @@ impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> fo
     }
 
 }
-
-// #[cfg(feature = "sqlite-db")]
-pub fn open_sqlite(path: impl AsRef<Path>) -> Result<Users> {
-        use std::sync::Mutex;
-        let x = Mutex::new(rusqlite::Connection::open(path)?);
-        let y = chashmap::CHashMap::new();
-        let users: Users = (x, y).into();
-
-
-        Ok(users)
-}
