@@ -1,6 +1,6 @@
 [package]
 name = "rocket_auth"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["tvallotton@uc.cl"]
 edition = "2018"
 license = "MIT"
