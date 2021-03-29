@@ -1,4 +1,5 @@
-
+#![doc(test(decl_macro))]
+// #![warn(missing_docs)]
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
@@ -45,7 +46,8 @@
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example: 
 //! ```rust,no_run
-//! use rocket::{get, post, Form};
+//! #![feature(decl_macro)]
+//! use rocket::{get, post, request::Form, routes};
 //! use rocket_auth::{Users, Error, Auth, Signup, Login};
 //! 
 //! #[post("/signup", data="<form>")] 
@@ -68,7 +70,7 @@
 //!     let users = Users::open_sqlite("mydb.db")?;
 //! 
 //!     rocket::ignite()
-//!         .mount("/", routes/[signup, login, logout])
+//!         .mount("/", routes![signup, login, logout])
 //!         .manage(users)
 //!         .launch();
 //!     Ok(())
@@ -84,11 +86,17 @@
 //! A simple example of how to query a user with the [`Users`] struct:
 //! 
 //! ```rust 
-//! #[get("see-user/<id>")]
+//! # #![feature(decl_macro)]
+//! # use rocket::{get, State};
+//! # use serde_json::json;
+//! use rocket_auth::Users;
+//! 
+//! #[get("/see-user/<id>")]
 //! fn see_user(id: u32, users: State<Users>) -> String {
-//!     let user = users.get_by_id(id);
-//!     fortmat!("{}", json!(user))
+//!     let user = users.get_by_id(id).unwrap();
+//!     format!("{}", json!(user))
 //! }
+//! # fn main() {}
 //! ```
 //! 
 //! A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
@@ -126,10 +134,14 @@ pub use crate::user::auth::Auth;
 
 /// The `User` guard can be used to restrict content so it can only be viewed my authenticated users. 
 /// ```rust
-/// #[get("/private-content/")]
+/// # #![feature(decl_macro)]
+/// # use rocket::{get};
+/// # use rocket_auth::User;
+/// #[get("/private-content")]
 /// fn private_content(user: User) -> &'static str {
 ///     "If you can see this, you are logged in."
 /// }
+/// # fn main() {}
 /// ```
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {

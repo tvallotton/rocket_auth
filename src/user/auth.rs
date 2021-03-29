@@ -14,7 +14,8 @@ use std::time::Duration;
 /// simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 ///  A working example:
 /// ```rust,no_run
-/// use rocket::{get, post, Form};
+/// #![feature(proc_macro_hygiene, decl_macro)]
+/// use rocket::{get, post, routes, request::Form};
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
 ///
 /// #[post("/signup", data="<form>")]
@@ -37,7 +38,7 @@ use std::time::Duration;
 ///     let users = Users::open_sqlite("mydb.db")?;
 ///
 ///     rocket::ignite()
-///         .mount("/", routes/[signup, login, logout])
+///         .mount("/", routes![signup, login, logout])
 ///         .manage(users)
 ///         .launch();
 ///     Ok(())
@@ -78,6 +79,9 @@ impl<'a> Auth<'a> {
     /// Logs in the user through a parsed form or json. The session is set to expire in one year by default.
     /// for a custom expiration date use [`Auth::login_for`].
     /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{get, post, request::Form};
+    /// # use rocket_auth::{Auth, Login};
     /// #[post("/login", data="<form>")]
     /// fn login(form: Form<Login>, mut auth: Auth) {
     ///     auth.login(&form);
@@ -99,6 +103,10 @@ impl<'a> Auth<'a> {
 
     /// Logs a user in for the specified period of time.
     /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{post, request::Form};
+    /// # use rocket_auth::{Login, Auth};
+    /// # use std::time::Duration;
     /// #[post("/login", data="<form>")]
     /// fn login(form: Form<Login>, mut auth: Auth) {
     ///     let one_hour = Duration::from_secs(60 * 60);
@@ -120,15 +128,54 @@ impl<'a> Auth<'a> {
         Ok(())
     }
 
+    /// Creates a new user from a form or a json.
+    /// The cliend will be automatically logged in.
+    /// Their session will be set to expire in a year.
+    /// In order to customize the expiration date use [`signup_for`].
+    /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{post, request::Form};
+    /// # use rocket_auth::{Auth, Login};
+    /// # use std::time::Duration;
+    /// #[post("/login", data="<form>")]
+    /// fn login(form: Form<Login>, mut auth: Auth) {
+    ///     let one_hour = Duration::from_secs(60 * 60);
+    ///     auth.login_for(&form, one_hour);
+    /// }
+    /// ```
     pub fn signup(&mut self, form: &Signup) -> Result<()> {
         self.users.signup(&form)?;
         self.login(&form.into())?;
         Ok(())
     }
+
+    /// Creates a new user from a form or a json.
+    /// The session will last the specified period of time. 
+    /// In order to customize the expiration date use [`signup_for`].
+    /// ```rust
+    /// #![feature(decl_macro)]
+    /// # use rocket::{post, request::Form};
+    /// # use rocket_auth::{Auth, Login};
+    /// # use std::time::Duration;
+    /// #[post("/login", data="<form>")]
+    /// fn login(form: Form<Login>, mut auth: Auth) {
+    ///     let one_hour = Duration::from_secs(60 * 60);
+    ///     auth.login_for(&form, one_hour);
+    /// }
+    /// ```
+    pub fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
+        self.users.signup(&form)?;
+        self.login_for(&form.into(), time)?;
+        Ok(())
+    }
+
     ///
     ///
     /// It allows to know if the current client is authenticated or not.
     /// ```rust
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{get};
+    /// # use rocket_auth::{Auth};
     /// #[get("/am-I-authenticated")]
     /// fn is_auth(auth: Auth) -> &'static str {
     ///     if auth.is_auth() {
@@ -137,6 +184,7 @@ impl<'a> Auth<'a> {
     ///         "nope."
     ///     }
     /// }
+    /// # fn main() {}
     /// ```
     pub fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
@@ -145,11 +193,23 @@ impl<'a> Auth<'a> {
             false
         }
     }
+
+    /// It retrieves the current logged user. 
+    /// This will fail on expired sessions. 
+    /// ```
+    /// # #![feature(decl_macro)]
+    /// # use rocket::get;
+    /// # use rocket_auth::Auth;
+    /// #[get("/display-me")]
+    /// fn display_me(auth: Auth) -> String {
+    ///     format!("{:?}", auth.get_user())
+    /// }
+    /// ```
     pub fn get_user(&self) -> Option<User> {
         if !self.is_auth() {
             return None;
         }
-        let id = self.session.clone()?.id;
+        let id = self.session.as_ref()?.id;
         if let Ok(user) = self.users.get_by_id(id) {
             Some(user)
         } else {

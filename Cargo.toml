@@ -14,7 +14,7 @@ readme = "README.md"
 
 
 [features]
-# default = ["sqlite-db", "postgres-db", "redis-session"]
+default = ["sqlite-db", "postgres-db", "redis-session"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres", "futures", "tokio"]
 redis-session = ["redis"]

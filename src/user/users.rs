@@ -9,12 +9,15 @@ impl Users {
     /// If the database does not yet exist it will be created. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
     /// the method (User::open_redis)[`open_redis`].
-    /// ```rust
+    /// ```rust, no_run
+    /// # use rocket_auth::{Error, Users};
+    /// # fn main() -> Result <(), Error> {
     /// let users = Users::open_sqlite("database.db")?;
     ///
     /// rocket::ignite()
     ///     .manage(users)
     ///     .launch();
+    /// # Ok(()) }
     /// ```
     #[cfg(feature = "sqlite-db")]
     pub fn open_sqlite(path: impl AsRef<Path>) -> Result<Self> {
@@ -29,13 +32,17 @@ impl Users {
 
     /// Opens a redis connection. It allows for sessions to be stored persistently across
     /// different launches.
-    /// ```rust
-    /// let users = Users::open_sqlite("database.db")?;
+    /// ```rust,no_run
+    /// # use rocket_auth::{Users, Error};
+    /// # fn main() -> Result<(), Error> {
+    /// let mut users = Users::open_sqlite("database.db")?;
     /// users.open_redis("redis://127.0.0.1/")?;
     ///
     /// rocket::ignite()
     ///     .manage(users)
     ///     .launch();
+    /// 
+    /// # Ok(()) }
     /// ```
     #[cfg(feature = "redis-session")]
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
@@ -46,12 +53,16 @@ impl Users {
 
     /// It opens a postgres database connection. I've got to admit I haven't tested this feature yet, so
     /// don't waste your time if it doesn't. 
-    /// ````rust
+    /// ```rust, no_run
+    /// # use rocket_auth::{Error, Users};
+    /// # fn main() -> Result<(), Error> {
     /// let users = Users::open_sqlite("database.db")?;
     /// 
     /// rocket::ignite()
     ///     .manage(users)
     ///     .launch();
+    /// # Ok(()) }
+    /// 
     /// ```
     #[cfg(feature = "postgres-db")]
     pub fn open_postgres(path: &str) -> Result<Self> {
@@ -80,10 +91,18 @@ impl Users {
     }
 
     /// It querys a user by their email.
+    /// ```
+    /// # #![feature(decl_macro)]
+    /// # use rocket::{State, get};
+    /// # use rocket_auth::{Error, Users};
     /// #[get("/user-information/<email>")]
-    /// fn user_information(email: String) -> String {
-    ///     
+    /// fn user_information(email: String, users: State<Users>) -> Result<String, Error> {
+    ///        
+    ///     let user = users.get_by_email(&email)?;
+    ///     Ok(format!("{:?}", user))
     /// }
+    /// # fn main() {}
+    /// ```
     pub fn get_by_email(&self, email: &str) -> Result<User> {
         self.conn.get_user_by_email(email)
     }
@@ -91,11 +110,15 @@ impl Users {
     /// Inserts a user in the database.
     /// # Example
     /// ```rust
-    /// #[get("/create_admin/<email>/<pasword>")]
-    /// fn create_admin(email: String, password: String, users: State<Users>) -> Result<String> {
-    ///     users.create_user(email, password, true)?;
-    ///     Ok("User created successfully")
+    /// #![feature(decl_macro)]
+    /// # use rocket::{State, get};
+    /// # use rocket_auth::{Error, Users};
+    /// #[get("/create_admin/<email>/<password>")]
+    /// fn create_admin(email: String, password: String, users: State<Users>) -> Result<String, Error> {
+    ///     users.create_user(&email, &password, true)?;
+    ///     Ok("User created successfully".into())
     /// }
+    /// # fn main() {}
     /// ```
     pub fn create_user(&self, email: &str, password: &str, is_admin: bool) -> Result<()> {
         let password = password.as_bytes();
