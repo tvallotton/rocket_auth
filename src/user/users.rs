@@ -142,7 +142,10 @@ impl Users {
         Ok(())
     }
 
-    pub fn modify(&self, user: User) -> Result<()> {
+
+    /// Modifies a user retrieved from a 
+
+    pub fn modify(&self, user: &User) -> Result<()> {
         self.conn.update_user(user)?;
         Ok(())
     }

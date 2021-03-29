@@ -17,7 +17,7 @@ impl DBConnection for Client {
         )?;
         Ok(())
     }
-    fn update_user(&self, user: User) -> Result<()> {
+    fn update_user(&self, user: &User) -> Result<()> {
         futures::executor::block_on(
             self.execute(sql::UPDATE_USER, &[&user.email, &user.password, &user.is_admin])
         )?;

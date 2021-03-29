@@ -241,7 +241,7 @@ impl<'a> Auth<'a> {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id)?;
             user.reset_password(&password)?;
-            self.users.modify(user)?;
+            self.users.modify(&user)?;
             Ok(())
         } else {
             raise(ErrorKind::Unauthorized, "Unauthorized.")
@@ -253,7 +253,7 @@ impl<'a> Auth<'a> {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id)?;
             user.email = email;
-            self.users.modify(user)?;
+            self.users.modify(&user)?;
             Ok(())
         } else {
             raise(ErrorKind::Unauthorized, "Unauthorized.")

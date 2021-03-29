@@ -1,5 +1,5 @@
-#![doc(test(decl_macro))]
-// #![warn(missing_docs)]
+#![warn(missing_doc_code_examples)]
+#![warn(missing_docs)]
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
@@ -145,7 +145,7 @@ pub use crate::user::auth::Auth;
 /// ```
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
-    pub id: u32,
+    id: u32,
     pub email: String,
     #[serde(skip_serializing)]
     password: String,
