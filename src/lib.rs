@@ -79,7 +79,7 @@
 //! ## Users struct
 //! The [`Users`] struct administers interactions with the database. 
 //! It lets you query, create, modify and delete users.
-//! Unlike the [`Auth`] guard, a [`Users`] is instance can manage any user in the database.
+//! Unlike the [`Auth`] guard, a [`Users`] instance can manage any user in the database.
 //! Note that the [`Auth`] guards includes a `Users` instance stored on the public `users` field.
 //! So it is not necesary to retrieve Users when using `Auth`.
 //! A simple example of how to query a user with the [`Users`] struct:
@@ -102,6 +102,25 @@
 //! [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection. 
 //! 
 //! 
+//! ## User guard
+//! The `User` guard can be used to restrict content so it can only be viewed by authenticated users. 
+//! Additionally, yo can use it to render special content if the client is authenticated or not. 
+//! ```rust
+//! #[get("/private-content")]
+//! fn private_content(user: User) -> &'static str {
+//!     "If you can see this, you are logged in."
+//! } 
+//! 
+//! #[get("/special-content")]
+//! fn private_content(option: Option<User>) -> String {
+//!     if let Some(user) = option {
+//!         format!("hello, {}.", user.email)
+//!     } else {
+//!         "hello, anonymous user".into()
+//!     }
+//! } 
+//! ```
+
 
 
 
