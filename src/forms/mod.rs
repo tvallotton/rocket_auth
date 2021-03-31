@@ -18,11 +18,11 @@ impl Signup {
     }
 }
 
-impl From<&Signup> for Login {
-    fn from(form: &Signup) -> Login {
+impl From<Signup> for Login {
+    fn from(form: Signup) -> Login {
         Login {
-            email: form.email.clone(),
-            password: form.password.clone(),
+            email: form.email,
+            password: form.password,
         }
     }
 }

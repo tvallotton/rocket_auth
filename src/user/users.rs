@@ -79,6 +79,7 @@ impl Users {
             })
         });
         client.init()?;
+        
         let users = Users {
             conn: Box::new(client),
             sess: Box::new(chashmap::CHashMap::new()),
@@ -116,7 +117,7 @@ impl Users {
     /// # }
     /// # fn main() {}
     /// ```
-    pub fn get_by_id(&self, user_id: u32) -> Result<User> {
+    pub fn get_by_id(&self, user_id: i32) -> Result<User> {
         self.conn.get_user_by_id(user_id)
     }
 
@@ -146,11 +147,11 @@ impl Users {
     /// Deletes a user from de database. Note that this method won't delete the session.
     /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// #[get("/delete_user/<id>")]
-    /// fn delete_user(id: u32, users: State<Users>) -> Result<String> {
+    /// fn delete_user(id: i32, users: State<Users>) -> Result<String> {
     ///     users.delete(id)?;
     ///     Ok("The user has been deleted.")
     /// }
-    pub fn delete(&self, id: u32) -> Result<()> {
+    pub fn delete(&self, id: i32) -> Result<()> {
         self.sess.remove(id)?;
         self.conn.delete_user_by_id(id)?;
         Ok(())
@@ -174,7 +175,30 @@ impl Users {
 }
 
 
+/// A `Users` instance can also be created from a database connection.
+/// ```
+/// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
+/// let users: Users = client.into();
+/// ```
 
+impl<Conn: 'static + DBConnection> From<Conn> for Users {
+    fn from(db: Conn) -> Users {
+        Users {
+            conn: Box::from(db),
+            sess: Box::new(chashmap::CHashMap::new())
+        }
+    }
+
+}
+
+/// Additionally, `Users` can be created from a tuple, 
+/// where the first element is a database connection, and the second is a redis connection.
+/// ```
+/// let (db_client, connection) = tokio_postgres::connect(postgres_path, NoTls).await?;
+/// let redis_client = redis::Client::open(redis_path)?;
+/// 
+/// let users: Users = (db_client, redis_client).into();
+/// ```
 impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> for Users {
     fn from((db, ss): (T0, T1)) -> Users {
         Users {

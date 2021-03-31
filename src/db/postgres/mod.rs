@@ -5,16 +5,17 @@ use std::convert::{TryInto, TryFrom};
 
 impl DBConnection for Client {
     fn init(&self) -> Result<()> {
-        println!("INITIALIZING");
         futures::executor::block_on(
             self.execute(sql::CREATE_TABLE, &[])
         )?;
         Ok(())
     }
     fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error> {
-        futures::executor::block_on(
+        let x = futures::executor::block_on(
             self.execute(sql::INSERT_USER, &[&email, &hash, &is_admin])
-        )?;
+        );
+        println!("creating user");
+        x?;
         Ok(())
     }
     fn update_user(&self, user: &User) -> Result<()> {
@@ -23,7 +24,7 @@ impl DBConnection for Client {
         )?;
         Ok(())
     }
-    fn delete_user_by_id(&self, user_id: u32) -> Result<()> {
+    fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
         futures::executor::block_on(
             self.execute(sql::REMOVE_BY_ID, &[&user_id])
         )?;
@@ -35,7 +36,7 @@ impl DBConnection for Client {
         )?;
         Ok(())
     }
-    fn get_user_by_id(&self, user_id: u32) -> Result<User> {
+    fn get_user_by_id(&self, user_id: i32) -> Result<User> {
         let user = futures::executor::block_on(
             self.query_one(sql::SELECT_BY_ID, &[&user_id])
         )?;

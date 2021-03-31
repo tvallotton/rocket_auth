@@ -20,8 +20,8 @@ use std::time::Duration;
 ///
 /// #[post("/signup", data="<form>")]
 /// fn signup(form: Form<Signup>, mut auth: Auth) {
-///     // users are automatically logged in after signing up.
 ///     auth.signup(&form);
+///     auth.login(&form.into());
 /// }
 ///
 /// #[post("/login", data="<form>")]
@@ -60,7 +60,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
         } else {
             None
         };
-        println!("Trying to load users");
+
         let users: State<Users> = if let Outcome::Success(users) = req.guard() {
             
             users
@@ -100,7 +100,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now() as u32,
+            time_stamp: now() as i32,
         };
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
@@ -126,7 +126,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now() as u32,
+            time_stamp: now() as i32,
         };
         let to_str = format!("{}", json!(session));
         let cookie = Cookie::new("rocket_auth", to_str);
@@ -135,7 +135,8 @@ impl<'a> Auth<'a> {
     }
 
     /// Creates a new user from a form or a json.
-    /// The client will be authenticated automatically.
+    /// As of version 0.2.0, the client will no longer be authenticated automatically. 
+    /// In order to authenticate the user cast the signup form to a login form or use `signup_for`. 
     /// Their session will be set to expire in a year.
     /// In order to customize the expiration date use [`signup_for`](Auth::signup_for).
     /// ```rust
@@ -146,11 +147,12 @@ impl<'a> Auth<'a> {
     /// #[post("/signup", data="<form>")]
     /// fn signup(form: Form<Signup>, mut auth: Auth) {
     ///     auth.signup(&form);
+    ///     self.login(&form.into())?;
     /// }
     /// ```
     pub fn signup(&mut self, form: &Signup) -> Result<()> {
         self.users.signup(&form)?;
-        self.login(&form.into())?;
+        
         Ok(())
     }
 
@@ -169,7 +171,8 @@ impl<'a> Auth<'a> {
     /// ```
     pub fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
         self.users.signup(&form)?;
-        self.login_for(&form.into(), time)?;
+        
+        self.login_for(&form.clone().into(), time)?;
         Ok(())
     }
 

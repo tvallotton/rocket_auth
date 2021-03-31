@@ -9,40 +9,40 @@
 
 
 
-pub const CREATE_TABLE: &str =  "
+pub const CREATE_TABLE: &str = "
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR (254) UNIQUE NOT NULL,
-	password VARCHAR ( 85 ) NOT NULL,
-    is_admin BOOL
+	password VARCHAR ( 255 ) NOT NULL,
+    is_admin BOOL DEFAULT FALSE
 );
 ";
 
 
 pub const INSERT_USER: &str = "
-INSERT INTO users (email, password, is_admin) VALUES (?1, ?2, ?3);
+INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3);
 ";
 
 pub const UPDATE_USER: &str = "
 UPDATE table SET 
-    email = ?2,
-    password = ?3,
-    is_admin = ?4,
+    email = $2,
+    password = $3,
+    is_admin = $4,
 WHERE
-    id = ?1
+    id = $1
 ";
 
 pub const SELECT_BY_ID: &str = "
-SELECT * FROM users WHERE id = ?1;
+SELECT * FROM users WHERE id = $1;
 ";
 
 pub const SELECT_BY_EMAIL: &str = "
-SELECT * FROM users WHERE email = ?1;
+SELECT * FROM users WHERE email = $1;
 ";
 
 pub const REMOVE_BY_ID: &str = "
-DELETE FROM users WHERE id =?1;
+DELETE FROM users WHERE id =$1;
 ";
 pub const REMOVE_BY_EMAIL: &str = "
-DELETE FROM users WHERE email =?1;
+DELETE FROM users WHERE email =$1;
 ";

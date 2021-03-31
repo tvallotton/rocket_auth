@@ -51,8 +51,8 @@
 //! 
 //! #[post("/signup", data="<form>")] 
 //! fn signup(form: Form<Signup>, mut auth: Auth) {
-//!     // users are automatically logged in after signing up.
 //!     auth.signup(&form);
+//!     auth.login(&form.into());
 //! }
 //! 
 //! #[post("/login", data="<form>")] 
@@ -91,7 +91,7 @@
 //! use rocket_auth::Users;
 //! 
 //! #[get("/see-user/<id>")]
-//! fn see_user(id: u32, users: State<Users>) -> String {
+//! fn see_user(id: i32, users: State<Users>) -> String {
 //!     let user = users.get_by_id(id).unwrap();
 //!     format!("{}", json!(user))
 //! }
@@ -144,7 +144,7 @@ pub use crate::user::auth::Auth;
 /// ```
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
-    id: u32,
+    id: i32,
     email: String,
     #[serde(skip_serializing)]
     password: String,
@@ -159,7 +159,7 @@ pub struct Users {
 }
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users. 
-#[derive(FromForm, Deserialize, Debug)]
+#[derive(FromForm, Deserialize, Debug, Clone)]
 pub struct Login {
     pub email: String,
     password: String,
@@ -168,7 +168,7 @@ pub struct Login {
 
 /// The `Signup` form is used along with the [`Auth`] guard to create new users. 
 
-#[derive(FromForm, Deserialize, Debug)]
+#[derive(FromForm, Deserialize, Debug, Clone)]
 pub struct Signup {
     pub email: String,
     password: String,

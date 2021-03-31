@@ -17,7 +17,7 @@ impl User {
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// #[get("/reset-password/<id>/<new_password>")]
-    /// fn reset_password(id: u32, new_password: String, users: State<Users>) -> Result<(), Error> {
+    /// fn reset_password(id: i32, new_password: String, users: State<Users>) -> Result<(), Error> {
     ///     let mut user = users.get_by_id(id)?;
     ///     user.set_password(&new_password);
     ///     users.modify(&user)?;
@@ -46,7 +46,7 @@ impl User {
     ///     format!("Your user_id is: {}", user.id())
     /// }
     /// ```
-    pub fn id(&self) -> u32 {
+    pub fn id(&self) -> i32 {
         self.id
     }
     /// This is an accessor field for the private `email` field. 

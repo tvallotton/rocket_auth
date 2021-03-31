@@ -22,7 +22,7 @@ impl DBConnection for Mutex<Connection> {
         db.execute(UPDATE_USER, params![user.id, user.email, user.password, user.is_admin])?;
         Ok(())
     }
-    fn delete_user_by_id(&self, user_id: u32) -> Result<()> {
+    fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
         let db = self.lock()?;
         db.execute(REMOVE_BY_ID, params![user_id])?;
         Ok(())
@@ -32,7 +32,7 @@ impl DBConnection for Mutex<Connection> {
         db.execute(REMOVE_BY_EMAIL, params![email])?;
         Ok(())
     }
-    fn get_user_by_id(&self, user_id: u32) -> Result<User> {
+    fn get_user_by_id(&self, user_id: i32) -> Result<User> {
         let db = self.lock()?;
         let user = db
             .query_row(

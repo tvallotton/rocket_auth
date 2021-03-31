@@ -45,18 +45,18 @@ impl Users {
         }
         Ok(())
     }
-    fn set_auth_key_for(&self, user_id: u32, time: Duration) -> Result<String> {
+    fn set_auth_key_for(&self, user_id: i32, time: Duration) -> Result<String> {
         let key = rand_string(10);
         self.sess.insert_for(user_id.into(), key.clone(), time)?;
         Ok(key)
     }
 
-    fn set_auth_key(&self, user_id: u32) -> Result<String> {
+    fn set_auth_key(&self, user_id: i32) -> Result<String> {
         let key = rand_string(15);
         self.sess.insert(user_id.into(), key.clone())?;
         Ok(key)
     }
-     fn signup(&self, form: &Signup) -> Result<()> {
+    fn signup(&self, form: &Signup) -> Result<()> {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;

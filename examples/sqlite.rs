@@ -47,7 +47,7 @@ fn delete(mut auth: Auth) -> &'static str {
 }
 
 fn main() -> Result<(), Error> {
-    let users = Users::open_sqlite("database.db")?;
+    let users = Users::open_postgres("database.db")?;
 
     rocket::ignite()
         .mount("/",
