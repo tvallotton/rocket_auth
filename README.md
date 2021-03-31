@@ -106,7 +106,7 @@ fn private_content(user: User) -> &'static str {
 } 
 
 #[get("/special-content")]
-fn private_content(option: Option<User>) -> String {
+fn special_content(option: Option<User>) -> String {
    if let Some(user) = option {
      format!("hello, {}.", user.email)
    } else {
