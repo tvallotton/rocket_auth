@@ -24,7 +24,7 @@ To use `rocket_auth` include it as a dependency in your Cargo.toml file:
 ```ini
 [dependencies.rocket_auth]
 version = "0.2.0"
-features = ["sqlite-db"]
+features = ["sqlite-db", "redis-session"]
 ```
 # Quick overview
 This crate provides two guards:
