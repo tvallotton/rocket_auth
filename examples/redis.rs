@@ -4,7 +4,6 @@ use rocket_auth::{Auth, Error, Login, Signup, User, Users};
 use rocket_contrib::templates::{tera, Template};
 use serde_json::json;
 
-
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
@@ -47,19 +46,20 @@ fn delete(mut auth: Auth) -> &'static str {
 }
 
 fn main() -> Result<(), Error> {
-    let users = Users::open_postgres("database.db")?;
+    let mut users = Users::open_postgres("database.db")?;
     users.open_redis("redis://127.0.0.1/")?;
-
     rocket::ignite()
-        .mount("/",
+        .mount("/", 
             routes![
-                index, 
-                get_login, 
-                post_signup, 
-                get_signup, 
+                index,
+                get_login,
+                post_signup,
+                get_signup,
                 post_login,
-                logout, 
-                delete],)
+                logout,
+                delete
+            ],
+        )
         .manage(users)
         .attach(Template::fairing())
         .launch();

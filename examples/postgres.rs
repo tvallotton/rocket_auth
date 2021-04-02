@@ -25,6 +25,7 @@ fn get_signup() -> Template {
 #[post("/signup", data = "<form>")]
 fn post_signup(mut auth: Auth, form: Form<Signup>) -> Redirect {
     auth.signup(&form).unwrap();
+    auth.login(&form.into()).unwrap();
     Redirect::to("/")
 }
 
@@ -64,3 +65,10 @@ fn main() -> Result<(), Error> {
         .launch();
     Ok(())
 }
+
+
+
+
+
+
+

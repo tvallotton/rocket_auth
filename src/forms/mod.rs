@@ -27,6 +27,17 @@ impl From<Signup> for Login {
     }
 }
 
+impl<T: Deref<Target=Signup>> From<T> for Login {
+    fn from(form: T) -> Login {
+        Login {
+            email: form.email.clone(),
+            password: form.password.clone(),
+        }
+    }
+}
+
+
+
 pub trait ValidEmail {
     fn is_valid(&self) -> Result<()>;
 }

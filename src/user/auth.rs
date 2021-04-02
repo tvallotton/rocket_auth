@@ -171,7 +171,6 @@ impl<'a> Auth<'a> {
     /// ```
     pub fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
         self.users.signup(&form)?;
-        
         self.login_for(&form.clone().into(), time)?;
         Ok(())
     }
@@ -284,7 +283,7 @@ impl<'a> Auth<'a> {
 
     /// Changes the email of the currently authenticated user
     /// ```
-    /// auth.change_password("new@email.com");
+    /// auth.change_email("new@email.com");
     /// ```
     
     pub fn change_email(&self, email: String) -> Result<()> {

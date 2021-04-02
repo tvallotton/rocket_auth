@@ -6,17 +6,13 @@ use argon2::verify_encoded as verify;
 
 use rand::random;
 pub fn rand_string(size: usize) -> String {
-    // let dissallowed = ['\\', '"', '{', '}', '(', ')', '`', '\''];
     (0..)
         .map(|_| random::<u8>())
         .filter(|n| 31 < *n && *n < 126)
         .map(|n| char::from(n))
-        // .filter(|c| !dissallowed.contains(c))
         .take(size)
         .collect()
 }
-
-
 
 impl Users {
     fn is_auth(&self, session: &Session) -> bool {
