@@ -23,7 +23,7 @@ For more information visit rocket's [configuration guide](https://rocket.rs/v0.4
 To use `rocket_auth` include it as a dependency in your Cargo.toml file: 
 ```ini
 [dependencies.rocket_auth]
-version = "0.2.0"
+version = "0.2.1"
 features = ["sqlite-db", "redis-session"]
 ```
 # Quick overview

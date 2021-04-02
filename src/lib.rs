@@ -22,7 +22,7 @@
 //! To use `rocket_auth` include it as a dependency in your Cargo.toml file: 
 //! ```ini
 //! [dependencies.rocket_auth]
-//! version = "0.2.0"
+//! version = "0.2.1"
 //! features = ["sqlite-db"]
 //! ```
 //! # Quick overview
@@ -112,7 +112,7 @@
 //! } 
 //! 
 //! #[get("/special-content")]
-//! fn private_content(option: Option<User>) -> String {
+//! fn special_content(option: Option<User>) -> String {
 //!     if let Some(user) = option {
 //!         format!("hello, {}.", user.email)
 //!     } else {
@@ -120,8 +120,7 @@
 //!     }
 //! } 
 //! ```
-
-
+//! 
 
 
 
