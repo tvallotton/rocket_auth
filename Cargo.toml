@@ -1,6 +1,6 @@
 [package]
 name = "rocket_auth"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["tvallotton@uc.cl"]
 edition = "2018"
 license = "MIT"
@@ -17,12 +17,13 @@ all-features = true
 
 
 [features]
-default = ["sqlite-db", "postgres-db", "redis-session", "lang-es"]
+default = ["sqlite-db"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres", "futures", "tokio"]
 redis-session = ["redis"]
 lang-es = []
-# mysql-db = [...]
+lang-pt = []
+
 
 
 [dependencies]

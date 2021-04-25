@@ -1,6 +1,6 @@
 #![feature(decl_macro)]
 use rocket::{request::Form, response::Redirect, *};
-use rocket_auth::{Auth, Error, Login, Signup, User, Users};
+use rocket_auth::*;
 use rocket_contrib::templates::{tera, Template};
 use serde_json::json;
 
@@ -11,9 +11,9 @@ fn get_login() -> Template {
 }
 
 #[post("/login", data = "<form>")]
-fn post_login(mut auth: Auth, form: Form<Login>) -> Redirect {
-    json!(auth.login(&form))
-    // Redirect::to("/")
+fn post_login(mut auth: Auth, form: Form<Login>) -> Result<Redirect, String> {
+    auth.login(&form).map_err(|x|x.message(Language::EN));
+    Ok(Redirect::to("/"))
 }
 
 #[get("/signup")]
