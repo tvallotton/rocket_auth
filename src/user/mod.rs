@@ -32,7 +32,7 @@ impl Users {
             let key = self.set_auth_key(user.id)?;
             Ok(key)
         } else {
-            raise(ErrorKind::Unauthorized, "Incorrect password.")
+            Err(Error::UnauthorizedError)
         }
     }
     fn logout(&self, session: &Session) -> Result<()> {
@@ -68,7 +68,7 @@ impl Users {
             let key = self.set_auth_key_for(user.id, time)?;
             Ok(key)
         } else {
-            raise(ErrorKind::Unauthorized, "Incorrect password.")
+            Err(Error::InvalidCredentialsError)
         }
     }
 }

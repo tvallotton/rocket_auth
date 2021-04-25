@@ -59,10 +59,7 @@ impl ValidEmail for str {
         if RE.is_match(&self) {
             Ok(())
         } else {
-            Err(Error {
-                message: format!("'{}' is not a valid email address.", self),
-                kind: ErrorKind::FormValidationError,
-            })
+            Err(Error::InvalidEmailAddressError)
         }
     }
 }
@@ -72,10 +69,7 @@ impl SafePassword for str {
         if self.len() > 8 {
             Ok(())
         } else {
-            raise(
-                ErrorKind::UnsafePasswordError,
-                "Unsafe password. It must be at least 8 characters long.",
-            )
+            Err(Error::UnsafePasswordTooShort)
         }
     }
 }

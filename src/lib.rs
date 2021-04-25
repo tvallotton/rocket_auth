@@ -146,9 +146,6 @@ pub use crate::user::auth::Auth;
 
 
 
-
-
-
 /// The `User` guard can be used to restrict content so it can only be viewed by authenticated users. 
 /// ```rust
 /// # #![feature(decl_macro)]

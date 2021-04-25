@@ -36,7 +36,7 @@ impl User {
     }
 
     /// This is an accessor function for the private `id` field.
-    /// This field is private so it is not modified by accident when updating a user. 
+    /// This field is private so it is not modified by accident when updating a user.
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
@@ -49,8 +49,8 @@ impl User {
     pub fn id(&self) -> i32 {
         self.id
     }
-    /// This is an accessor field for the private `email` field. 
-    /// This field is private so an email cannot be updated without checking whether it is valid. 
+    /// This is an accessor field for the private `email` field.
+    /// This field is private so an email cannot be updated without checking whether it is valid.
     /// ```rust
     /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
@@ -64,8 +64,8 @@ impl User {
         &self.email
     }
 
-    /// This functions allows to easily modify the email of a user. 
-    /// In case the input is not a valid email, it will return an error. 
+    /// This functions allows to easily modify the email of a user.
+    /// In case the input is not a valid email, it will return an error.
     /// In case the user corresponds to the authenticated client, it's easier to use [`Auth::change_email`].
     /// ```rust
     /// # #![feature(decl_macro)]
@@ -106,13 +106,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
         if let Some(user) = auth.get_user() {
             Outcome::Success(user)
         } else {
-            Outcome::Failure((
-                Status::Unauthorized,
-                Error {
-                    kind: ErrorKind::Unauthorized,
-                    message: "Unauthorized".into(),
-                },
-            ))
+            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
         }
     }
 }

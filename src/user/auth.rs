@@ -66,10 +66,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
             users
         } else {
             
-            return Outcome::Failure((Status::Unauthorized, Error {
-                message: "Attempted to load Users, but it was not being managed. Possible fix:  add `.manage(users)` to your rocket apllication.".into(),
-                kind: ErrorKind::UnmanagedStateError,
-            }));
+            return Outcome::Failure((Status::Unauthorized, Error::UnmanagedStateError));
         };
 
         Outcome::Success(Auth {
@@ -256,10 +253,7 @@ impl<'a> Auth<'a> {
             self.cookies.remove_private(Cookie::named("rocket_auth"));
             Ok(())
         } else {
-            Err(Error {
-                message: "Client is not logged in.".into(),
-                kind: ErrorKind::UnauthenticatedClientError,
-            })
+            Err(Error::UnauthenticatedClientError)
         }
     }
 
@@ -277,7 +271,7 @@ impl<'a> Auth<'a> {
             self.users.modify(&user)?;
             Ok(())
         } else {
-            raise(ErrorKind::Unauthorized, "Unauthorized.")
+            Err(Error::UnauthorizedError)
         }
     }
 
@@ -295,7 +289,7 @@ impl<'a> Auth<'a> {
             self.users.modify(&user)?;
             Ok(())
         } else {
-            raise(ErrorKind::Unauthorized, "Unauthorized.")
+            Err(Error::Unauthorized)
         }
     }
 
@@ -307,10 +301,7 @@ impl<'a> Auth<'a> {
     /// users.get_session()?
     /// ```
     pub fn get_session(&self) -> Result<&Session> {
-        let session = self.session.as_ref().ok_or(Error {
-            message: "Client is not authenticated".into(),
-            kind: ErrorKind::UnauthenticatedClientError,
-        })?;
+        let session = self.session.as_ref().ok_or(Error::UnauthenticatedClientError)?;
         Ok(session)
     }
 }

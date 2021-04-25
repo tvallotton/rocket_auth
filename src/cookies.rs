@@ -34,10 +34,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Session {
         } else {
             Outcome::Failure((
                 Status::Unauthorized,
-                Error {
-                    message: "To view this page you must be authenticated.".into(),
-                    kind: ErrorKind::ClientSessionError,
-                },
+                Error::UnauthorizedError
             ))
         }
     }

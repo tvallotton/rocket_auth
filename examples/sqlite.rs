@@ -12,8 +12,8 @@ fn get_login() -> Template {
 
 #[post("/login", data = "<form>")]
 fn post_login(mut auth: Auth, form: Form<Login>) -> Redirect {
-    auth.login(&form).unwrap();
-    Redirect::to("/")
+    json!(auth.login(&form))
+    // Redirect::to("/")
 }
 
 #[get("/signup")]
@@ -24,9 +24,10 @@ fn get_signup() -> Template {
 
 #[post("/signup", data = "<form>")]
 fn post_signup(mut auth: Auth, form: Form<Signup>) -> Redirect {
-    auth.signup(&form).unwrap();
-    auth.login(&form.into()).unwrap();
-    Redirect::to("/")
+    json!({
+        "signup": auth.signup(&form),
+        "login": auth.login(&form.into())
+    })
 }
 
 #[get("/")]
@@ -38,13 +39,11 @@ fn index(user: Option<User>) -> Template {
 
 #[get("/logout")]
 fn logout(mut auth: Auth) -> &'static str {
-    auth.logout().unwrap();
-    "You've logged out."
+    json!(auth.logout())
 }
 #[get("/delete")]
 fn delete(mut auth: Auth) -> &'static str {
-    auth.delete().unwrap();
-    "Your account was deleted."
+    json!(auth.delete())
 }
 
 fn main() -> Result<(), Error> {

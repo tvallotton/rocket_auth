@@ -2,14 +2,21 @@ use crate::prelude::*;
 use std::error::Error as ErrorTrait;
 use std::fmt::{self, Display, Formatter};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum ErrorKind {
+
+
+
+
+
+#[derive(Debug, Clone)]
+pub enum Error {
+    #[cfg(feature = "sqlite-db")]
     MutexPoisonError,
-    SystemTimeError(Duration),
-    SQLiteError,
+    SystemTimeError,
+    #[cfg(feature = "sqlite-db")]
+    SQLiteError(rusqlite::Error),
     NoneError,
     Argon2ParsingError,
-    ClientSessionError,
+    AunothorizedError,
     Unspecified,
     QueryError,
     UnmanagedStateError,
@@ -22,30 +29,16 @@ pub enum ErrorKind {
     PostgresqlError,
     IOError
 }
-#[allow(missing_docs)]
-#[derive(Debug, Clone)]
-pub struct Error {
-    pub message: String,
-    pub kind: ErrorKind,
-    // #[serde(skip_serializing)]
-    
-    
-}
+
 
 impl ErrorTrait for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?}: {}", self.kind, self.message)
+        write!(f, "Error: {:?}", self)
     }
 }
 
-pub fn raise<T>(kind: ErrorKind, msg: &str) -> Result<T> {
-    Err(Error {
-        message: msg.into(),
-        kind,
-    })
-}
 
 /*****  MESSAGE PASSING  *****/
 pub trait SetErrorMessage {
@@ -71,48 +64,34 @@ impl<T, E: Into<Error> + ErrorTrait> SetErrorMessage for std::result::Result<T, 
 use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
     fn from(error: PoisonError<T>) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::MutexPoisonError,
-        }
+        Error::MutexPoisonError
     }
 }
 
 #[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {
     fn from(error: rusqlite::Error) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::SQLiteError,
-        }
+        Error::SQLiteError(error)
+        
     }
 }
 
 use std::time::SystemTimeError;
 impl From<SystemTimeError> for Error {
     fn from(error: SystemTimeError) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::SystemTimeError(error.duration()),
-        }
+        Error::SystemTimeError(error)
     }
 }
 
 impl From<argon2::Error> for Error {
     fn from(error: argon2::Error) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::Argon2ParsingError,
-        }
+        Error::Argon2ParsingError
     }
 }
 
 impl From<()> for Error {
     fn from(_: ()) -> Error {
-        Error {
-            message: "".into(),
-            kind: ErrorKind::Unspecified,
-        }
+        Error::Unspecified
     }
 }
 
@@ -124,38 +103,27 @@ impl From<&Error> for Error {
 #[cfg(feature="redis-session")]
 impl From<redis::RedisError> for Error {
     fn from(error: redis::RedisError) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::RedisError,
-        }
+        Error::RedisError
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::JsonParsingError,
-        }
+        Error::JsonParsingError
+
     }
 }
 #[cfg(feature="postgres-db")]
 impl From<tokio_postgres::Error> for Error {
 
     fn from(error: tokio_postgres::Error) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::PostgresqlError,
-        }
+        Error::PostgresqlError
     }
 }
 
 impl From<std::io::Error> for Error {
 
     fn from(error: std::io::Error) -> Error {
-        Error {
-            message: format!("{}", error),
-            kind: ErrorKind::IOError,
-        }
+        Error::IOError
     }
 }
