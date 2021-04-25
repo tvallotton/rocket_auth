@@ -1,5 +1,6 @@
+pub use crate::language::Language;
 pub use crate::db::DBConnection;
-pub use crate::error::{Error, SetErrorMessage};
+pub use crate::error::Error;
 pub use crate::cookies::Session;
 pub use crate::session::SessionManager;
 pub use crate::{User, Users, Login, Signup};

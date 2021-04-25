@@ -1,8 +1,7 @@
-use crate::prelude::*;
 use std::error::Error as ErrorTrait;
 use std::fmt::{self, Display, Formatter};
 
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy)]
 pub enum Error {
     InvalidEmailAddressError,
     EmailAlreadyExists,
@@ -37,11 +36,8 @@ impl Display for Error {
     }
 }
 
-/*****  MESSAGE PASSING  *****/
-pub trait SetErrorMessage {
-    type Ok;
-    fn msg(self, msg: &str) -> std::result::Result<Self::Ok, Error>;
-}
+
+
 
 /*****  CONVERSIONS  *****/
 use std::sync::PoisonError;
@@ -50,6 +46,7 @@ impl<T> From<PoisonError<T>> for Error {
         Error::MutexPoisonError
     }
 }
+
 
 #[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {

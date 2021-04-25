@@ -131,6 +131,8 @@ mod forms;
 mod prelude;
 mod session;
 mod user;
+mod language;
+
 
 #[cfg(test)]
 mod tests;
@@ -139,7 +141,7 @@ mod tests;
 use prelude::*;
 use rocket::FromForm;
 
-
+pub use language::Language;
 pub use cookies::Session;
 pub use error::Error;
 pub use crate::user::auth::Auth;
