@@ -17,10 +17,11 @@ all-features = true
 
 
 [features]
-default = ["sqlite-db", "postgres-db", "redis-session"]
+default = ["sqlite-db", "postgres-db", "redis-session", "lang-es"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres", "futures", "tokio"]
 redis-session = ["redis"]
+lang-es = []
 # mysql-db = [...]
 
 

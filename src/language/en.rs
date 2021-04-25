@@ -1,16 +1,9 @@
 
 use super::*;
 
-impl Error {
-    pub fn message(self, lang: Language) -> &'static str {
-        lang.message(self)
-    }
-}
-
 use Error::*;
 
 impl Language {
-
     pub fn en_message(error: Error) -> &'static str {
         match error {
             UnsafePasswordTooShort => "The password has to be at least 8 characters long.",
