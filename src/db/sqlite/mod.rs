@@ -47,7 +47,7 @@ impl DBConnection for Mutex<Connection> {
                     })
                 },
             )
-            .msg("User not found.")?;
+            .map_err(|_| Error::UserNotFoundError)?;
         Ok(user)
     }
     fn get_user_by_email(&self, email: &str) -> Result<User> {
@@ -65,7 +65,7 @@ impl DBConnection for Mutex<Connection> {
                     })
                 },
             )
-            .msg("User not found.")?;
+            .map_err(|_|Error::UserNotFoundError)?;
         Ok(user)
     }
 }

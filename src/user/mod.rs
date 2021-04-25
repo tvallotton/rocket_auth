@@ -9,7 +9,7 @@ pub fn rand_string(size: usize) -> String {
     (0..)
         .map(|_| random::<u8>())
         .filter(|n| 31 < *n && *n < 126)
-        .map(|n| char::from(n))
+        .map(char::from)
         .take(size)
         .collect()
 }
@@ -43,13 +43,13 @@ impl Users {
     }
     fn set_auth_key_for(&self, user_id: i32, time: Duration) -> Result<String> {
         let key = rand_string(10);
-        self.sess.insert_for(user_id.into(), key.clone(), time)?;
+        self.sess.insert_for(user_id, key.clone(), time)?;
         Ok(key)
     }
 
     fn set_auth_key(&self, user_id: i32) -> Result<String> {
         let key = rand_string(15);
-        self.sess.insert(user_id.into(), key.clone())?;
+        self.sess.insert(user_id, key.clone())?;
         Ok(key)
     }
     fn signup(&self, form: &Signup) -> Result<()> {

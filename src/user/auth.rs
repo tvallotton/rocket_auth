@@ -70,9 +70,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth<'a> {
         };
 
         Outcome::Success(Auth {
-            users: users,
+            users,
+            session,
             cookies: req.cookies(),
-            session: session,
         })
     }
 }
@@ -289,7 +289,7 @@ impl<'a> Auth<'a> {
             self.users.modify(&user)?;
             Ok(())
         } else {
-            Err(Error::Unauthorized)
+            Err(Error::UnauthorizedError)
         }
     }
 
@@ -310,7 +310,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn now() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .msg("Error computing SystemTime")
         .unwrap_or(Duration::from_secs(0))
         .as_secs()
 }

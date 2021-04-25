@@ -2,18 +2,16 @@ use crate::prelude::*;
 use std::error::Error as ErrorTrait;
 use std::fmt::{self, Display, Formatter};
 
-
-
-
-
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum Error {
+    InvalidEmailAddressError,
+    EmailAlreadyExists,
     #[cfg(feature = "sqlite-db")]
     MutexPoisonError,
     SystemTimeError,
+    UserNotFoundError,
     #[cfg(feature = "sqlite-db")]
-    SQLiteError(rusqlite::Error),
+    SQLiteError,
     NoneError,
     Argon2ParsingError,
     AunothorizedError,
@@ -22,14 +20,14 @@ pub enum Error {
     UnmanagedStateError,
     FormValidationError,
     UnauthenticatedClientError,
-    UnsafePasswordError,
-    Unauthorized,
+    InvalidCredentialsError,
+    UnsafePasswordTooShort,
+    UnauthorizedError,
     RedisError,
     JsonParsingError,
     PostgresqlError,
-    IOError
+    IOError,
 }
-
 
 impl ErrorTrait for Error {}
 
@@ -39,31 +37,16 @@ impl Display for Error {
     }
 }
 
-
 /*****  MESSAGE PASSING  *****/
 pub trait SetErrorMessage {
     type Ok;
     fn msg(self, msg: &str) -> std::result::Result<Self::Ok, Error>;
 }
 
-impl<T, E: Into<Error> + ErrorTrait> SetErrorMessage for std::result::Result<T, E> {
-    type Ok = T;
-    fn msg(self, msg: &str) -> std::result::Result<T, Error> {
-        match self {
-            Ok(val) => Ok(val),
-            Err(error) => {
-                let mut error: Error = error.into();
-                error.message = msg.into();
-                Err(error)
-            }
-        }
-    }
-}
-
 /*****  CONVERSIONS  *****/
 use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
-    fn from(error: PoisonError<T>) -> Error {
+    fn from(_error: PoisonError<T>) -> Error {
         Error::MutexPoisonError
     }
 }
@@ -71,20 +54,30 @@ impl<T> From<PoisonError<T>> for Error {
 #[cfg(feature = "sqlite-db")]
 impl From<rusqlite::Error> for Error {
     fn from(error: rusqlite::Error) -> Error {
-        Error::SQLiteError(error)
-        
+        use rusqlite::Error::*;
+        match error {
+            SqliteFailure(_, Some(message)) => {
+                if message == "UNIQUE constraint failed: users.email" {
+                    Error::EmailAlreadyExists
+                } else {
+                    Error::SQLiteError
+                }
+            },
+            _ => Error::SQLiteError
+        }
+
     }
 }
 
 use std::time::SystemTimeError;
 impl From<SystemTimeError> for Error {
-    fn from(error: SystemTimeError) -> Error {
-        Error::SystemTimeError(error)
+    fn from(_error: SystemTimeError) -> Error {
+        Error::SystemTimeError
     }
 }
 
 impl From<argon2::Error> for Error {
-    fn from(error: argon2::Error) -> Error {
+    fn from(_error: argon2::Error) -> Error {
         Error::Argon2ParsingError
     }
 }
@@ -97,33 +90,30 @@ impl From<()> for Error {
 
 impl From<&Error> for Error {
     fn from(error: &Error) -> Error {
-        error.clone()
+        *error
     }
 }
-#[cfg(feature="redis-session")]
+#[cfg(feature = "redis-session")]
 impl From<redis::RedisError> for Error {
-    fn from(error: redis::RedisError) -> Error {
+    fn from(_error: redis::RedisError) -> Error {
         Error::RedisError
     }
 }
 
 impl From<serde_json::Error> for Error {
-    fn from(error: serde_json::Error) -> Error {
+    fn from(_error: serde_json::Error) -> Error {
         Error::JsonParsingError
-
     }
 }
-#[cfg(feature="postgres-db")]
+#[cfg(feature = "postgres-db")]
 impl From<tokio_postgres::Error> for Error {
-
-    fn from(error: tokio_postgres::Error) -> Error {
+    fn from(_error: tokio_postgres::Error) -> Error {
         Error::PostgresqlError
     }
 }
 
 impl From<std::io::Error> for Error {
-
-    fn from(error: std::io::Error) -> Error {
+    fn from(_error: std::io::Error) -> Error {
         Error::IOError
     }
 }

@@ -16,5 +16,7 @@ json!{
     "UnauthenticatedClientError": "Client is not logged in.",
     "UnauthorizedError": "Unauthorized.",
     "InvalidCredentialsError": "Your email or password is incorrect.",
-        
+    "UserNotFoundError": "User not found",
+    "InvalidEmailAddressError": "The email address is not valid."
+
 }
