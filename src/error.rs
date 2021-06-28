@@ -1,116 +1,77 @@
-use std::error::Error as ErrorTrait;
-use std::fmt::{self, Display, Formatter};
+use rocket::Responder;
+use std::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("That is not a valid email address.")]
     InvalidEmailAddressError,
+
+    #[error("That email address already exists. Try logging in.")]
     EmailAlreadyExists,
+
     #[cfg(feature = "sqlite-db")]
+    #[error("The mutex guarding the Sqlite connection was posioned.")]
     MutexPoisonError,
-    SystemTimeError,
+
+    #[error("An error occured trying to retrieve the current time.")]
+    SystemTimeError(#[from] time::SystemTimeError),
+
+    #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
+
     #[cfg(feature = "sqlite-db")]
-    SQLiteError,
-    NoneError,
-    Argon2ParsingError,
-    AunothorizedError,
+    #[error("RusqliteError: {0}")]
+    SQLiteError(#[from] rusqlite::Error),
+
+    #[error("Argon2ParsingError: {0}")]
+    Argon2ParsingError(#[from] argon2::Error),
+
+    #[error("UnaothorizedError")]
+    UnaothorizedError,
+
+    #[error("Unspecified")]
     Unspecified,
+
+    #[error("Unspecified")]
     QueryError,
+
+    #[error("UnmanagedStateError")]
     UnmanagedStateError,
+
+    #[error("FormValidationError")]
     FormValidationError,
-    UnauthenticatedClientError,
+    #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
+    UnauthenticatedError,
+    #[error("InvalidCredentialsError: Incorrect email or password.")]
     InvalidCredentialsError,
+    #[error("UnsafePasswordTooShort")]
     UnsafePasswordTooShort,
+    #[error("UnauthorizedError")]
     UnauthorizedError,
-    RedisError,
-    JsonParsingError,
-    PostgresqlError,
-    IOError,
+    #[cfg(feature = "redis-session")]
+    #[error("RedisError")]
+    RedisError(#[from] redis::Error),
+    #[error("SerdeError: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    #[cfg(feature = "postgres-db")]
+    #[error("PostgresqlError: {0}")]
+    PostgresqlError(#[from] tokio_postgres::Error),
+    #[error("IOError: {0}")]
+    IOError(#[from] std::io::Error),
 }
-
-impl ErrorTrait for Error {}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Error: {:?}", self)
-    }
-}
-
-
-
 
 /*****  CONVERSIONS  *****/
+#[cfg(feature = "sqlite-db")]
 use std::sync::PoisonError;
+#[cfg(feature = "sqlite-db")]
 impl<T> From<PoisonError<T>> for Error {
     fn from(_error: PoisonError<T>) -> Error {
         Error::MutexPoisonError
     }
 }
 
-
-#[cfg(feature = "sqlite-db")]
-impl From<rusqlite::Error> for Error {
-    fn from(error: rusqlite::Error) -> Error {
-        use rusqlite::Error::*;
-        match error {
-            SqliteFailure(_, Some(message)) => {
-                if message == "UNIQUE constraint failed: users.email" {
-                    Error::EmailAlreadyExists
-                } else {
-                    Error::SQLiteError
-                }
-            },
-            _ => Error::SQLiteError
-        }
-
-    }
-}
-
-use std::time::SystemTimeError;
-impl From<SystemTimeError> for Error {
-    fn from(_error: SystemTimeError) -> Error {
-        Error::SystemTimeError
-    }
-}
-
-impl From<argon2::Error> for Error {
-    fn from(_error: argon2::Error) -> Error {
-        Error::Argon2ParsingError
-    }
-}
-
 impl From<()> for Error {
     fn from(_: ()) -> Error {
         Error::Unspecified
-    }
-}
-
-impl From<&Error> for Error {
-    fn from(error: &Error) -> Error {
-        *error
-    }
-}
-#[cfg(feature = "redis-session")]
-impl From<redis::RedisError> for Error {
-    fn from(_error: redis::RedisError) -> Error {
-        Error::RedisError
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(_error: serde_json::Error) -> Error {
-        Error::JsonParsingError
-    }
-}
-#[cfg(feature = "postgres-db")]
-impl From<tokio_postgres::Error> for Error {
-    fn from(_error: tokio_postgres::Error) -> Error {
-        Error::PostgresqlError
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(_error: std::io::Error) -> Error {
-        Error::IOError
     }
 }

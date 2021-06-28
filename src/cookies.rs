@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use rocket::http::{Cookies, Status};
+use rocket::http::{CookieJar, Status};
 use rocket::request::{FromRequest, Outcome, Request};
 use serde_json::{from_str};
 
@@ -23,13 +23,13 @@ pub struct Session {
     /// It represents the Unix time in which the user logged in. It is measured in seconds. 
     pub time_stamp: i32,
 }
-
-impl<'a, 'r> FromRequest<'a, 'r> for Session {
+#[async_trait]
+impl<'r> FromRequest<'r> for Session {
     type Error = Error;
-    fn from_request(request: &'a Request<'r>) -> Outcome<Session, Self::Error> {
-        let mut cookies = request.cookies();
+   async fn from_request(request: &'r Request<'_>) -> Outcome<Session, Self::Error> {
+        let cookies = request.cookies();
 
-        if let Some(session) = get_session(&mut cookies) {
+        if let Some(session) = get_session(cookies) {
             Outcome::Success(session)
         } else {
             Outcome::Failure((
@@ -40,7 +40,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Session {
     }
 }
 
-fn get_session(cookies: &mut Cookies) -> Option<Session> {
+fn get_session(cookies: &CookieJar) -> Option<Session> {
     let session = cookies.get_private("rocket_auth")?;
 
     from_str(&session.value()).ok()

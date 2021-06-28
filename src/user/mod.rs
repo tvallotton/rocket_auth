@@ -7,8 +7,8 @@ use argon2::verify_encoded as verify;
 use rand::random;
 pub fn rand_string(size: usize) -> String {
     (0..)
-        .map(|_| random::<u8>())
-        .filter(|n| 31 < *n && *n < 126)
+        .map(|_| random::<char>())
+        .filter(|c| c.is_ascii())
         .map(char::from)
         .take(size)
         .collect()

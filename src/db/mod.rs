@@ -4,7 +4,6 @@ mod postgres;
 #[cfg(feature = "sqlite-db")]
 mod sqlite;
 
-
 use crate::prelude::*;
 
 pub trait DBConnection: Send + Sync {

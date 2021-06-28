@@ -111,9 +111,10 @@ impl Users {
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// # #[get("/user-information/<email>")]
-    /// # fn user_information(email: String, users: State<Users>) -> Result<String, Error> { 
+    /// # fn user_information(email: String, users: State<Users>) -> Result<(), Error> { 
     ///  let user = users.get_by_id(3)?;
-    ///  format!("{:?}", user)
+    ///  format!("{:?}", user);
+    /// # Ok(())
     /// # }
     /// # fn main() {}
     /// ```
@@ -177,8 +178,10 @@ impl Users {
 
 /// A `Users` instance can also be created from a database connection.
 /// ```
+/// # async fn func() -> Result<(), Error> {
 /// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
 /// let users: Users = client.into();
+/// # Ok(())}
 /// ```
 
 impl<Conn: 'static + DBConnection> From<Conn> for Users {
@@ -194,10 +197,15 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 /// Additionally, `Users` can be created from a tuple, 
 /// where the first element is a database connection, and the second is a redis connection.
 /// ```
+/// # use rocket_auth::Users;
+/// # extern crate tokio_postgres;
+/// # extern crate redis;
+/// # async fn func(postgres_path: &str, redis_path: &str) -> Result<(), Error> {
 /// let (db_client, connection) = tokio_postgres::connect(postgres_path, NoTls).await?;
 /// let redis_client = redis::Client::open(redis_path)?;
 /// 
 /// let users: Users = (db_client, redis_client).into();
+/// # Ok(())}
 /// ```
 impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> for Users {
     fn from((db, ss): (T0, T1)) -> Users {
@@ -206,5 +214,40 @@ impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> fo
             sess: Box::new(ss)
         }
     }
+}
+#[cfg(feature="postgres-db")]
+#[cfg(feature="redis-session")]
+impl std::convert::From<(tokio_postgres::Client, redis::Client)> for Users {
+    fn from((db, ss): (tokio_postgres::Client, redis::Client)) -> Users {
+        Users {
+            conn: Box::from(db),
+            sess: Box::from(ss)
+        }
+    }
+}
 
+#[cfg(feature="sqlite-db")]
+#[cfg(feature="redis-session")]
+impl From<(sqlite::Connection, redis::Client)> for Users {
+    fn from((db, ss): (tokio_postgres::Client, redis::Client)) -> Users {
+        Users {
+            conn: Box::from(db),
+            sess: Box::from(ss)
+        }
+    }
+}
+
+#[cfg(feature="sqlite-db")]
+#[cfg(feature="redis-session")]
+#[cfg(test)]
+mod tests {
+async fn func(postgres_path: &str, redis_path: &str) {
+    use tokio_postgres::NoTls;
+    use crate::Users;
+    let (db_client, connection) = tokio_postgres::connect(postgres_path, NoTls).await.unwrap();
+    let redis_client = redis::Client::open(redis_path).unwrap();
+    let users: Users = Users::from((db_client, redis_client));
+    // let users: Users = (db_client, redis_client).into();
+ 
+}
 }

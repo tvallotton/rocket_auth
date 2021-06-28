@@ -106,6 +106,7 @@
 //! The `User` guard can be used to restrict content so it can only be viewed by authenticated users. 
 //! Additionally, yo can use it to render special content if the client is authenticated or not. 
 //! ```rust
+//! # use rocket_auth::User;
 //! #[get("/private-content")]
 //! fn private_content(user: User) -> &'static str {
 //!     "If you can see this, you are logged in."
@@ -131,7 +132,6 @@ mod forms;
 mod prelude;
 mod session;
 mod user;
-mod language;
 
 
 #[cfg(test)]
@@ -141,7 +141,7 @@ mod tests;
 use prelude::*;
 use rocket::FromForm;
 
-pub use language::Language;
+// pub use language::Language;
 pub use cookies::Session;
 pub use error::Error;
 pub use crate::user::auth::Auth;
@@ -150,7 +150,7 @@ pub use crate::user::auth::Auth;
 
 /// The `User` guard can be used to restrict content so it can only be viewed by authenticated users. 
 /// ```rust
-/// # #![feature(decl_macro)]
+/// # 
 /// # use rocket::{get};
 /// # use rocket_auth::User;
 /// #[get("/private-content")]

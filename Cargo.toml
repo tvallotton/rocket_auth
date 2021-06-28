@@ -17,10 +17,11 @@ all-features = true
 
 
 [features]
-default = ["sqlite-db"]
+default = ["sqlite-db", "tokio-postgres", "futures", "tokio", "sqlx-db"]
 sqlite-db = ["rusqlite"]
 postgres-db = ["tokio-postgres", "futures", "tokio"]
 redis-session = ["redis"]
+sqlx-db = ["sqlx"]
 lang-es = []
 lang-pt = []
 
@@ -33,10 +34,19 @@ lazy_static = "1.4.0"
 regex = "1"
 serde_json = "1.0.59"
 chashmap = "2.2.2"
+thiserror = "1.0.25"
+async-trait = "0.1.50"
+
+
+
+[dependencies.sqlx]
+version = "0.5.5"
+features = ["runtime-tokio-rustls"]
+optional = true
 
 [dependencies.rocket]
-version = "0.4.7"
-features = ["private-cookies"]
+version = "0.5.0-rc.1"
+features = ["secrets"]
 
 [dependencies.serde]
 version = "1.0.125"
@@ -57,7 +67,6 @@ optional = true
 
 [dependencies.futures]
 version = "0.3.13"
-# features = []
 optional = true
 
 [dependencies.tokio]
@@ -67,5 +76,12 @@ optional = true
 
 
 [dev-dependencies]
-rocket_contrib = {version = "0.4.7", features = ["tera_templates"]}
 
+rocket_auth = {version = "*", path = "../rocket_auth", features = ["tokio-postgres", "futures", "tokio"]}
+
+[dev-dependencies.tokio-postgres]
+version = "0.7.0"
+
+[dev-dependencies.redis]
+version = "0.20.0"
+features = ["aio", "tokio-comp"]

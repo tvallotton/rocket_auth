@@ -99,10 +99,19 @@ impl Debug for User {
     }
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for User {
+
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for User {
     type Error = Error;
-    fn from_request(request: &'a Request) -> Outcome<User, Error> {
-        let auth: Auth = request.guard()?;
+    async fn from_request(request: &'r Request<'_>) -> Outcome<User, Error> {
+        use rocket::outcome::Outcome::*;
+        let guard = request.guard().await;
+        let auth: Auth = match guard {
+            Success(auth) => auth,
+            Failure(x) => return  Failure(x),
+            Forward(x) => return Forward(x)
+        };
         if let Some(user) = auth.get_user() {
             Outcome::Success(user)
         } else {
