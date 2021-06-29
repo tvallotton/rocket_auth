@@ -1,6 +1,6 @@
 [package]
 name = "rocket_auth"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["tvallotton@uc.cl"]
 edition = "2018"
 license = "MIT"
@@ -17,11 +17,12 @@ all-features = true
 
 
 [features]
-default = ["sqlite-db", "tokio-postgres", "futures", "tokio", "sqlx-db"]
-sqlite-db = ["rusqlite"]
-postgres-db = ["tokio-postgres", "futures", "tokio"]
+default = ["sqlite-db",  "postgres-db", "redis-session", "tokio-postgres-db"]
+sqlite-db = ["sqlx/sqlite", "futures", "tokio"]
+tokio-postgres-db = ["tokio-postgres"]
+postgres-db = ["futures", "tokio", "sqlx/postgres"]
 redis-session = ["redis"]
-sqlx-db = ["sqlx"]
+
 lang-es = []
 lang-pt = []
 
@@ -44,6 +45,7 @@ version = "0.5.5"
 features = ["runtime-tokio-rustls"]
 optional = true
 
+
 [dependencies.rocket]
 version = "0.5.0-rc.1"
 features = ["secrets"]
@@ -56,9 +58,9 @@ features = ["derive"]
 version = "0.7.0"
 optional = true
 
-[dependencies.rusqlite]
-version = "0.24.1"
-optional = true
+# [dependencies.rusqlite]
+# version = "0.24.1"
+# optional = true
 
 [dependencies.redis]
 version = "0.20.0"
@@ -76,8 +78,14 @@ optional = true
 
 
 [dev-dependencies]
+rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlite-db",  "postgres-db", "redis-session", "tokio-postgres-db"]}
 
-rocket_auth = {version = "*", path = "../rocket_auth", features = ["tokio-postgres", "futures", "tokio"]}
+
+
+[dev-dependencies.rocket]
+version = "0.5.0-rc.1"
+features = ["secrets", "json"]
+
 
 [dev-dependencies.tokio-postgres]
 version = "0.7.0"
@@ -85,3 +93,8 @@ version = "0.7.0"
 [dev-dependencies.redis]
 version = "0.20.0"
 features = ["aio", "tokio-comp"]
+
+
+[dev-dependencies.rocket_dyn_templates]
+version = "0.1.0-rc.1"
+# features = ["aio", "tokio-comp"]

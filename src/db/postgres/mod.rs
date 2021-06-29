@@ -1,68 +1,55 @@
-use crate::prelude::*;
+use crate::prelude::{Result, *};
 mod sql;
-use tokio_postgres::Client;
-use std::convert::{TryInto, TryFrom};
+use sql::*;
 
-impl DBConnection for Client {
-    fn init(&self) -> Result<()> {
-        futures::executor::block_on(
-            self.execute(sql::CREATE_TABLE, &[])
-        )?;
+use sqlx::postgres::PgPool;
+use sqlx::Acquire;
+use sqlx::*;
+
+#[rocket::async_trait]
+impl DBConnection for PgPool {
+    async fn init(&self) -> Result<()> {
+        query(CREATE_TABLE).execute(self).await?;
         Ok(())
     }
-    fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error> {
-        let x = futures::executor::block_on(
-            self.execute(sql::INSERT_USER, &[&email, &hash, &is_admin])
-        );
-        println!("creating user");
-        x?;
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+        query(INSERT_USER)
+            .bind(email)
+            .bind(hash)
+            .bind(is_admin)
+            .execute(self)
+            .await?;
         Ok(())
     }
-    fn update_user(&self, user: &User) -> Result<()> {
-        futures::executor::block_on(
-            self.execute(sql::UPDATE_USER, &[&user.email, &user.password, &user.is_admin])
-        )?;
+    async fn update_user(&self, user: &User) -> Result<()> {
+        query(UPDATE_USER)
+            .bind(user.id)
+            .bind(&user.email)
+            .bind(&user.password)
+            .bind(user.is_admin)
+            .execute(self)
+            .await?;
+
         Ok(())
     }
-    fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
-        futures::executor::block_on(
-            self.execute(sql::REMOVE_BY_ID, &[&user_id])
-        )?;
+    async fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
+        query(REMOVE_BY_ID).bind(user_id).execute(self).await?;
         Ok(())
     }
-    fn delete_user_by_email(&self, email: &str) -> Result<()> {
-        futures::executor::block_on(
-            self.execute(sql::REMOVE_BY_EMAIL, &[&email])
-        )?;
+    async fn delete_user_by_email(&self, email: &str) -> Result<()> {
+        query(REMOVE_BY_EMAIL).bind(email).execute(self).await?;
         Ok(())
     }
-    fn get_user_by_id(&self, user_id: i32) -> Result<User> {
-        let user = futures::executor::block_on(
-            self.query_one(sql::SELECT_BY_ID, &[&user_id])
-        )?;
-        user.try_into()
+    async fn get_user_by_id(&self, user_id: i32) -> Result<User> {
+        let user = query_as(SELECT_BY_ID).bind(user_id).fetch_one(self).await?;
+
+        Ok(user)
     }
-
-
-    fn get_user_by_email(&self, email: &str) -> Result<User> {
-                let user = futures::executor::block_on(
-            self.query_one(sql::SELECT_BY_EMAIL, &[&email])
-        )?;
-        user.try_into()
+    async fn get_user_by_email(&self, email: &str) -> Result<User> {
+        let user = query_as(SELECT_BY_EMAIL)
+            .bind(email)
+            .fetch_one(self)
+            .await?;
+        Ok(user)
     }
-}
-
-
-
-impl TryFrom<tokio_postgres::Row> for User {
-    type Error = Error;
-    fn try_from(row: tokio_postgres::Row) -> Result<User> {
-        Ok(User {
-            id: row.get(0),
-            email: row.get(1),
-            password: row.get(2), 
-            is_admin: row.get(3),
-        })   
-    }
-    
 }

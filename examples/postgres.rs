@@ -1,7 +1,7 @@
-#![feature(decl_macro)]
-use rocket::{request::Form, response::Redirect, *};
+
+use rocket::{response::Redirect, *};
 use rocket_auth::*;
-use rocket_contrib::templates::{tera, Template};
+use rocket_dyn_templates::Template;
 use serde_json::json;
 
 

@@ -24,9 +24,9 @@ impl Users {
         }
     }
 
-    fn login(&self, form: &Login) -> Result<String> {
+    async fn login(&self, form: &Login) -> Result<String> {
         let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email)?;
+        let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             let key = self.set_auth_key(user.id)?;
@@ -52,17 +52,17 @@ impl Users {
         self.sess.insert(user_id, key.clone())?;
         Ok(key)
     }
-    fn signup(&self, form: &Signup) -> Result<()> {
+    async fn signup(&self, form: &Signup) -> Result<()> {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
-        self.create_user(email, password, false)?;
+        self.create_user(email, password, false).await?;
         Ok(())
     }
 
-    fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
+    async fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
         let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email)?;
+        let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             let key = self.set_auth_key_for(user.id, time)?;

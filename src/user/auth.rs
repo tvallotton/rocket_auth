@@ -88,9 +88,9 @@ impl<'a> Auth<'a> {
     ///     auth.login(&form);
     /// }
     /// ```
-    pub fn login(&mut self, form: &Login) -> Result<()> {
-        let key = self.users.login(&form)?;
-        let user = self.users.get_by_email(&form.email)?;
+    pub async fn login(&mut self, form: &Login) -> Result<()> {
+        let key = self.users.login(&form).await?;
+        let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
             id: user.id,
             email: user.email,
@@ -114,9 +114,9 @@ impl<'a> Auth<'a> {
     ///     auth.login_for(&form, one_hour);
     /// }
     /// ```
-    pub fn login_for(&mut self, form: &Login, time: Duration) -> Result<()> {
-        let key = self.users.login_for(&form, time)?;
-        let user = self.users.get_by_email(&form.email)?;
+    pub async fn login_for(&mut self, form: &Login, time: Duration) -> Result<()> {
+        let key = self.users.login_for(&form, time).await?;
+        let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
             id: user.id,
             email: user.email,
@@ -130,12 +130,10 @@ impl<'a> Auth<'a> {
     }
 
     /// Creates a new user from a form or a json.
-    /// As of version 0.2.0, the client will no longer be authenticated automatically.
     /// In order to authenticate the user cast the signup form to a login form or use `signup_for`.
     /// Their session will be set to expire in a year.
     /// In order to customize the expiration date use [`signup_for`](Auth::signup_for).
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{post, request::Form};
     /// # use rocket_auth::{Auth, Signup};
     /// # use std::time::Duration;
@@ -145,8 +143,8 @@ impl<'a> Auth<'a> {
     ///     self.login(&form.into())?;
     /// }
     /// ```
-    pub fn signup(&mut self, form: &Signup) -> Result<()> {
-        self.users.signup(&form)?;
+    pub async fn signup(&mut self, form: &Signup) -> Result<()> {
+        self.users.signup(&form).await?;
 
         Ok(())
     }
@@ -164,9 +162,9 @@ impl<'a> Auth<'a> {
     ///     auth.signup_for(&form, one_hour);
     /// }
     /// ```
-    pub fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
-        self.users.signup(&form)?;
-        self.login_for(&form.clone().into(), time)?;
+    pub async fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
+        self.users.signup(&form).await?;
+        self.login_for(&form.clone().into(), time).await?;
         Ok(())
     }
 
@@ -197,7 +195,6 @@ impl<'a> Auth<'a> {
 
     /// It retrieves the current logged user.  
     /// ```
-    /// # #![feature(decl_macro)]
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/display-me")]
@@ -205,12 +202,12 @@ impl<'a> Auth<'a> {
     ///     format!("{:?}", auth.get_user())
     /// }
     /// ```
-    pub fn get_user(&self) -> Option<User> {
+    pub async fn get_user(&self) -> Option<User> {
         if !self.is_auth() {
             return None;
         }
         let id = self.session.as_ref()?.id;
-        if let Ok(user) = self.users.get_by_id(id) {
+        if let Ok(user) = self.users.get_by_id(id).await {
             Some(user)
         } else {
             None
@@ -234,7 +231,6 @@ impl<'a> Auth<'a> {
     }
     /// Deletes the account of the currently authenticated user.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/delete-my-account")]
@@ -242,10 +238,10 @@ impl<'a> Auth<'a> {
     ///     auth.delete();
     /// }```
 
-    pub fn delete(&mut self) -> Result<()> {
+    pub async fn delete(&mut self) -> Result<()> {
         if self.is_auth() {
             let session = self.get_session()?;
-            self.users.delete(session.id)?;
+            self.users.delete(session.id).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
             Ok(())
         } else {
@@ -263,12 +259,12 @@ impl<'a> Auth<'a> {
     /// # }
     /// ```
 
-    pub fn change_password(&self, password: &str) -> Result<()> {
+    pub async fn change_password(&self, password: &str) -> Result<()> {
         if self.is_auth() {
             let session = self.get_session()?;
-            let mut user = self.users.get_by_id(session.id)?;
+            let mut user = self.users.get_by_id(session.id).await?;
             user.set_password(password)?;
-            self.users.modify(&user)?;
+            self.users.modify(&user).await?;
             Ok(())
         } else {
             Err(Error::UnauthorizedError)
@@ -283,13 +279,13 @@ impl<'a> Auth<'a> {
     /// # }
     /// ```
 
-    pub fn change_email(&self, email: String) -> Result<()> {
+    pub async fn change_email(&self, email: String) -> Result<()> {
         if self.is_auth() {
             email.is_valid()?;
             let session = self.get_session()?;
-            let mut user = self.users.get_by_id(session.id)?;
+            let mut user = self.users.get_by_id(session.id).await?;
             user.email = email;
-            self.users.modify(&user)?;
+            self.users.modify(&user).await?;
             Ok(())
         } else {
             Err(Error::UnauthorizedError)
@@ -303,10 +299,7 @@ impl<'a> Auth<'a> {
     /// users.get_session()?
     /// ```
     pub fn get_session(&self) -> Result<&Session> {
-        let session = self
-            .session
-            .as_ref()
-            .ok_or(Error::UnauthenticatedError)?;
+        let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
         Ok(session)
     }
 }

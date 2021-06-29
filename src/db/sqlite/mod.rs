@@ -1,71 +1,76 @@
 mod sql;
 
-use crate::prelude::*;
+use crate::prelude::{Result, *};
 
-use rusqlite::{params, Connection};
 use sql::*;
-use std::sync::Mutex;
+use sqlx::sqlite::SqliteConnection;
+use sqlx::*;
 
-impl DBConnection for Mutex<Connection> {
-    fn init(&self) -> Result<()> {
-        let db = self.lock()?;
-        db.execute(CREATE_TABLE, params![])?;
+use tokio::sync::Mutex;
+use tokio::sync::RwLock;
+#[rocket::async_trait]
+impl DBConnection for Mutex<SqliteConnection> {
+    async fn init(&self) -> Result<()> {
+        let mut db = self.lock().await;
+        query(CREATE_TABLE).execute(&mut *db).await?;
         Ok(())
     }
-    fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
-        let db = self.lock()?;
-        db.execute(INSERT_USER, params![email, hash, is_admin])?;
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+        let mut db = self.lock().await;
+        query(INSERT_USER)
+            .bind(email)
+            .bind(hash)
+            .bind(is_admin)
+            .execute(&mut *db)
+            .await?;
         Ok(())
     }
-    fn update_user(&self, user: &User) -> Result<()> {
-        let db = self.lock()?;
-        db.execute(UPDATE_USER, params![user.id, user.email, user.password, user.is_admin])?;
+    async fn update_user(&self, user: &User) -> Result<()> {
+        let mut db = self.lock().await;
+        query(UPDATE_USER)
+            .bind(user.id)
+            .bind(&user.email)
+            .bind(&user.password)
+            .bind(user.is_admin)
+            .execute(&mut *db)
+            .await?;
+
         Ok(())
     }
-    fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
-        let db = self.lock()?;
-        db.execute(REMOVE_BY_ID, params![user_id])?;
+    async fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
+        query(REMOVE_BY_ID)
+            .bind(user_id)
+            .execute(&mut *self.lock().await)
+            .await?;
         Ok(())
     }
-    fn delete_user_by_email(&self, email: &str) -> Result<()> {
-        let db = self.lock()?;
-        db.execute(REMOVE_BY_EMAIL, params![email])?;
+    async fn delete_user_by_email(&self, email: &str) -> Result<()> {
+        query(REMOVE_BY_EMAIL)
+            .bind(email)
+            .execute(&mut *self.lock().await)
+            .await?;
         Ok(())
     }
-    fn get_user_by_id(&self, user_id: i32) -> Result<User> {
-        let db = self.lock()?;
-        let user = db
-            .query_row(
-                SELECT_BY_ID,
-                params![user_id],
-                |row| {
-                    Ok(User {
-                        id: row.get(0)?,
-                        email: row.get(1)?,
-                        password: row.get(2)?,
-                        is_admin: row.get(3)?,
-                    })
-                },
-            )
-            .map_err(|_| Error::UserNotFoundError)?;
+    async fn get_user_by_id(&self, user_id: i32) -> Result<User> {
+        let mut db = self.lock().await;
+
+        let user = query_as(SELECT_BY_ID)
+            .bind(user_id)
+            .fetch_one(&mut *db)
+            .await?;
+
         Ok(user)
     }
-    fn get_user_by_email(&self, email: &str) -> Result<User> {
-        let db = self.lock()?;
-        let user = db
-            .query_row(
-                SELECT_BY_EMAIL,
-                params![email],
-                |row| {
-                    Ok(User {
-                        id: row.get(0)?,
-                        email: row.get(1)?,
-                        password: row.get(2)?,
-                        is_admin: row.get(3)?,
-                    })
-                },
-            )
-            .map_err(|_|Error::UserNotFoundError)?;
+    async fn get_user_by_email(&self, email: &str) -> Result<User> {
+        let mut db = self.lock().await;
+
+        let user = query_as(SELECT_BY_EMAIL)
+            .bind(email)
+            .fetch_one(&mut *db)
+            .await?;
+
         Ok(user)
     }
 }
+
+

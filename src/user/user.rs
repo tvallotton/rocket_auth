@@ -112,7 +112,7 @@ impl<'r> FromRequest<'r> for User {
             Failure(x) => return  Failure(x),
             Forward(x) => return Forward(x)
         };
-        if let Some(user) = auth.get_user() {
+        if let Some(user) = auth.get_user().await {
             Outcome::Success(user)
         } else {
             Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))

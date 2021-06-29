@@ -159,7 +159,7 @@ pub use crate::user::auth::Auth;
 /// }
 /// # fn main() {}
 /// ```
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, sqlx::FromRow)]
 pub struct User {
     id: i32,
     email: String,

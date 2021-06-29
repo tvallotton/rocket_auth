@@ -1,35 +1,35 @@
-#![feature(decl_macro)]
-use rocket::{request::Form, response::{Redirect, Responder}, *};
-use rocket_auth::{Auth, Error, Login, Signup, User, Users, Language};
-use rocket_contrib::{json, json::*};
-use rocket_contrib::templates::{tera, Template};
 
+use rocket::{response::{Redirect, Responder}, *};
+use rocket_auth::{Auth, Error, Login, Signup, User, Users};
+use rocket::serde::json::{Json};
+use rocket_dyn_templates::{Template, Metadata};
+use serde_json::json;
 
 
 #[get("/login")]
-fn get_login() -> Template {
+async fn get_login() -> Template {
     Template::render("login", json!({}))
 }
 
 #[post("/login", data = "<form>")]
-fn post_login(mut auth: Auth, form: Form<Login>) -> Result<Redirect, JsonValue>{
+async fn post_login(mut auth: Auth, form: Form<Login>) -> Result<Redirect, JsonValue>{
     let result = auth.login(&form);
     if result.is_err() {
-        return Err(json!(result.map_err(|s|s.message(Language::ES))));
+        return Err(result);
     }
     Ok(Redirect::to("/"))
 }
 
 #[get("/signup")]
-fn get_signup() -> Template {
+async fn get_signup() -> Template {
     let cnxt = tera::Context::new();
     Template::render("signup", cnxt)
 }
 
 #[post("/signup", data = "<form>")]
-fn post_signup(mut auth: Auth, form: Form<Signup>) -> Result<(), &str> {
-    auth.signup(&form).map_err(|e| e.message(Language::ES))?;
-    auth.login(&form.into()).map_err(|e| e.message(Language::ES))
+async fn post_signup(mut auth: Auth, form: Form<Signup>) -> Result<(), &str> {
+    auth.signup(&form).await?;
+    auth.login(&form.into()).await?;
     
 }
 
@@ -41,8 +41,8 @@ fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth) -> JsonValue {
-    json!(auth.logout().map_err(|s|s.message(Language::ES)))
+async fn logout(mut auth: Auth) -> JsonValue {
+    auth.logout().await
 }
 #[get("/delete")]
 fn delete(mut auth: Auth) -> JsonValue {

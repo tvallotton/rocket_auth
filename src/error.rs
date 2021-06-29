@@ -21,13 +21,10 @@ pub enum Error {
 
     #[cfg(feature = "sqlite-db")]
     #[error("RusqliteError: {0}")]
-    SQLiteError(#[from] rusqlite::Error),
+    SqlxError(#[from] sqlx::Error),
 
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
-
-    #[error("UnaothorizedError")]
-    UnaothorizedError,
 
     #[error("Unspecified")]
     Unspecified,
@@ -40,8 +37,10 @@ pub enum Error {
 
     #[error("FormValidationError")]
     FormValidationError,
+
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
+
     #[error("InvalidCredentialsError: Incorrect email or password.")]
     InvalidCredentialsError,
     #[error("UnsafePasswordTooShort")]
@@ -50,14 +49,15 @@ pub enum Error {
     UnauthorizedError,
     #[cfg(feature = "redis-session")]
     #[error("RedisError")]
-    RedisError(#[from] redis::Error),
+    RedisError(#[from] redis::RedisError),
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
     #[cfg(feature = "postgres-db")]
-    #[error("PostgresqlError: {0}")]
-    PostgresqlError(#[from] tokio_postgres::Error),
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
+    #[cfg(feature = "tokio-postgres-db")]
+    #[error("TokioPostgresError: {0}")]
+    TokioPostgresError(#[from] tokio_postgres::Error),
 }
 
 /*****  CONVERSIONS  *****/
@@ -73,5 +73,37 @@ impl<T> From<PoisonError<T>> for Error {
 impl From<()> for Error {
     fn from(_: ()) -> Error {
         Error::Unspecified
+    }
+}
+
+use self::Error::*;
+use rocket::response::*;
+use serde_json::*;
+impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
+    fn respond_to(self, request: &'r rocket::Request<'_>) -> rocket::response::Result<'o> {
+        match self {
+            InvalidEmailAddressError => json!({
+                "status": 401,
+                "message": format!("{}", InvalidEmailAddressError),
+            }),
+
+            EmailAlreadyExists => json!({
+                "status": 401,
+                "message": format!("{}", EmailAlreadyExists),
+            }),
+
+            UserNotFoundError => json!({
+                "status": 404,
+                "message": format!("{}", UserNotFoundError)
+            }),
+            _ => {
+                json!({
+                    "status": 500,
+                    "message": "internal server error",
+                })
+            }
+        };
+
+        todo!()
     }
 }
