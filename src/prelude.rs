@@ -5,7 +5,6 @@ pub use crate::session::SessionManager;
 pub use crate::{Login, Signup, User, Users};
 
 pub(crate) use crate::db::DBConnection;
-pub(crate) use crate::error::Error;
 pub(crate) use serde::{Deserialize, Serialize};
 pub(crate) use std::ops::Deref;
 pub(crate) use std::time::Duration;

@@ -86,22 +86,17 @@ impl From<()> for Error {
 }
 use self::Error::*;
 impl Error {
-    fn status(&self) -> i32 {
-        match self {
-            InvalidEmailAddressError
-            | EmailAlreadyExists
-            | UnauthorizedError
-            | UnsafePasswordTooShort => 401,
-            UserNotFoundError => 404,
-            _ => 500,
-        }
-    }
     fn message(&self) -> String {
         match self {
             InvalidEmailAddressError
+            | InvalidCredentialsError
             | EmailAlreadyExists
             | UnauthorizedError
-            | UserNotFoundError => format!("{}", self),
+            | UserNotFoundError
+            | UnsafePasswordTooShort
+            | UnsafePasswordHasNoDigit
+            | UnsafePasswordHasNoLower
+            | UnsafePasswordHasNoUpper => format!("{}", self),
             _ => "undefined".into(),
         }
     }
@@ -116,7 +111,7 @@ use std::io::Cursor;
 impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
         let payload = to_string(&json!({
-            "status": self.status(),
+            "status": "error",
             "message": self.message(),
         }))
         .unwrap();

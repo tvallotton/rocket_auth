@@ -1,0 +1,15 @@
+{% extends "base" %}
+{% block body %}
+
+
+
+
+
+<ul>
+    {% for user in users -%}
+    <li> {{ user.email }}</li>
+    {% else %}
+    There are no registered users.
+    {%- endfor %}
+</ul>
+{% endblock body %}

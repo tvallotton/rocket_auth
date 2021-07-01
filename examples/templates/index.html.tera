@@ -1,27 +1,13 @@
-<html lang="en">
+{% extends "base" %}
+{% block body %}
+{% if user %}
+Hello there, your email is {{ user.email }}.
+<br><a href="/delete">Delete your account.</a>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-<body>
-    {% if user %}
-    Hello there, your email is {{ user.email }}.
-    <br>
-    <a href="/logout">Log out from your account.</a>
-    <br><a href="/delete">Delete your account.</a>
-
-    {% endif %}
-    {% if not user %}
-    Hello, anonymous user.
-    <br>
-    <a href="/signup">Signup here.</a>
-    <br>
-    <a href="/login">Login here</a>
-    {% endif %}
-</body>
-
-</html>
+{% endif %}
+{% if not user %}
+Hello, anonymous user.
+{% endif %}
+<br>
+<a href="show_all_users">Show all users</a>
+{% endblock body %}

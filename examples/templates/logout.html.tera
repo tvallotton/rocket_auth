@@ -1,0 +1,4 @@
+{% extends "base" %}
+{% block body %}
+You're logged out 
+{% endblock body %}

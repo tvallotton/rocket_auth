@@ -263,7 +263,7 @@ impl<'a> Auth<'a> {
             let mut user = self.users.get_by_id(session.id).await?;
             user.set_password(password)?;
             self.users.modify(&user).await?;
-            Ok(())
+            
         } else {
             throw!(Error::UnauthorizedError)
         }
