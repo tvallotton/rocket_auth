@@ -119,6 +119,9 @@ impl<'a> Auth<'a> {
     pub async fn login_for(&mut self, form: &Login, time: Duration) {
         let key = self.users.login_for(&form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
+        let x: Vec<i32> = vec![];
+        
+        
         let session = Session {
             id: user.id,
             email: user.email,
