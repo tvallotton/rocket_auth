@@ -1,0 +1,4 @@
+{% extends "base" %}
+{% block body %}
+You're account has been deleted. You can verify <a href="/show_all_users">here</a>
+{% endblock body %}

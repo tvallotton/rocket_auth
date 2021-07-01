@@ -54,7 +54,7 @@ pub enum Error {
     #[error("The password must include a lower case character.")]
     UnsafePasswordHasNoLower,
 
-    #[error("UnauthorizedError")]
+    #[error("Incorrect email or password")]
     UnauthorizedError,
     #[cfg(feature = "redis-session")]
     #[error("RedisError")]

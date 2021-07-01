@@ -23,6 +23,7 @@ impl Users {
             false
         }
     }
+
     #[throws(Error)]
     async fn login(&self, form: &Login) -> String {
         let form_pwd = &form.password.as_bytes();
@@ -41,24 +42,27 @@ impl Users {
             self.sess.remove(session.id)?;
         }
     }
+
     #[throws(Error)]
     fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
         let key = rand_string(10);
         self.sess.insert_for(user_id, key.clone(), time)?;
         key
     }
+
     #[throws(Error)]
     fn set_auth_key(&self, user_id: i32) -> String {
         let key = rand_string(15);
         self.sess.insert(user_id, key.clone())?;
         key
     }
+
     #[throws(Error)]
     async fn signup(&self, form: &Signup) {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
-        self.create_user(email, password, false).await?;
+        self.create_user(email, password, false).await.map_err(|_| Error::EmailAlreadyExists)?;
     }
 
     #[throws(Error)]

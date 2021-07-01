@@ -1,10 +1,5 @@
 {% extends "base" %}
 {% block body %}
-
-
-
-
-
 <ul>
     {% for user in users -%}
     <li> {{ user.email }}</li>

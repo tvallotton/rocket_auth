@@ -35,24 +35,24 @@ async fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+fn logout(mut auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout()?;
-    Ok("logged out")
+    Ok(Template::render("logout", json!({})))
 }
 #[get("/delete")]
-async fn delete(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
-    Ok("user deleted")
+    Ok(Template::render("deleted", json!({})))
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(conn: &State<Mutex<SqliteConnection>>) -> Result<Template, Error> {
+async fn show_all_users(conn: &State<Mutex<SqliteConnection>>, user: Option<User>) -> Result<Template, Error> {
     
     let users: Vec<User> = query_as("select * from users;")
         .fetch_all(&mut *conn.lock().await)
         .await?;
     println!("{:?}", users);
-    Ok(Template::render("users", json!({"users": users})))
+    Ok(Template::render("users", json!({"users": users, "user": user})))
 }
 // async fn show_users(mut auth: Auth<'_>) -> tes
 
