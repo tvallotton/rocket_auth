@@ -12,9 +12,9 @@ impl Users {
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # fn main() -> Result <(), Error> {
-    /// let users = Users::open_sqlite("database.db")?;
+    /// let users = Users::open_sqlite("database.db").await?;
     ///
-    /// rocket::ignite()
+    /// rocket::build()
     ///     .manage(users)
     ///     .launch();
     /// # Ok(()) }
@@ -34,10 +34,10 @@ impl Users {
     /// ```rust,no_run
     /// # use rocket_auth::{Users, Error};
     /// # fn main() -> Result<(), Error> {
-    /// let mut users = Users::open_sqlite("database.db")?;
+    /// let mut users = Users::open_sqlite("database.db").await?;
     /// users.open_redis("redis://127.0.0.1/")?;
     ///
-    /// rocket::ignite()
+    /// rocket::build()
     ///     .manage(users)
     ///     .launch();
     ///
@@ -55,9 +55,9 @@ impl Users {
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # fn main() -> Result<(), Error> {
-    /// let users = Users::open_sqlite("database.db")?;
+    /// let users = Users::open_sqlite("database.db").await?;
     ///
-    /// rocket::ignite()
+    /// rocket::build()
     ///     .manage(users)
     ///     .launch();
     /// # Ok(()) }
@@ -85,7 +85,7 @@ impl Users {
     /// #[get("/user-information/<email>")]
     /// fn user_information(email: String, users: State<Users>) -> Result<String, Error> {
     ///        
-    ///     let user = users.get_by_email(&email)?;
+    ///     let user = users.get_by_email(&email).await?;
     ///     Ok(format!("{:?}", user))
     /// }
     /// # fn main() {}
@@ -96,12 +96,11 @@ impl Users {
 
     /// It querys a user by their email.
     /// ```
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// # #[get("/user-information/<email>")]
     /// # fn user_information(email: String, users: State<Users>) -> Result<(), Error> {
-    ///  let user = users.get_by_id(3)?;
+    ///  let user = users.get_by_id(3).await?;
     ///  format!("{:?}", user);
     /// # Ok(())
     /// # }
@@ -149,10 +148,10 @@ impl Users {
     /// ```
     /// # use rocket_auth::{Users, Error};
     /// # fn func(users: Users) -> Result<(), Error> {
-    /// let mut user = users.get_by_id(4)?;
+    /// let mut user = users.get_by_id(4).await?;
     /// user.set_email("new@email.com");
     /// user.set_password("new password");
-    /// users.modify(&user)?;
+    /// users.modify(&user).await?;
     /// # Ok(())}
     /// ```
     pub async fn modify(&self, user: &User) -> Result<()> {

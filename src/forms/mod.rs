@@ -6,8 +6,7 @@ use regex::Regex;
 const EMAIL_REGEX: &str = r"^[\w\-\.]+@([\w-]+\.)+[\w\-]{2,4}$";
 
 impl Signup {
-
-    /// It checks whether the form is valid. 
+    /// It checks whether the form is valid.
     /// It is not necesay to check if a form is valid when
     /// using [`Auth::signup`](crate::Auth::signup), since that function
     /// does it already.
@@ -27,7 +26,7 @@ impl From<Signup> for Login {
     }
 }
 
-impl<T: Deref<Target=Signup>> From<T> for Login {
+impl<T: Deref<Target = Signup>> From<T> for Login {
     fn from(form: T) -> Login {
         Login {
             email: form.email.clone(),
@@ -35,8 +34,6 @@ impl<T: Deref<Target=Signup>> From<T> for Login {
         }
     }
 }
-
-
 
 pub trait ValidEmail {
     fn is_valid(&self) -> Result<()>;
@@ -48,7 +45,17 @@ pub trait SafePassword {
     // const NUMBER: &'static str = "1234567890";
     // const SYMBOLS: &'static str = "~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/";
 
-    fn is_secure(&self) -> Result<()>;
+    fn is_secure(&self) -> Result<()> {
+        self.is_long()?;
+        self.has_number()?;
+        self.has_uppercase()?;
+        self.has_lowercase()?;
+        Ok(())
+    }
+    fn has_number(&self) -> Result<()>;
+    fn is_long(&self) -> Result<()>;
+    fn has_uppercase(&self) -> Result<()>;
+    fn has_lowercase(&self) -> Result<()>;
 }
 
 impl ValidEmail for str {
@@ -65,11 +72,35 @@ impl ValidEmail for str {
 }
 
 impl SafePassword for str {
-    fn is_secure(&self) -> Result<()> {
+    fn is_long(&self) -> Result<()> {
         if self.len() > 8 {
             Ok(())
         } else {
             Err(Error::UnsafePasswordTooShort)
         }
+    }
+    fn has_uppercase(&self) -> Result<()> {
+        for c in self.chars() {
+            if c.is_uppercase() {
+                return Ok(());
+            }
+        }
+        Err(Error::UnsafePasswordHasNoUpper)
+    }
+    fn has_lowercase(&self) -> Result<()> {
+        for c in self.chars() {
+            if c.is_lowercase() {
+                return Ok(());
+            }
+        }
+        Err(Error::UnsafePasswordHasNoLower)
+    }
+    fn has_number(&self) -> Result<()> {
+        for c in self.chars() {
+            if c.is_numeric() {
+                return Ok(());
+            }
+        }
+        Err(Error::UnsafePasswordHasNoDigit)
     }
 }

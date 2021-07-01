@@ -19,8 +19,8 @@ use std::time::Duration;
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
 ///
 /// #[post("/signup", data="<form>")]
-/// fn signup(form: Form<Signup>, mut auth: Auth) {
-///     auth.signup(&form);
+/// async fn signup(form: Form<Signup>, mut auth: Auth) {
+///     auth.signup(&form).await?;
 ///     auth.login(&form.into());
 /// }
 ///
@@ -34,13 +34,14 @@ use std::time::Duration;
 ///     auth.logout();
 /// }
 ///
-/// fn main() -> Result<(), Error>{
+/// async fn main() -> Result<(), Error>{
 ///     let users = Users::open_sqlite("mydb.db")?;
 ///
-///     rocket::ignite()
+///     rocket::build()
 ///         .mount("/", routes![signup, login, logout])
 ///         .manage(users)
-///         .launch();
+///         .launch()
+///         .await;
 ///     Ok(())
 /// }
 /// ```
@@ -172,11 +173,10 @@ impl<'a> Auth<'a> {
     ///
     /// It allows to know if the current client is authenticated or not.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{get};
     /// # use rocket_auth::{Auth};
     /// #[get("/am-I-authenticated")]
-    /// fn is_auth(auth: Auth) -> &'static str {
+    /// fn is_auth(auth: Auth<'_>) -> &'static str {
     ///     if auth.is_auth() {
     ///         "Yes you are."
     ///     } else {
@@ -198,7 +198,7 @@ impl<'a> Auth<'a> {
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/display-me")]
-    /// fn display_me(auth: Auth) -> String {
+    /// fn display_me(auth: Auth<'_>) -> String {
     ///     format!("{:?}", auth.get_user())
     /// }
     /// ```

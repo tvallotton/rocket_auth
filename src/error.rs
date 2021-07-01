@@ -1,4 +1,3 @@
-use rocket::Responder;
 use std::*;
 
 #[derive(thiserror::Error, Debug)]
@@ -41,10 +40,20 @@ pub enum Error {
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
 
-    #[error("InvalidCredentialsError: Incorrect email or password.")]
+    #[error("Incorrect email or password.")]
     InvalidCredentialsError,
-    #[error("UnsafePasswordTooShort")]
+    #[error("The password must be at least 8 characters long.")]
     UnsafePasswordTooShort,
+
+    #[error("The password must include a digit.")]
+    UnsafePasswordHasNoDigit,
+
+    #[error("The password must include an upper case character.")]
+    UnsafePasswordHasNoUpper,
+    
+    #[error("The password must include a lower case character.")]
+    UnsafePasswordHasNoLower,
+
     #[error("UnauthorizedError")]
     UnauthorizedError,
     #[cfg(feature = "redis-session")]
@@ -75,35 +84,52 @@ impl From<()> for Error {
         Error::Unspecified
     }
 }
-
 use self::Error::*;
-use rocket::response::*;
-use serde_json::*;
-impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
-    fn respond_to(self, request: &'r rocket::Request<'_>) -> rocket::response::Result<'o> {
+impl Error {
+    fn status(&self) -> i32 {
         match self {
-            InvalidEmailAddressError => json!({
-                "status": 401,
-                "message": format!("{}", InvalidEmailAddressError),
-            }),
-
-            EmailAlreadyExists => json!({
-                "status": 401,
-                "message": format!("{}", EmailAlreadyExists),
-            }),
-
-            UserNotFoundError => json!({
-                "status": 404,
-                "message": format!("{}", UserNotFoundError)
-            }),
-            _ => {
-                json!({
-                    "status": 500,
-                    "message": "internal server error",
-                })
-            }
-        };
-
-        todo!()
+            InvalidEmailAddressError
+            | EmailAlreadyExists
+            | UnauthorizedError
+            | UnsafePasswordTooShort => 401,
+            UserNotFoundError => 404,
+            _ => 500,
+        }
     }
+    fn message(&self) -> String {
+        match self {
+            InvalidEmailAddressError
+            | EmailAlreadyExists
+            | UnauthorizedError
+            | UserNotFoundError => format!("{}", self),
+            _ => "undefined".into(),
+        }
+    }
+}
+
+use rocket::http::ContentType;
+use rocket::request::Request;
+use rocket::response::{self, Responder, Response};
+use serde_json::*;
+use std::io::Cursor;
+
+impl<'r> Responder<'r, 'static> for Error {
+    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
+        let payload = to_string(&json!({
+            "status": self.status(),
+            "message": self.message(),
+        }))
+        .unwrap();
+
+        Response::build()
+            .sized_body(payload.len(), Cursor::new(payload))
+            .header(ContentType::new("application", "json"))
+            .ok()
+    }
+}
+
+#[test]
+
+fn func() {
+    println!("{}", EmailAlreadyExists);
 }

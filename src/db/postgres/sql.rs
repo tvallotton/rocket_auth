@@ -1,4 +1,4 @@
-pub const CREATE_TABLE: &str = "
+pub(crate) const CREATE_TABLE: &str = "
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR (254) UNIQUE NOT NULL,
@@ -7,11 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ";
 
-pub const INSERT_USER: &str = "
+pub(crate) const INSERT_USER: &str = "
 INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3);
 ";
 
-pub const UPDATE_USER: &str = "
+pub(crate) const UPDATE_USER: &str = "
 UPDATE table SET 
     email = $2,
     password = $3,
@@ -20,17 +20,17 @@ WHERE
     id = $1
 ";
 
-pub const SELECT_BY_ID: &str = "
+pub(crate) const SELECT_BY_ID: &str = "
 SELECT * FROM users WHERE id = $1;
 ";
 
-pub const SELECT_BY_EMAIL: &str = "
+pub(crate) const SELECT_BY_EMAIL: &str = "
 SELECT * FROM users WHERE email = $1;
 ";
 
-pub const REMOVE_BY_ID: &str = "
+pub(crate) const REMOVE_BY_ID: &str = "
 DELETE FROM users WHERE id =$1;
 ";
-pub const REMOVE_BY_EMAIL: &str = "
+pub(crate) const REMOVE_BY_EMAIL: &str = "
 DELETE FROM users WHERE email =$1;
 ";

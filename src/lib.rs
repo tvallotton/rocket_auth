@@ -45,30 +45,31 @@
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example: 
 //! ```rust,no_run
-//! #![feature(decl_macro)]
 //! use rocket::{get, post, request::Form, routes};
 //! use rocket_auth::{Users, Error, Auth, Signup, Login};
 //! 
 //! #[post("/signup", data="<form>")] 
-//! fn signup(form: Form<Signup>, mut auth: Auth) {
-//!     auth.signup(&form);
+//! async fn signup(form: Form<Signup>, mut auth: Auth) -> Result<&'static str, Error> {
+//!     auth.signup(&form).await?;
 //!     auth.login(&form.into());
+//!     Ok("You signed up.")
 //! }
 //! 
 //! #[post("/login", data="<form>")] 
-//! fn login(form: Form<Login>, mut auth: Auth) {
-//!     auth.login(&form);
+//! async fn login(form: Form<Login>, mut auth: Auth) -> Result<&'static str, Error>{
+//!     auth.login(&form)?;
+//!     Ok("You're logged in.")
 //! }
 //! 
 //! #[get("/logout")] 
 //! fn logout(mut auth: Auth) {
 //!     auth.logout();
 //! }
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error>{
+//!     let users = Users::open_sqlite("mydb.db").await?;
 //! 
-//! fn main() -> Result<(), Error>{
-//!     let users = Users::open_sqlite("mydb.db")?;
-//! 
-//!     rocket::ignite()
+//!     rocket::build()
 //!         .mount("/", routes![signup, login, logout])
 //!         .manage(users)
 //!         .launch();
@@ -85,14 +86,13 @@
 //! A simple example of how to query a user with the [`Users`] struct:
 //! 
 //! ```rust 
-//! # #![feature(decl_macro)]
 //! # use rocket::{get, State};
 //! # use serde_json::json;
 //! use rocket_auth::Users;
 //! 
 //! #[get("/see-user/<id>")]
-//! fn see_user(id: i32, users: State<Users>) -> String {
-//!     let user = users.get_by_id(id).unwrap();
+//! async fn see_user(id: i32, users: &State<Users>) -> String {
+//!     let user = users.get_by_id(id).await.unwrap();
 //!     format!("{}", json!(user))
 //! }
 //! # fn main() {}
@@ -122,7 +122,6 @@
 //! } 
 //! ```
 //! 
-
 
 
 mod cookies;

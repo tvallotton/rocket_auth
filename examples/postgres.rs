@@ -1,73 +1,72 @@
-
-use rocket::{response::Redirect, *};
-use rocket_auth::*;
+use rocket::{form::*, response::Redirect, *};
+use rocket_auth::{Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-
-
+use std::result::Result;
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
 }
 
 #[post("/login", data = "<form>")]
-fn post_login(mut auth: Auth, form: Form<Login>) -> Result<Redirect, String> {
-    auth.login(&form).map_err(|x|x.message(Language::EN));
+async fn post_login<'a>(mut auth: Auth<'a>, form: Form<Login>) -> Result<Redirect, Error> {
+    auth.login(&form).await?;
     Ok(Redirect::to("/"))
 }
 
 #[get("/signup")]
-fn get_signup() -> Template {
-    let cnxt = tera::Context::new();
-    Template::render("signup", cnxt)
+async fn get_signup() -> Template {
+    Template::render("signup", json!({}))
 }
 
 #[post("/signup", data = "<form>")]
-fn post_signup(mut auth: Auth, form: Form<Signup>) -> Redirect {
-    json!({
-        "signup": auth.signup(&form),
-        "login": auth.login(&form.into())
-    })
+async fn post_signup(mut auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
+    auth.signup(&form).await?;
+    auth.login(&form.into()).await?;
+    Ok(Redirect::to("/"))
 }
 
 #[get("/")]
-fn index(user: Option<User>) -> Template {
-    let mut cnxt = tera::Context::new();
-    cnxt.insert("user", &user);
-    Template::render("index", cnxt)
+async fn index(user: Option<User>) -> Template {
+    Template::render("index", json!({ "user": user }))
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth) -> &'static str {
-    json!(auth.logout())
+fn logout(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+    auth.logout()?;
+    Ok("logged out")
 }
 #[get("/delete")]
-fn delete(mut auth: Auth) -> &'static str {
-    json!(auth.delete())
+async fn delete(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+    auth.delete().await?;
+    Ok("user deleted")
 }
 
-fn main() -> Result<(), Error> {
-    let users = Users::open_postgres("host=localhost user=postgres password='password'")?;
 
-    rocket::ignite()
-        .mount("/",
+
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let users = Users::open_postgres("host=localhost user=postgres password='password'").await?;
+
+    rocket::build()
+        .mount(
+            "/",
             routes![
-                index, 
-                get_login, 
-                post_signup, 
-                get_signup, 
+                index,
+                get_login,
+                post_signup,
+                get_signup,
                 post_login,
-                logout, 
-                delete],)
+                logout,
+                delete
+            ],
+        )
         .manage(users)
         .attach(Template::fairing())
-        .launch();
+        .launch()
+        .await
+        .unwrap();
     Ok(())
 }
-
-
-
-
-
-
 
