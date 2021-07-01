@@ -24,15 +24,14 @@ impl User {
     ///     Ok(())
     /// }
     /// ```
-
-    pub fn set_password(&mut self, new: &str) -> Result<()> {
+    #[throws(Error)]
+    pub fn set_password(&mut self, new: &str) {
         new.is_secure()?;
         let password = new.as_bytes();
         let salt = rand_string(10);
         let config = argon2::Config::default();
         let hash = argon2::hash_encoded(password, &salt.as_bytes(), &config).unwrap();
         self.password = hash;
-        Ok(())
     }
 
     /// This is an accessor function for the private `id` field.
@@ -99,8 +98,6 @@ impl Debug for User {
     }
 }
 
-
-
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for User {
     type Error = Error;
@@ -109,8 +106,8 @@ impl<'r> FromRequest<'r> for User {
         let guard = request.guard().await;
         let auth: Auth = match guard {
             Success(auth) => auth,
-            Failure(x) => return  Failure(x),
-            Forward(x) => return Forward(x)
+            Failure(x) => return Failure(x),
+            Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
             Outcome::Success(user)

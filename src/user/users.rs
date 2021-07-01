@@ -2,7 +2,7 @@ use super::rand_string;
 use crate::db::DBConnection;
 use crate::prelude::*;
 #[cfg(feature = "sqlite-db")]
-use std::path::Path;
+
 
 impl Users {
     /// It creates a `Users` instance by connecting  it to a redis database.

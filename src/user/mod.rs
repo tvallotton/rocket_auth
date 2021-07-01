@@ -1,5 +1,5 @@
 pub mod auth;
-mod user;
+mod user_impl;
 mod users;
 use crate::prelude::*;
 use argon2::verify_encoded as verify;
@@ -23,52 +23,54 @@ impl Users {
             false
         }
     }
-
-    async fn login(&self, form: &Login) -> Result<String> {
+    #[throws(Error)]
+    async fn login(&self, form: &Login) -> String {
         let form_pwd = &form.password.as_bytes();
         let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             let key = self.set_auth_key(user.id)?;
-            Ok(key)
+            key
         } else {
-            Err(Error::UnauthorizedError)
+            throw!(Error::UnauthorizedError)
         }
     }
-    fn logout(&self, session: &Session) -> Result<()> {
+    #[throws(Error)]
+    fn logout(&self, session: &Session) {
         if self.is_auth(session) {
             self.sess.remove(session.id)?;
         }
-        Ok(())
     }
-    fn set_auth_key_for(&self, user_id: i32, time: Duration) -> Result<String> {
+    #[throws(Error)]
+    fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
         let key = rand_string(10);
         self.sess.insert_for(user_id, key.clone(), time)?;
-        Ok(key)
+        key
     }
-
-    fn set_auth_key(&self, user_id: i32) -> Result<String> {
+    #[throws(Error)]
+    fn set_auth_key(&self, user_id: i32) -> String {
         let key = rand_string(15);
         self.sess.insert(user_id, key.clone())?;
-        Ok(key)
+        key
     }
-    async fn signup(&self, form: &Signup) -> Result<()> {
+    #[throws(Error)]
+    async fn signup(&self, form: &Signup) {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
         self.create_user(email, password, false).await?;
-        Ok(())
     }
 
-    async fn login_for(&self, form: &Login, time: Duration) -> Result<String> {
+    #[throws(Error)]
+    async fn login_for(&self, form: &Login, time: Duration) -> String {
         let form_pwd = &form.password.as_bytes();
         let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             let key = self.set_auth_key_for(user.id, time)?;
-            Ok(key)
+            key
         } else {
-            Err(Error::InvalidCredentialsError)
+            throw!(Error::InvalidCredentialsError)
         }
     }
 }

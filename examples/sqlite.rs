@@ -1,15 +1,15 @@
 use rocket::{form::*, response::Redirect, *};
-use rocket_auth::{Error, *};
+use rocket_auth::{prelude::Error, Result, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-use std::result::Result;
+
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
 }
 
 #[post("/login", data = "<form>")]
-async fn post_login<'a>(mut auth: Auth<'a>, form: Form<Login>) -> Result<Redirect, Error> {
+async fn post_login(mut auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
     auth.login(&form).await?;
     Ok(Redirect::to("/"))
 }

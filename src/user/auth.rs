@@ -89,7 +89,8 @@ impl<'a> Auth<'a> {
     ///     auth.login(&form);
     /// }
     /// ```
-    pub async fn login(&mut self, form: &Login) -> Result<()> {
+    #[throws(Error)]
+    pub async fn login(&mut self, form: &Login) {
         let key = self.users.login(&form).await?;
         let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
@@ -100,7 +101,6 @@ impl<'a> Auth<'a> {
         };
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
-        Ok(())
     }
 
     /// Logs a user in for the specified period of time.
@@ -115,7 +115,8 @@ impl<'a> Auth<'a> {
     ///     auth.login_for(&form, one_hour);
     /// }
     /// ```
-    pub async fn login_for(&mut self, form: &Login, time: Duration) -> Result<()> {
+    #[throws(Error)]
+    pub async fn login_for(&mut self, form: &Login, time: Duration) {
         let key = self.users.login_for(&form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
@@ -127,7 +128,6 @@ impl<'a> Auth<'a> {
         let to_str = format!("{}", json!(session));
         let cookie = Cookie::new("rocket_auth", to_str);
         self.cookies.add_private(cookie);
-        Ok(())
     }
 
     /// Creates a new user from a form or a json.
@@ -144,10 +144,9 @@ impl<'a> Auth<'a> {
     ///     self.login(&form.into())?;
     /// }
     /// ```
-    pub async fn signup(&mut self, form: &Signup) -> Result<()> {
+    #[throws(Error)]
+    pub async fn signup(&mut self, form: &Signup) {
         self.users.signup(&form).await?;
-
-        Ok(())
     }
 
     /// Creates a new user from a form or a json.
@@ -163,10 +162,10 @@ impl<'a> Auth<'a> {
     ///     auth.signup_for(&form, one_hour);
     /// }
     /// ```
-    pub async fn signup_for(&mut self, form: &Signup, time: Duration) -> Result<()> {
+    #[throws(Error)]
+    pub async fn signup_for(&mut self, form: &Signup, time: Duration) {
         self.users.signup(&form).await?;
         self.login_for(&form.clone().into(), time).await?;
-        Ok(())
     }
 
     ///
@@ -223,11 +222,11 @@ impl<'a> Auth<'a> {
     ///     auth.logout();
     /// }
     /// ```
-    pub fn logout(&mut self) -> Result<()> {
+    #[throws(Error)]
+    pub fn logout(&mut self) {
         let session = self.get_session()?;
         self.users.logout(session)?;
         self.cookies.remove_private(Cookie::named("rocket_auth"));
-        Ok(())
     }
     /// Deletes the account of the currently authenticated user.
     /// ```rust
@@ -237,15 +236,14 @@ impl<'a> Auth<'a> {
     /// fn delete(mut auth: Auth)  {
     ///     auth.delete();
     /// }```
-
-    pub async fn delete(&mut self) -> Result<()> {
+    #[throws(Error)]
+    pub async fn delete(&mut self) {
         if self.is_auth() {
             let session = self.get_session()?;
             self.users.delete(session.id).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
-            Ok(())
         } else {
-            Err(Error::UnauthenticatedError)
+            throw!(Error::UnauthenticatedError)
         }
     }
 
@@ -258,8 +256,8 @@ impl<'a> Auth<'a> {
     ///     auth.change_password("new password");
     /// # }
     /// ```
-
-    pub async fn change_password(&self, password: &str) -> Result<()> {
+    #[throws(Error)]
+    pub async fn change_password(&self, password: &str) {
         if self.is_auth() {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id).await?;
@@ -267,7 +265,7 @@ impl<'a> Auth<'a> {
             self.users.modify(&user).await?;
             Ok(())
         } else {
-            Err(Error::UnauthorizedError)
+            throw!(Error::UnauthorizedError)
         }
     }
 

@@ -3,7 +3,7 @@ mod sql;
 use sql::*;
 
 use sqlx::postgres::PgPool;
-use sqlx::Acquire;
+
 use sqlx::*;
 
 #[rocket::async_trait]

@@ -50,7 +50,7 @@ pub enum Error {
 
     #[error("The password must include an upper case character.")]
     UnsafePasswordHasNoUpper,
-    
+
     #[error("The password must include a lower case character.")]
     UnsafePasswordHasNoLower,
 

@@ -7,7 +7,7 @@ use sqlx::sqlite::SqliteConnection;
 use sqlx::*;
 
 use tokio::sync::Mutex;
-use tokio::sync::RwLock;
+
 #[rocket::async_trait]
 impl DBConnection for Mutex<SqliteConnection> {
     async fn init(&self) -> Result<()> {
