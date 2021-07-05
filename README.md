@@ -10,11 +10,10 @@ By default this crate stores sessions on a concurrent hashmap.
 As a result, sessions will only be stored as long as the rocket application runs uninterrupted.
 In order to store persistent sessions, it is recommended to connect the [`Users`](`Users::open_redis`) instance to a [redis server](https://redis.io/) .
 This requires the `redis-session` feature to be enabled.
-`rocket_auth` uses private cookies to store session data.
-
-
-This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.
+`rocket_auth` uses private cookies to store session data. This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.
 For more information visit rocket's [configuration guide](https://rocket.rs/v0.4/guide/configuration/).
+
+
 To use `rocket_auth` include it as a dependency in your Cargo.toml file:
 ```ini
 [dependencies.rocket_auth]
@@ -74,6 +73,8 @@ It lets you query, create, modify and delete users.
 Unlike the `Auth` guard, a `Users` instance can manage any user in the database.
 Note that the `Auth` guards includes a `Users` instance stored on the public `users` field.
 So it is not necesary to retrieve Users when using `Auth`.
+
+
 A simple example of how to query a user with the `Users` struct:
 ```rust
 # use rocket::{get, State};
