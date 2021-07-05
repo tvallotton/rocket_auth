@@ -1,3 +1,4 @@
+# rocket_auth
 rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 The available features are:
