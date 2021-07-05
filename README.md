@@ -40,7 +40,7 @@ simultaneously. However, retrieveng cookies is not needed since `Auth` stores th
  
  
  A working example:
-```rust,no_run
+```rust
 use rocket::{get, post, form::Form, routes};
 use rocket_auth::{Users, Error, Auth, Signup, Login};
 #[post("/signup", data="<form>")]
@@ -73,20 +73,20 @@ The `Users` struct administers interactions with the database.
 It lets you query, create, modify and delete users.
 Unlike the `Auth` guard, a `Users` instance can manage any user in the database.
 Note that the `Auth` guards includes a `Users` instance stored on the public `users` field.
-So it is not necesary to retrieve Users when using `Auth`.
+So it is not necessary to retrieve Users when using `Auth`.
 
 
 A simple example of how to query a user with the `Users` struct:
 ```rust
-# use rocket::{get, State};
-# use serde_json::json;
+
+
 use rocket_auth::Users;
 #[get("/see-user/<id>")]
 async fn see_user(id: i32, users: &State<Users>) -> String {
     let user = users.get_by_id(id).await.unwrap();
     format!("{}", json!(user))
 }
-# fn main() {}
+
 ```
 A `Users` instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
 [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection.
@@ -94,8 +94,6 @@ A `Users` instance can be constructed by connecting it to the database with the 
 The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
 Additionally, yo can use it to render special content if the client is authenticated or not.
 ```rust
-# use rocket::*;
-# use rocket_auth::User;
 #[get("/private-content")]
 fn private_content(user: User) -> &'static str {
     "If you can see this, you are logged in."

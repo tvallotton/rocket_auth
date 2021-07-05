@@ -82,7 +82,7 @@
 //! It lets you query, create, modify and delete users.
 //! Unlike the [`Auth`] guard, a [`Users`] instance can manage any user in the database.
 //! Note that the [`Auth`] guards includes a `Users` instance stored on the public `users` field.
-//! So it is not necesary to retrieve Users when using `Auth`.
+//! So it is not necessary to retrieve Users when using `Auth`.
 //! A simple example of how to query a user with the [`Users`] struct:
 //!
 //! ```rust
