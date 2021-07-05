@@ -19,7 +19,7 @@ use std::time::Duration;
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
 ///
 /// #[post("/signup", data="<form>")]
-/// async fn signup(form: Form<Signup>, mut auth: Auth) {
+/// async fn signup(form: Form<Signup>, mut auth: Auth<'_>) {
 ///     auth.signup(&form).await;
 ///     auth.login(&form.into());
 /// }
@@ -104,7 +104,7 @@ impl<'a> Auth<'a> {
 
     /// Logs a user in for the specified period of time.
     /// ```rust
-    /// # use rocket::{post, request::Form};
+    /// # use rocket::{post, form::Form};
     /// # use rocket_auth::{Login, Auth};
     /// # use std::time::Duration;
     /// #[post("/login", data="<form>")]
@@ -117,8 +117,7 @@ impl<'a> Auth<'a> {
     pub async fn login_for(&mut self, form: &Login, time: Duration) {
         let key = self.users.login_for(&form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
-        
-        
+
         let session = Session {
             id: user.id,
             email: user.email,
@@ -139,9 +138,9 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::{Auth, Signup, Error};
     /// # use std::time::Duration;
     /// #[post("/signup", data="<form>")]
-    /// fn signup(form: Form<Signup>, mut auth: Auth) -> Result<&'static str, Error>{
-    ///     auth.signup(&form)?;
-    ///     self.login(&form.into())?;
+    /// async fn signup(form: Form<Signup>, mut auth: Auth<'_>) -> Result<&'static str, Error>{
+    ///     auth.signup(&form).await?;
+    ///     auth.login(&form.into()).await?;
     ///     Ok("Logged in")
     /// }
     /// ```
@@ -197,7 +196,7 @@ impl<'a> Auth<'a> {
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/display-me")]
-    /// fn display_me(auth: Auth<'_>) -> String {
+    /// async fn display_me(auth: Auth<'_>) -> String {
     ///     format!("{:?}", auth.get_user().await)
     /// }
     /// ```
@@ -235,7 +234,8 @@ impl<'a> Auth<'a> {
     /// #[get("/delete-my-account")]
     /// fn delete(mut auth: Auth)  {
     ///     auth.delete();
-    /// }```
+    /// }
+    /// ```
     #[throws(Error)]
     pub async fn delete(&mut self) {
         if self.is_auth() {
@@ -249,7 +249,7 @@ impl<'a> Auth<'a> {
 
     /// Changes the password of the currently authenticated user
     /// ```
-    /// # #![feature(decl_macro)]
+    /// # use rocket_auth::Auth;
     /// # use rocket::post;
     /// # #[post("/change")]
     /// # fn example(mut auth: Auth<'_>) {
@@ -263,7 +263,6 @@ impl<'a> Auth<'a> {
             let mut user = self.users.get_by_id(session.id).await?;
             user.set_password(password)?;
             self.users.modify(&user).await?;
-            
         } else {
             throw!(Error::UnauthorizedError)
         }
@@ -294,7 +293,10 @@ impl<'a> Auth<'a> {
     /// It is intended to be used primarily
     /// with the `?` operator.
     /// ```
-    /// users.get_session()?
+    /// # fn func(mut auth: rocket_auth::Auth) -> Result<(), rocket_auth::Error> {
+    /// auth.get_session()?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn get_session(&self) -> Result<&Session> {
         let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;

@@ -105,6 +105,7 @@
 //! The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
 //! Additionally, yo can use it to render special content if the client is authenticated or not.
 //! ```rust
+//! # use rocket::*;
 //! # use rocket_auth::User;
 //! #[get("/private-content")]
 //! fn private_content(user: User) -> &'static str {

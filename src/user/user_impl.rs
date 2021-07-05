@@ -13,14 +13,13 @@ impl User {
     /// you can change it more easily with [`change_password`](`super::auth::Auth::change_password`).
     /// This function will fail in case the password is not secure enough.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// #[get("/reset-password/<id>/<new_password>")]
-    /// fn reset_password(id: i32, new_password: String, users: State<Users>) -> Result<(), Error> {
-    ///     let mut user = users.get_by_id(id)?;
+    /// async fn reset_password(id: i32, new_password: String, users: &State<Users>) -> Result<(), Error> {
+    ///     let mut user = users.get_by_id(id).await?;
     ///     user.set_password(&new_password);
-    ///     users.modify(&user)?;
+    ///     users.modify(&user).await?;
     ///     Ok(())
     /// }
     /// ```
@@ -65,14 +64,13 @@ impl User {
     /// In case the input is not a valid email, it will return an error.
     /// In case the user corresponds to the authenticated client, it's easier to use [`Auth::change_email`].
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Auth};
     /// #[get("/set-email/<email>")]
-    /// fn show_my_email(email: String, auth: Auth) -> Result<String, Error> {
-    ///     let mut user = auth.get_user().unwrap();
+    /// async fn show_my_email(email: String, auth: Auth<'_>) -> Result<String, Error> {
+    ///     let mut user = auth.get_user().await.unwrap();
     ///     user.set_email(&email)?;
-    ///     auth.users.modify(&user)?;
+    ///     auth.users.modify(&user).await?;
     ///     Ok("Your user email was changed".into())
     /// }
     /// ```

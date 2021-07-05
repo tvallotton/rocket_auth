@@ -103,7 +103,7 @@ impl Users {
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// # #[get("/user-information/<email>")]
-    /// # async fn user_information(email: String, users: State<Users>) -> Result<(), Error> {
+    /// # async fn user_information(email: String, users: &State<Users>) -> Result<(), Error> {
     ///  let user = users.get_by_id(3).await?;
     ///  format!("{:?}", user);
     /// # Ok(())
@@ -165,6 +165,8 @@ impl Users {
 
 /// A `Users` instance can also be created from a database connection.
 /// ```
+/// # use rocket_auth::{Users, Error};
+/// # use tokio_postgres::NoTls;
 /// # async fn func() -> Result<(), Error> {
 /// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
 /// let users: Users = client.into();
@@ -183,8 +185,9 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 /// Additionally, `Users` can be created from a tuple,
 /// where the first element is a database connection, and the second is a redis connection.
 /// ```
-/// # use rocket_auth::Users;
+/// # use rocket_auth::{Users, Error};
 /// # extern crate tokio_postgres;
+/// # use tokio_postgres::NoTls;
 /// # extern crate redis;
 /// # async fn func(postgres_path: &str, redis_path: &str) -> Result<(), Error> {
 /// let (db_client, connection) = tokio_postgres::connect(postgres_path, NoTls).await?;
