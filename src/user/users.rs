@@ -3,7 +3,6 @@ use crate::db::DBConnection;
 use crate::prelude::*;
 #[cfg(feature = "sqlite-db")]
 
-
 impl Users {
     /// It creates a `Users` instance by connecting  it to a redis database.
     /// If the database does not yet exist it will be created. By default,
@@ -49,7 +48,6 @@ impl Users {
     #[cfg(feature = "redis-session")]
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
         let client = redis::Client::open(path)?;
-        println!("client: {:?}", client);
         self.sess = Box::new(client);
         Ok(())
     }
@@ -72,7 +70,7 @@ impl Users {
     pub async fn open_postgres(path: &str) -> Result<Self> {
         use sqlx::PgPool;
         let conn = PgPool::connect(path).await?;
-        
+
         conn.init().await?;
 
         let users = Users {
@@ -215,7 +213,6 @@ impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> fo
 //         }
 //     }
 // }
-
 
 #[cfg(feature = "sqlite-db")]
 #[cfg(feature = "redis-session")]

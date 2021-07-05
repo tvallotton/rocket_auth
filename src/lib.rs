@@ -1,9 +1,10 @@
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
-//! * `sqlite-db`: for interacting with a SQLite database.
-//! * `postgres-db`: for interacting with a Postgresql database.
-//! * `redis-session`: for storing sessions on a redis server.
+//! * `sqlite-db`: for interacting with a SQLite database using [`sqlx`].
+//! * `postgres-db`: for interacting with a Postgresql database with [`sqlx`].
+//! * `tokio-postgres-db`: for interacting with a Postgresql database with [`tokio_postgres`].
+//! * `redis-session`: for storing sessions on a redis server using [`redis`].
 //!
 //! By default this crate stores sessions on a concurrent hashmap.
 //! As a result, sessions will only be stored as long as the rocket application runs uninterrupted.

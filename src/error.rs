@@ -115,7 +115,6 @@ impl<'r> Responder<'r, 'static> for Error {
             "message": self.message(),
         }))
         .unwrap();
-
         Response::build()
             .sized_body(payload.len(), Cursor::new(payload))
             .header(ContentType::new("application", "json"))
@@ -123,8 +122,3 @@ impl<'r> Responder<'r, 'static> for Error {
     }
 }
 
-#[test]
-
-fn func() {
-    println!("{}", EmailAlreadyExists);
-}
