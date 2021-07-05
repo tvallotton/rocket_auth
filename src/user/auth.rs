@@ -15,12 +15,12 @@ use std::time::Duration;
 ///  A working example:
 /// ```rust,no_run
 ///
-/// use rocket::{*, request::Form};
+/// use rocket::{*, form::Form};
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
 ///
 /// #[post("/signup", data="<form>")]
 /// async fn signup(form: Form<Signup>, mut auth: Auth) {
-///     auth.signup(&form).await?;
+///     auth.signup(&form).await;
 ///     auth.login(&form.into());
 /// }
 ///
@@ -33,9 +33,9 @@ use std::time::Duration;
 /// fn logout(mut auth: Auth) {
 ///     auth.logout();
 /// }
-///
+/// #[tokio::main]
 /// async fn main() -> Result<(), Error>{
-///     let users = Users::open_sqlite("mydb.db")?;
+///     let users = Users::open_sqlite("mydb.db").await?;
 ///
 ///     rocket::build()
 ///         .mount("/", routes![signup, login, logout])
@@ -81,8 +81,7 @@ impl<'a> Auth<'a> {
     /// The session is set to expire in one year by default.
     /// For a custom expiration date use [`Auth::login_for`].
     /// ```rust
-    /// # #![feature(decl_macro)]
-    /// # use rocket::{get, post, request::Form};
+    /// # use rocket::{get, post, form::Form};
     /// # use rocket_auth::{Auth, Login};
     /// #[post("/login", data="<form>")]
     /// fn login(form: Form<Login>, mut auth: Auth) {
@@ -105,7 +104,6 @@ impl<'a> Auth<'a> {
 
     /// Logs a user in for the specified period of time.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{post, request::Form};
     /// # use rocket_auth::{Login, Auth};
     /// # use std::time::Duration;
@@ -119,7 +117,6 @@ impl<'a> Auth<'a> {
     pub async fn login_for(&mut self, form: &Login, time: Duration) {
         let key = self.users.login_for(&form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
-        let x: Vec<i32> = vec![];
         
         
         let session = Session {
@@ -138,13 +135,14 @@ impl<'a> Auth<'a> {
     /// Their session will be set to expire in a year.
     /// In order to customize the expiration date use [`signup_for`](Auth::signup_for).
     /// ```rust
-    /// # use rocket::{post, request::Form};
-    /// # use rocket_auth::{Auth, Signup};
+    /// # use rocket::{post, form::Form};
+    /// # use rocket_auth::{Auth, Signup, Error};
     /// # use std::time::Duration;
     /// #[post("/signup", data="<form>")]
-    /// fn signup(form: Form<Signup>, mut auth: Auth) {
-    ///     auth.signup(&form);
+    /// fn signup(form: Form<Signup>, mut auth: Auth) -> Result<&'static str, Error>{
+    ///     auth.signup(&form)?;
     ///     self.login(&form.into())?;
+    ///     Ok("Logged in")
     /// }
     /// ```
     #[throws(Error)]
@@ -155,8 +153,7 @@ impl<'a> Auth<'a> {
     /// Creates a new user from a form or a json.
     /// The session will last the specified period of time.
     /// ```rust
-    /// # #![feature(decl_macro)]
-    /// # use rocket::{post, request::Form};
+    /// # use rocket::{post, form::Form};
     /// # use rocket_auth::{Auth, Signup};
     /// # use std::time::Duration;
     /// #[post("/signup", data="<form>")]
@@ -201,7 +198,7 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::Auth;
     /// #[get("/display-me")]
     /// fn display_me(auth: Auth<'_>) -> String {
-    ///     format!("{:?}", auth.get_user())
+    ///     format!("{:?}", auth.get_user().await)
     /// }
     /// ```
     pub async fn get_user(&self) -> Option<User> {
@@ -255,7 +252,7 @@ impl<'a> Auth<'a> {
     /// # #![feature(decl_macro)]
     /// # use rocket::post;
     /// # #[post("/change")]
-    /// # fn example(mut aut: Auth) {
+    /// # fn example(mut auth: Auth<'_>) {
     ///     auth.change_password("new password");
     /// # }
     /// ```
@@ -276,7 +273,7 @@ impl<'a> Auth<'a> {
     /// ```
     /// # use rocket_auth::Auth;
     /// # fn func(mut auth: Auth) {
-    /// auth.change_email("new@email.com");
+    /// auth.change_email("new@email.com".into());
     /// # }
     /// ```
 

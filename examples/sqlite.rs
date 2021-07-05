@@ -1,3 +1,4 @@
+use std::*;
 use rocket::{form::*, get, post, response::Redirect, routes, State};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
@@ -23,7 +24,7 @@ async fn get_signup() -> Template {
 
 #[post("/signup", data = "<form>")]
 async fn post_signup(mut auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
-    auth.signup(&form).await;
+    auth.signup(&form).await?;
     auth.login(&form.into()).await?;
     
     Ok(Redirect::to("/"))
@@ -46,7 +47,7 @@ async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(conn: &State<Mutex<SqliteConnection>>, user: Option<User>) -> Result<Template, Error> {
+async fn show_all_users(conn: &State<std::sync::Arc<Mutex<SqliteConnection>>>, user: Option<User>) -> Result<Template, Error> {
     
     let users: Vec<User> = query_as("select * from users;")
         .fetch_all(&mut *conn.lock().await)
@@ -54,13 +55,13 @@ async fn show_all_users(conn: &State<Mutex<SqliteConnection>>, user: Option<User
     println!("{:?}", users);
     Ok(Template::render("users", json!({"users": users, "user": user})))
 }
-// async fn show_users(mut auth: Auth<'_>) -> tes
+
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let conn = SqliteConnection::connect("database.db").await?;
-    let conn: Mutex<_> = conn.into();
-    let users = Users::open_sqlite("database.db").await?;
+    let conn: sync::Arc<Mutex<_>> = sync::Arc::new(conn.into());
+    let users: Users = conn.clone().into();
 
     rocket::build()
         .mount(

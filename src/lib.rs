@@ -44,24 +44,24 @@
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example:
 //! ```rust,no_run
-//! use rocket::{get, post, request::Form, routes};
+//! use rocket::{get, post, form::Form, routes};
 //! use rocket_auth::{Users, Error, Auth, Signup, Login};
 //!
 //! #[post("/signup", data="<form>")]
-//! async fn signup(form: Form<Signup>, mut auth: Auth) -> Result<&'static str, Error> {
+//! async fn signup(form: Form<Signup>, mut auth: Auth<'_>) -> Result<&'static str, Error> {
 //!     auth.signup(&form).await?;
 //!     auth.login(&form.into());
 //!     Ok("You signed up.")
 //! }
 //!
 //! #[post("/login", data="<form>")]
-//! async fn login(form: Form<Login>, mut auth: Auth) -> Result<&'static str, Error>{
-//!     auth.login(&form)?;
+//! async fn login(form: Form<Login>, mut auth: Auth<'_>) -> Result<&'static str, Error>{
+//!     auth.login(&form).await?;
 //!     Ok("You're logged in.")
 //! }
 //!
 //! #[get("/logout")]
-//! fn logout(mut auth: Auth) {
+//! fn logout(mut auth: Auth<'_>) {
 //!     auth.logout();
 //! }
 //! #[tokio::main]
@@ -114,7 +114,7 @@
 //! #[get("/special-content")]
 //! fn special_content(option: Option<User>) -> String {
 //!     if let Some(user) = option {
-//!         format!("hello, {}.", user.email)
+//!         format!("hello, {}.", user.email())
 //!     } else {
 //!         "hello, anonymous user".into()
 //!     }

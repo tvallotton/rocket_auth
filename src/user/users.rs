@@ -11,12 +11,14 @@ impl Users {
     /// the method [`open_redis`](User::open_redis).
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
-    /// # fn main() -> Result <(), Error> {
+    /// # #[tokio::main]
+    /// # async fn main() -> Result <(), Error> {
     /// let users = Users::open_sqlite("database.db").await?;
     ///
     /// rocket::build()
     ///     .manage(users)
-    ///     .launch();
+    ///     .launch()
+    ///     .await;
     /// # Ok(()) }
     /// ```
     #[cfg(feature = "sqlite-db")]
@@ -33,7 +35,8 @@ impl Users {
     /// different launches.
     /// ```rust,no_run
     /// # use rocket_auth::{Users, Error};
-    /// # fn main() -> Result<(), Error> {
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Error> {
     /// let mut users = Users::open_sqlite("database.db").await?;
     /// users.open_redis("redis://127.0.0.1/")?;
     ///
@@ -46,6 +49,7 @@ impl Users {
     #[cfg(feature = "redis-session")]
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
         let client = redis::Client::open(path)?;
+        println!("client: {:?}", client);
         self.sess = Box::new(client);
         Ok(())
     }
@@ -54,7 +58,8 @@ impl Users {
     /// don't waste your time debugging if it doesn't work.
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
-    /// # fn main() -> Result<(), Error> {
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Error> {
     /// let users = Users::open_sqlite("database.db").await?;
     ///
     /// rocket::build()
@@ -79,11 +84,10 @@ impl Users {
 
     /// It querys a user by their email.
     /// ```
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// #[get("/user-information/<email>")]
-    /// fn user_information(email: String, users: State<Users>) -> Result<String, Error> {
+    /// async fn user_information(email: String, users: &State<Users>) -> Result<String, Error> {
     ///        
     ///     let user = users.get_by_email(&email).await?;
     ///     Ok(format!("{:?}", user))
@@ -99,7 +103,7 @@ impl Users {
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// # #[get("/user-information/<email>")]
-    /// # fn user_information(email: String, users: State<Users>) -> Result<(), Error> {
+    /// # async fn user_information(email: String, users: State<Users>) -> Result<(), Error> {
     ///  let user = users.get_by_id(3).await?;
     ///  format!("{:?}", user);
     /// # Ok(())
@@ -112,12 +116,11 @@ impl Users {
 
     /// Inserts a new user in the database. It will fail if the user already exists.
     /// ```rust
-    /// #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
     /// #[get("/create_admin/<email>/<password>")]
-    /// fn create_admin(email: String, password: String, users: State<Users>) -> Result<String, Error> {
-    ///     users.create_user(&email, &password, true)?;
+    /// async fn create_admin(email: String, password: String, users: &State<Users>) -> Result<String, Error> {
+    ///     users.create_user(&email, &password, true).await?;
     ///     Ok("User created successfully".into())
     /// }
     /// # fn main() {}
@@ -147,7 +150,7 @@ impl Users {
     /// Modifies a user in the database.
     /// ```
     /// # use rocket_auth::{Users, Error};
-    /// # fn func(users: Users) -> Result<(), Error> {
+    /// # async fn func(users: Users) -> Result<(), Error> {
     /// let mut user = users.get_by_id(4).await?;
     /// user.set_email("new@email.com");
     /// user.set_password("new password");

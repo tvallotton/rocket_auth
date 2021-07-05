@@ -1,15 +1,18 @@
-use rocket::{form::*, response::Redirect, *};
-use rocket_auth::{Error, *};
+use std::*;
+use rocket::{form::*, get, post, response::Redirect, routes, State};
+use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
+use sqlx::*;
 use std::result::Result;
+use tokio::sync::*;
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
 }
 
 #[post("/login", data = "<form>")]
-async fn post_login<'a>(mut auth: Auth<'a>, form: Form<Login>) -> Result<Redirect, Error> {
+async fn post_login(mut auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
     auth.login(&form).await?;
     Ok(Redirect::to("/"))
 }
@@ -23,6 +26,7 @@ async fn get_signup() -> Template {
 async fn post_signup(mut auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
+    
     Ok(Redirect::to("/"))
 }
 
@@ -32,17 +36,25 @@ async fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+fn logout(mut auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout()?;
-    Ok("logged out")
+    Ok(Template::render("logout", json!({})))
 }
 #[get("/delete")]
-async fn delete(mut auth: Auth<'_>) -> Result<&'static str, Error> {
+async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
-    Ok("user deleted")
+    Ok(Template::render("deleted", json!({})))
 }
 
-
+#[get("/show_all_users")]
+async fn show_all_users(conn: &State<Mutex<SqliteConnection>>, user: Option<User>) -> Result<Template, Error> {
+    
+    let users: Vec<User> = query_as("select * from users;")
+        .fetch_all(&mut *conn.lock().await)
+        .await?;
+    println!("{:?}", users);
+    Ok(Template::render("users", json!({"users": users, "user": user})))
+}
 
 
 #[tokio::main]

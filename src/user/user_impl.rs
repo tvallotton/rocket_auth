@@ -37,7 +37,6 @@ impl User {
     /// This is an accessor function for the private `id` field.
     /// This field is private so it is not modified by accident when updating a user.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, User};
     /// #[get("/show-my-id")]
@@ -51,7 +50,6 @@ impl User {
     /// This is an accessor field for the private `email` field.
     /// This field is private so an email cannot be updated without checking whether it is valid.
     /// ```rust
-    /// # #![feature(decl_macro)]
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, User};
     /// #[get("/show-my-email")]
