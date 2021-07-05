@@ -5,11 +5,14 @@ The available features are:
 * `postgres-db`: for interacting with a Postgresql database with `sqlx`.
 * `tokio-postgres-db`: for interacting with a Postgresql database with `tokio_postgres`.
 * `redis-session`: for storing sessions on a redis server using `redis`.
+
 By default this crate stores sessions on a concurrent hashmap.
 As a result, sessions will only be stored as long as the rocket application runs uninterrupted.
 In order to store persistent sessions, it is recommended to connect the [`Users`](`Users::open_redis`) instance to a [redis server](https://redis.io/) .
 This requires the `redis-session` feature to be enabled.
 `rocket_auth` uses private cookies to store session data.
+
+
 This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.
 For more information visit rocket's [configuration guide](https://rocket.rs/v0.4/guide/configuration/).
 To use `rocket_auth` include it as a dependency in your Cargo.toml file:
@@ -29,9 +32,13 @@ It also includes two structs to be parsed from forms and json data:
 Finally it has two structures for queries:
 * `Users`: it allows to query users to the database.
 * `User`: it is the response of a query.
+
+
 The `Auth` guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
 For more information see `Auth`. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
 simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
+ 
+ 
  A working example:
 ```rust,no_run
 use rocket::{get, post, form::Form, routes};
