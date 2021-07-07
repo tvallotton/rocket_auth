@@ -52,6 +52,7 @@ pub struct Auth<'a> {
     pub cookies: &'a CookieJar<'a>,
     pub session: Option<Session>,
 }
+
 #[async_trait]
 impl<'r> FromRequest<'r> for Auth<'r> {
     type Error = Error;
