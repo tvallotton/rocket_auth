@@ -157,7 +157,7 @@ pub use error::Error;
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, sqlx::FromRow)]
 pub struct User {
     id: i32,
-    email: String,
+    pub email: String,
     #[serde(skip_serializing)]
     password: String,
     pub is_admin: bool,
