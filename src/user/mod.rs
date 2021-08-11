@@ -27,7 +27,11 @@ impl Users {
     #[throws(Error)]
     async fn login(&self, form: &Login) -> String {
         let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email).await?;
+        let user = self
+            .conn
+            .get_user_by_email(&form.email)
+            .await
+            .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             let key = self.set_auth_key(user.id)?;
@@ -62,7 +66,9 @@ impl Users {
         form.is_valid()?;
         let email = &form.email;
         let password = &form.password;
-        self.create_user(email, password, false).await.map_err(|_| Error::EmailAlreadyExists)?;
+        self.create_user(email, password, false)
+            .await
+            .map_err(|_| Error::EmailAlreadyExists)?;
     }
 
     #[throws(Error)]

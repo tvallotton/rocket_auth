@@ -13,7 +13,7 @@
 //!
 //! `rocket_auth` uses private cookies to store session data.
 //! This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.
-//! For more information visit rocket's [configuration guide](https://rocket.rs/v0.4/guide/configuration/).
+//! For more information visit rocket's [configuration guide](https://rocket.rs/v0.5-rc/guide/configuration/#configuration).
 //!
 //!
 //!
@@ -26,7 +26,7 @@
 //! features = ["sqlite-db"]
 //! ```
 //! # Quick overview
-//! This crate provides two guards:
+//! This crate provides three guards:
 //! * [`Auth`]: manages authentication.
 //! * [`Session`]: retrieves session data from client cookies.
 //! * [`User`]: It restricts content, so it can be viewed by authenticated clients only.

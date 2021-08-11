@@ -5,7 +5,7 @@ use crate::prelude::*;
 
 impl Users {
     /// It creates a `Users` instance by connecting  it to a redis database.
-    /// If the database does not yet exist it will be created. By default,
+    /// If the database does not yet exist it will return an Error. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
     /// the method [`open_redis`](User::open_redis).
     /// ```rust, no_run
@@ -21,17 +21,33 @@ impl Users {
     /// # Ok(()) }
     /// ```
     #[cfg(feature = "sqlite-db")]
-    pub async fn open_sqlite(path: &str) -> Result<Self> {
-        use sqlx::Connection;
-        use tokio::sync::Mutex;
-        let conn = sqlx::SqliteConnection::connect(path).await?;
-        let users: Users = Mutex::new(conn).into();
+    #[throws(Error)]
+    pub async fn open_sqlite(path: &str) -> Self {
+        let conn = sqlx::SqlitePool::connect(path).await?;
+        let users: Users = conn.into();
+        users.create_table().await?;
         users.conn.init().await?;
-        Ok(users)
+        users
     }
-
+    /// Initializes the user table in the database. It won't drop the table if it already exists.
+    /// It is necessary to call it explicitly when casting the `Users` struct from an already
+    /// stablished database connection and the if table hasn't been created yet. If the table
+    /// already exists then this step is not necessary.
+    /// ```rust,no_run
+    /// # use rocket_auth::{Users, Error};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Error> {
+    /// let mut users = Users::open_sqlite("database.db").await?;
+    /// users.open_redis("redis://127.0.0.1/")?;
+    /// users.create_table().await?;
+    /// # Ok(()) }
+    /// ```
+    #[throws(Error)]
+    pub async fn create_table(&self) {
+        self.conn.init().await?
+    }
     /// Opens a redis connection. It allows for sessions to be stored persistently across
-    /// different launches.
+    /// different launches. Note that persistent sessions also require a `secret_key` to be set in the [Rocket.toml](https://rocket.rs/v0.5-rc/guide/configuration/#configuration) configuration file.
     /// ```rust,no_run
     /// # use rocket_auth::{Users, Error};
     /// # #[tokio::main]
@@ -52,13 +68,13 @@ impl Users {
         Ok(())
     }
 
-    /// It opens a postgres database connection. I've got to admit I haven't tested this feature yet, so
+    /// It opens a postgres database connection using [`sqlx`]. I've got to admit I haven't tested this feature yet, so
     /// don't waste your time debugging if it doesn't work.
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Error> {
-    /// let users = Users::open_sqlite("database.db").await?;
+    /// let users = Users::open_postgres("postgres://postgres:password@localhost/test").await?;
     ///
     /// rocket::build()
     ///     .manage(users)
@@ -68,6 +84,33 @@ impl Users {
     /// ```
     #[cfg(feature = "postgres-db")]
     pub async fn open_postgres(path: &str) -> Result<Self> {
+        use sqlx::PgPool;
+        let conn = PgPool::connect(path).await?;
+
+        conn.init().await?;
+
+        let users = Users {
+            conn: Box::new(conn),
+            sess: Box::new(chashmap::CHashMap::new()),
+        };
+        Ok(users)
+    }
+    /// It opens a postgres database connection using [`tokio_postgres`]. I've got to admit I haven't tested this feature yet, so
+    /// don't waste your time debugging if it doesn't work.
+    /// ```rust, no_run
+    /// # use rocket_auth::{Error, Users};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Error> {
+    /// let users = Users::open_tokio_postgres("host=localhost user=user password='password'").await?;
+    ///
+    /// rocket::build()
+    ///     .manage(users)
+    ///     .launch();
+    /// # Ok(()) }
+    ///
+    /// ```
+    #[cfg(feature = "tokio-postgres")]
+    pub async fn open_tokio_postgres(path: &str) -> Result<Self> {
         use sqlx::PgPool;
         let conn = PgPool::connect(path).await?;
 
@@ -168,6 +211,9 @@ impl Users {
 /// # async fn func() -> Result<(), Error> {
 /// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
 /// let users: Users = client.into();
+/// // we create the user table in the
+/// // database if it does not exists.
+/// users.create_table()
 /// # Ok(())}
 /// ```
 
@@ -192,6 +238,9 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 /// let redis_client = redis::Client::open(redis_path)?;
 ///
 /// let users: Users = (db_client, redis_client).into();
+/// // we create the user table in the
+/// // database if it does not exists.
+/// users.create_table();
 /// # Ok(())}
 /// ```
 impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> for Users {

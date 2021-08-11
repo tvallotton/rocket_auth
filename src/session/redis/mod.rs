@@ -9,7 +9,6 @@ const YEAR_IN_SECS: usize = 365 * 60 * 60 * 24;
 impl SessionManager for Client {
     fn insert(&self, id: i32, key: String) -> Result<()> {
         let mut cnn = self.get_connection()?;
-        println!("connected;\n\n");
         cnn.set_ex(id, key, YEAR_IN_SECS)?;
         Ok(())
     }

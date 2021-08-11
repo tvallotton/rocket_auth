@@ -1,5 +1,7 @@
 use std::*;
 
+
+#[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("That is not a valid email address.")]
@@ -18,17 +20,19 @@ pub enum Error {
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
-    #[cfg(feature = "sqlite-db")]
-    #[error("RusqliteError: {0}")]
-    SqlxError(#[from] sqlx::Error),
 
+    #[cfg(feature = "sqlite-db")]
+    #[cfg(feature = "postgres-db")]
+    #[error("SqlxError: {0}")]
+    SqlxError(#[from] sqlx::Error),
+    
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
 
     #[error("Unspecified")]
     Unspecified,
 
-    #[error("Unspecified")]
+    #[error("QueryError")]
     QueryError,
 
     #[error("UnmanagedStateError")]
@@ -39,6 +43,9 @@ pub enum Error {
 
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
+
+    #[error("The email \"{0}\" is not registered. Try signing up first.")]
+    EmailDoesNotExist(String),
 
     #[error("Incorrect email or password.")]
     InvalidCredentialsError,
@@ -97,6 +104,9 @@ impl Error {
             | UnsafePasswordHasNoDigit
             | UnsafePasswordHasNoLower
             | UnsafePasswordHasNoUpper => format!("{}", self),
+            #[cfg(debug_assertions)]
+            e => return format!("{}", e),
+            #[allow(unreachable_patterns)]
             _ => "undefined".into(),
         }
     }
@@ -121,4 +131,3 @@ impl<'r> Responder<'r, 'static> for Error {
             .ok()
     }
 }
-
