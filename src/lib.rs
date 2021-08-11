@@ -1,3 +1,4 @@
+
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
@@ -27,21 +28,23 @@
 //! ```
 //! # Quick overview
 //! This crate provides three guards:
-//! * [`Auth`]: manages authentication.
-//! * [`Session`]: retrieves session data from client cookies.
+//! * [`Auth`]: Manages authentication.
+//! * [`Session`]: It's used to retrieve session data from client cookies.
 //! * [`User`]: It restricts content, so it can be viewed by authenticated clients only.
 //!
+//!
 //! It also includes two structs to be parsed from forms and json data:
-//! * [`Signup`]: used to create new users.
-//! * [`Login`]: used to authenticate users.
+//! * [`Signup`]: Used to create new users.
+//! * [`Login`]: Used to authenticate users.
+//!
 //!
 //! Finally it has two structures for queries:
-//! * [`Users`]: it allows to query users to the database.
-//! * [`User`]: it is the response of a query.
+//! * [`Users`]: It allows to query users to the database.
+//! * [`User`]: It is the response of a query.
 //!
-
+//!
 //! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
-//! For more information see [`Auth`]. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
+//! For more information see [`Auth`]. Because of Rust's ownership rules, you may not retrieve both `rocket::http::CookieJar` and the [`Auth`] guard
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example:
 //! ```rust,no_run
@@ -123,7 +126,7 @@
 //! }
 //! ```
 //!
-
+#[warn(clippy::*)]
 mod cookies;
 mod db;
 mod error;

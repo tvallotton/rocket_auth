@@ -70,7 +70,7 @@ impl<'r> FromRequest<'r> for Auth<'r> {
         };
 
         Outcome::Success(Auth {
-            users: &users,
+            users,
             session,
             cookies: req.cookies(),
         })
@@ -91,7 +91,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login(&mut self, form: &Login) {
-        let key = self.users.login(&form).await?;
+        let key = self.users.login(form).await?;
         let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
             id: user.id,
@@ -116,7 +116,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login_for(&mut self, form: &Login, time: Duration) {
-        let key = self.users.login_for(&form, time).await?;
+        let key = self.users.login_for(form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
 
         let session = Session {
@@ -147,7 +147,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup(&mut self, form: &Signup) {
-        self.users.signup(&form).await?;
+        self.users.signup(form).await?;
     }
 
     /// Creates a new user from a form or a json.
@@ -164,7 +164,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup_for(&mut self, form: &Signup, time: Duration) {
-        self.users.signup(&form).await?;
+        self.users.signup(form).await?;
         self.login_for(&form.clone().into(), time).await?;
     }
 

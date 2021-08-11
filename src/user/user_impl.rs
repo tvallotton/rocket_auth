@@ -29,7 +29,7 @@ impl User {
         let password = new.as_bytes();
         let salt = rand_string(10);
         let config = argon2::Config::default();
-        let hash = argon2::hash_encoded(password, &salt.as_bytes(), &config).unwrap();
+        let hash = argon2::hash_encoded(password, salt.as_bytes(), &config).unwrap();
         self.password = hash;
     }
 

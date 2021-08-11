@@ -170,7 +170,7 @@ impl Users {
         let password = password.as_bytes();
         let salt = rand_string(30);
         let config = argon2::Config::default();
-        let hash = argon2::hash_encoded(password, &salt.as_bytes(), &config).unwrap();
+        let hash = argon2::hash_encoded(password, salt.as_bytes(), &config).unwrap();
         self.conn.create_user(email, &hash, is_admin).await?;
         Ok(())
     }
@@ -249,30 +249,5 @@ impl<T0: 'static + DBConnection, T1: 'static + SessionManager> From<(T0, T1)> fo
             conn: Box::from(db),
             sess: Box::new(ss),
         }
-    }
-}
-
-// #[cfg(feature="sqlite-db")]
-// #[cfg(feature="redis-session")]
-// impl From<(sqlite::Connection, redis::Client)> for Users {
-//     fn from((db, ss): (tokio_postgres::Client, redis::Client)) -> Users {
-//         Users {
-//             conn: Box::from(db),
-//             sess: Box::from(ss)
-//         }
-//     }
-// }
-
-#[cfg(feature = "sqlite-db")]
-#[cfg(feature = "redis-session")]
-#[cfg(test)]
-mod tests {
-    async fn func(postgres_path: &str, redis_path: &str) {
-        use crate::Users;
-        use tokio_postgres::NoTls;
-        let (db_client, connection) = tokio_postgres::connect(postgres_path, NoTls).await.unwrap();
-        let redis_client = redis::Client::open(redis_path).unwrap();
-        let users: Users = Users::from((db_client, redis_client));
-        // let users: Users = (db_client, redis_client).into();
     }
 }

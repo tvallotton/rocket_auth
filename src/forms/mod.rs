@@ -63,7 +63,7 @@ impl ValidEmail for str {
         lazy_static! {
             static ref RE: Regex = Regex::new(EMAIL_REGEX).unwrap();
         }
-        if RE.is_match(&self) {
+        if RE.is_match(self) {
             Ok(())
         } else {
             Err(Error::InvalidEmailAddressError)

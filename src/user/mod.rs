@@ -34,8 +34,7 @@ impl Users {
             .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
-            let key = self.set_auth_key(user.id)?;
-            key
+            self.set_auth_key(user.id)?
         } else {
             throw!(Error::UnauthorizedError)
         }
@@ -77,8 +76,7 @@ impl Users {
         let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
-            let key = self.set_auth_key_for(user.id, time)?;
-            key
+            self.set_auth_key_for(user.id, time)?
         } else {
             throw!(Error::InvalidCredentialsError)
         }
