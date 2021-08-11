@@ -95,34 +95,6 @@ impl Users {
         };
         Ok(users)
     }
-    /// It opens a postgres database connection using [`tokio_postgres`]. I've got to admit I haven't tested this feature yet, so
-    /// don't waste your time debugging if it doesn't work.
-    /// ```rust, no_run
-    /// # use rocket_auth::{Error, Users};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Error> {
-    /// let users = Users::open_tokio_postgres("host=localhost user=user password='password'").await?;
-    ///
-    /// rocket::build()
-    ///     .manage(users)
-    ///     .launch();
-    /// # Ok(()) }
-    ///
-    /// ```
-    #[cfg(feature = "tokio-postgres")]
-    pub async fn open_tokio_postgres(path: &str) -> Result<Self> {
-        use sqlx::PgPool;
-        let conn = PgPool::connect(path).await?;
-
-        conn.init().await?;
-
-        let users = Users {
-            conn: Box::new(conn),
-            sess: Box::new(chashmap::CHashMap::new()),
-        };
-        Ok(users)
-    }
-
     /// It querys a user by their email.
     /// ```
     /// # use rocket::{State, get};
@@ -213,7 +185,7 @@ impl Users {
 /// let users: Users = client.into();
 /// // we create the user table in the
 /// // database if it does not exists.
-/// users.create_table()
+/// users.create_table();
 /// # Ok(())}
 /// ```
 

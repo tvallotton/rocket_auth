@@ -1,4 +1,3 @@
-
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
@@ -126,7 +125,6 @@
 //! }
 //! ```
 //!
-#[warn(clippy::*)]
 mod cookies;
 mod db;
 mod error;
@@ -137,6 +135,8 @@ mod user;
 
 #[cfg(test)]
 mod tests;
+
+use std::fmt::Debug;
 
 use prelude::*;
 use rocket::FromForm;
@@ -173,7 +173,7 @@ pub struct Users {
 }
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
-#[derive(FromForm, Deserialize, Debug, Clone)]
+#[derive(FromForm, Deserialize, Clone)]
 pub struct Login {
     pub email: String,
     password: String,
@@ -181,8 +181,18 @@ pub struct Login {
 
 /// The `Signup` form is used along with the [`Auth`] guard to create new users.
 
-#[derive(FromForm, Deserialize, Debug, Clone)]
+#[derive(FromForm, Deserialize, Clone)]
 pub struct Signup {
     pub email: String,
     password: String,
+}
+impl Debug for Signup {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Signup {{ email: \"{0}\", password: \"*****\" }}", self.email)
+    }
+}
+impl Debug for Login {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Signup {{ email: \"{0}\", password: \"*****\" }}", self.email)
+    }
 }
