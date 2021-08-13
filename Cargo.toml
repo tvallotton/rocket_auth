@@ -18,8 +18,8 @@ all-features = true
 
 [features]
 # default = ["sqlx-sqlite",  "sqlx-postgres", "redis", "tokio-sqlx-postgres", "rusqlite"]
-sqlx-sqlite = ["sqlx/sqlite", "futures"]
-sqlx-postgres = ["futures", "sqlx/postgres"]
+sqlx-sqlite = ["sqlx/sqlite"]
+sqlx-postgres = ["sqlx/postgres"]
 
 
 [dependencies.rusqlite]
@@ -68,8 +68,7 @@ features = ["aio", "tokio-comp"]
 optional = true
 
 [dependencies.futures]
-version = "0.3.13"
-optional = true
+version = "0.3.16"
 
 [dependencies.tokio]
 version = "1.4.0"

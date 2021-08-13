@@ -156,7 +156,8 @@ pub use error::Error;
 /// }
 /// # fn main() {}
 /// ```
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, sqlx::FromRow)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, )]
 pub struct User {
     id: i32,
     email: String,
