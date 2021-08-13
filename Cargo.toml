@@ -6,9 +6,10 @@ edition = "2018"
 license = "MIT"
 description = "A high level authentication management library for Rocket applications. It supports both SQLite and Postgres."
 repository = "https://github.com/tvallotton/rocket_auth"
+
 readme = "README.md"
 categories = ["web-programming", "web-programming::http-server"]
-keyword = ["users", "authentication", "auth", "session"]
+keywords = ["rocket", "users", "authentication", "auth", "session"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
