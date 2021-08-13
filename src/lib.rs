@@ -99,7 +99,7 @@
 //! ```
 //!
 //! A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
-//! [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection.
+//! [`open_postgres`](Users::open_postgres) or [`open_rusqlite`](Users::open_rusqlite). Furthermore, it can be constructed from a working connection.
 //!
 //!
 //! ## User guard

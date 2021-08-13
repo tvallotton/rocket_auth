@@ -44,31 +44,6 @@ impl<T: DBConnection> DBConnection for std::sync::Arc<T> {
     }
 }
 
-// #[rocket::async_trait]
-// impl<T: DBConnection> DBConnection for tokio::sync::RwLock<T> {
-//     async fn init(&self) -> Result<()> {
-//         self.init().await
-//     }
-//     async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error> {
-//         self.create_user(email, hash, is_admin).await
-//     }
-//     async fn update_user(&self, user: &User) -> Result<()> {
-//         self.update_user(user).await
-//     }
-//     async fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
-//         self.delete_user_by_id(user_id).await
-//     }
-//     async fn delete_user_by_email(&self, email: &str) -> Result<()> {
-//         self.delete_user_by_email(email).await
-//     }
-//     async fn get_user_by_id(&self, user_id: i32) -> Result<User> {
-//         self.get_user_by_id(user_id).await
-//     }
-//     async fn get_user_by_email(&self, email: &str) -> Result<User> {
-//         self.get_user_by_email(email).await
-//     }
-// }
-
 
 #[rocket::async_trait]
 impl<T: DBConnection> DBConnection for tokio::sync::Mutex<T> {

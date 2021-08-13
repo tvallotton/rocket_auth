@@ -2,7 +2,7 @@
 pub use crate::cookies::Session;
 pub use crate::error::Error;
 pub use crate::session::SessionManager;
-pub use crate::{AdminUser, Login, Signup, User, Users};
+pub use crate::{AdminUser, Auth, Login, Signup, User, Users};
 
 pub(crate) use crate::db::DBConnection;
 pub(crate) use async_trait::async_trait;

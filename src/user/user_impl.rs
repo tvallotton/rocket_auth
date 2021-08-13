@@ -67,7 +67,7 @@ impl User {
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Auth};
     /// #[get("/set-email/<email>")]
-    /// async fn show_my_email(email: String, auth: Auth<'_>) -> Result<String, Error> {
+    /// async fn set_email(email: String, auth: Auth<'_>) -> Result<String, Error> {
     ///     let mut user = auth.get_user().await.unwrap();
     ///     user.set_email(&email)?;
     ///     auth.users.modify(&user).await?;

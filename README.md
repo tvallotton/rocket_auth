@@ -120,3 +120,15 @@ fn admins_only(user: AdminUser) -> &'static str {
    "Hello administrator."
 }
 ```
+
+## AdminUser guard
+The `AdminUser` guard can be used analogously to `User`.
+It will restrict content so it can be viewed by admins only.
+```rust
+# use rocket::*;
+# use rocket_auth::AdminUser;
+#[get("/admin-panel")]
+fn admin_panel(user: AdminUser) -> String {
+   format!("Hello {}.", user.email());
+}
+```

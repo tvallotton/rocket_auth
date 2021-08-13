@@ -130,10 +130,8 @@ impl<'a> Auth<'a> {
         self.cookies.add_private(cookie);
     }
 
-    /// Creates a new user from a form or a json.
-    /// In order to authenticate the user cast the signup form to a login form or use `signup_for`.
-    /// Their session will be set to expire in a year.
-    /// In order to customize the expiration date use [`signup_for`](Auth::signup_for).
+    /// Creates a new user from a form or a json. The user will not be authenticated by default.
+    /// In order to authenticate the user, cast the signup form to a login form or use `signup_for`.
     /// ```rust
     /// # use rocket::{post, form::Form};
     /// # use rocket_auth::{Auth, Signup, Error};
