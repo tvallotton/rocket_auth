@@ -100,7 +100,7 @@ A `Users` instance can be constructed by connecting it to the database with the 
 
 ## User guard
 The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
-Additionally, yo can use it to render special content if the client is authenticated or not.
+Additionally, you can use it to render special content if the client is authenticated or not.
 ```rust
 #[get("/private-content")]
 fn private_content(user: User) -> &'static str {
@@ -114,5 +114,9 @@ fn special_content(option: Option<User>) -> String {
     } else {
         "hello, anonymous user".into()
     }
+}
+#[get("/admins-only")]
+fn admins_only(user: AdminUser) -> &'static str {
+   "Hello administrator."
 }
 ```
