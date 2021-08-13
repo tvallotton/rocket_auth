@@ -145,7 +145,7 @@ impl DBConnection for Mutex<SqliteConnection> {
         Ok(user)
     }
 }
-
+#[cfg(feature = "sqlx-sqlite")]
 #[rocket::async_trait]
 impl DBConnection for SqlitePool {
     async fn init(&self) -> Result<()> {

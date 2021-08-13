@@ -66,7 +66,7 @@ impl<'r> FromRequest<'r> for Auth<'r> {
         let users: &State<Users> = if let Outcome::Success(users) = req.guard().await {
             users
         } else {
-            return Outcome::Failure((Status::Unauthorized, Error::UnmanagedStateError));
+            return Outcome::Failure((Status::InternalServerError, Error::UnmanagedStateError));
         };
 
         Outcome::Success(Auth {
