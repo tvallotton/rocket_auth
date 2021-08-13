@@ -17,7 +17,7 @@
 //!
 //!
 //! To use `rocket_auth` include it as a dependency in your Cargo.toml file:
-//! ```ini
+//! ```
 //! [dependencies.rocket_auth]
 //! version = "0.3.0"
 //! features = ["sqlx-sqlite"]
@@ -25,8 +25,8 @@
 //! # Quick overview
 //! This crate provides three guards:
 //! * [`Auth`]: Manages authentication.
-//! * [`Session`]: It's used to retrieve session data from client cookies.
-//! * [`User`]: It restricts content, so it can be viewed by authenticated clients only.
+//! * [`Session`]: Used to retrieve session data from client cookies.
+//! * [`User`]: Restricts content, so it can be viewed by authenticated clients only.
 //!
 //!
 //! It also includes two structs to be parsed from forms and json data:
@@ -39,6 +39,7 @@
 //! * [`User`]: It is the response of a query.
 //!
 //!
+//! ## Auth guard
 //! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
 //! For more information see [`Auth`]. Because of Rust's ownership rules, you may not retrieve both [`rocket::http::CookieJar`] and the [`Auth`] guard
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
@@ -102,8 +103,8 @@
 //!
 //!
 //! ## User guard
-//! The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
-//! Additionally, yo can use it to render special content if the client is authenticated or not.
+//! The [`User`] guard can be used to restrict content so it can only be viewed by authenticated users.
+//! Additionally, you can use it to render special content if the client is authenticated or not.
 //! ```rust
 //! # use rocket::*;
 //! # use rocket_auth::User;
@@ -122,6 +123,17 @@
 //! }
 //! ```
 //!
+//! ## AdminUser guard
+//! The [`AdminUser`] guard can be used analogously to [`User`].
+//! It will restrict content so it can be viewed by admins only.
+//! ```
+//! # use rocket::*;
+//! # use rocket_auth::AdminUser;
+//! #[get("/admin-panel")]
+//! fn admin_panel(user: AdminUser) -> String {
+//!    format!("Hello {}.", user.email());
+//! }
+//! ```
 // #![warn(missing_docs)]
 
 mod cookies;
@@ -135,7 +147,7 @@ mod user;
 #[cfg(test)]
 mod tests;
 
-use std::{fmt::Debug};
+use std::fmt::Debug;
 
 use prelude::*;
 use rocket::FromForm;
@@ -157,7 +169,7 @@ pub use error::Error;
 /// # fn main() {}
 /// ```
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, )]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct User {
     id: i32,
     email: String,
@@ -165,6 +177,28 @@ pub struct User {
     password: String,
     pub is_admin: bool,
 }
+
+
+
+/// The [`AdminUser`] guard can be used analogously to [`User`].
+/// It will restrict content so it can be viewed by admins only.
+/// ```
+/// # use rocket::*;
+/// # use rocket_auth::AdminUser;
+/// #[get("/admin-panel")]
+/// fn admin_panel(user: AdminUser) -> String {
+///    format!("Hello {}.", user.email());
+/// }
+/// ```
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct AdminUser(User);
+
+impl Debug for AdminUser {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Admin{:?}", self.0)
+    }
+}
+
 
 /// The `Users` struct is used to query users from the database, as well as to create, modify and delete them.
 pub struct Users {
@@ -202,14 +236,5 @@ impl Debug for Login {
             "Signup {{ email: \"{0}\", password: \"*****\" }}",
             self.email
         )
-    }
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
-pub struct AdminUser(User);
-
-impl Debug for AdminUser {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Admin{:?}", self.0)
     }
 }

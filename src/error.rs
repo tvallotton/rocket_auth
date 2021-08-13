@@ -34,9 +34,6 @@ pub enum Error {
     #[error("RusqliteError: {0}")]
     RusqliteError(#[from] rusqlite::Error),
 
-    #[error("UserIsNotAdmin: the queried user was not an administrator.")]
-    UserIsNotAdmin,
-
     #[error("QueryError")]
     QueryError,
 
