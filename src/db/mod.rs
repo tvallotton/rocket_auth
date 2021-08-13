@@ -1,10 +1,9 @@
 #[cfg(feature = "postgres-db")]
 mod postgres;
 
-#[cfg(feature = "sqlite-db")]
 mod sqlite;
 
-#[cfg(feature = "tokio-postgres-db")]
+#[cfg(feature = "tokio-postgres")]
 mod tokio_postgres;
 
 use crate::prelude::*;

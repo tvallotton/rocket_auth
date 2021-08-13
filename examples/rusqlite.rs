@@ -1,15 +1,15 @@
 use rocket::{form::*, get, post, response::Redirect, routes, State};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
+use rusqlite::Connection;
 use serde_json::json;
-use sqlx::*;
-use std::result::Result;
+use std::{convert::TryInto, result::Result};
 use std::*;
+use tokio::sync::Mutex;
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
 }
-
 
 #[post("/login", data = "<form>")]
 async fn post_login(mut auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
@@ -49,8 +49,18 @@ async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<Template, Error> {
-    let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
+async fn show_all_users(
+    conn: &State<Mutex<Connection>>,
+    user: Option<User>,
+) -> Result<Template, Error> {
+    let users: Vec<User> = conn
+        .lock()
+        .await
+        .prepare_cached("select * from users;")?
+        .query_map([], |row| row.try_into())?
+        .flatten()
+        .collect();
+
     println!("{:?}", users);
     Ok(Template::render(
         "users",
@@ -60,8 +70,9 @@ async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let conn = SqlitePool::connect("database.db").await?;
-    let users: Users = conn.clone().into();
+    let conn = Connection::open("database.db")?;
+    let conn = Mutex::new(conn);
+    let users = Users::open_rusqlite("database.db")?;
 
     rocket::build()
         .mount(
@@ -74,8 +85,7 @@ async fn main() -> Result<(), Error> {
                 post_login,
                 logout,
                 delete,
-                show_all_users,
-                
+                show_all_users
             ],
         )
         .manage(conn)

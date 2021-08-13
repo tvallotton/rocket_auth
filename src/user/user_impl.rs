@@ -112,3 +112,46 @@ impl<'r> FromRequest<'r> for User {
         }
     }
 }
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for AdminUser {
+    type Error = Error;
+    async fn from_request(request: &'r Request<'_>) -> Outcome<AdminUser, Error> {
+        use rocket::outcome::Outcome::*;
+        let guard = request.guard().await;
+        let auth: Auth = match guard {
+            Success(auth) => auth,
+            Failure(x) => return Failure(x),
+            Forward(x) => return Forward(x),
+        };
+        if let Some(user) = auth.get_user().await {
+            if user.is_admin {
+                return Outcome::Success(AdminUser(user));
+            }
+        }
+        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+    }
+}
+
+use std::ops::*;
+impl Deref for AdminUser {
+    type Target = User;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for AdminUser {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+impl std::convert::TryFrom<User> for AdminUser {
+    type Error = Error;
+    fn try_from(value: User) -> Result<Self> {
+        if value.is_admin {
+            Ok(AdminUser(value))
+        } else {
+            Err(Error::UnauthorizedError)
+        }
+    }
+}

@@ -1,6 +1,5 @@
 use std::*;
 
-
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -20,17 +19,23 @@ pub enum Error {
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
-
     #[cfg(feature = "sqlite-db")]
     #[cfg(feature = "postgres-db")]
     #[error("SqlxError: {0}")]
     SqlxError(#[from] sqlx::Error),
-    
+
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
 
     #[error("Unspecified")]
     Unspecified,
+
+    #[cfg(feature = "rusqlite")]
+    #[error("RusqliteError: {0}")]
+    RusqliteError(#[from] rusqlite::Error),
+
+    #[error("UserIsNotAdmin: the queried user was not an administrator.")]
+    UserIsNotAdmin,
 
     #[error("QueryError")]
     QueryError,
@@ -71,7 +76,7 @@ pub enum Error {
     #[cfg(feature = "postgres-db")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
-    #[cfg(feature = "tokio-postgres-db")]
+    #[cfg(feature = "tokio-postgres")]
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
 }

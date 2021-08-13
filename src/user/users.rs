@@ -1,10 +1,13 @@
 use super::rand_string;
 use crate::db::DBConnection;
 use crate::prelude::*;
-#[cfg(feature = "sqlite-db")]
+
+#[cfg(feature = "rusqlite")]
+use std::path::Path;
 
 impl Users {
-    /// It creates a `Users` instance by connecting  it to a redis database.
+    /// It creates a `Users` instance by connecting  it to a sqlite database. 
+    /// This method uses the [`sqlx`] crate. 
     /// If the database does not yet exist it will return an Error. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
     /// the method [`open_redis`](User::open_redis).
@@ -31,7 +34,7 @@ impl Users {
     }
     /// Initializes the user table in the database. It won't drop the table if it already exists.
     /// It is necessary to call it explicitly when casting the `Users` struct from an already
-    /// stablished database connection and the if table hasn't been created yet. If the table
+    /// stablished database connection and if the table hasn't been created yet. If the table
     /// already exists then this step is not necessary.
     /// ```rust,no_run
     /// # use rocket_auth::{Users, Error};
@@ -66,6 +69,34 @@ impl Users {
         let client = redis::Client::open(path)?;
         self.sess = Box::new(client);
         Ok(())
+    }
+
+    /// It creates a `Users` instance by connecting  it to a sqlite database.
+    /// This method uses [`rusqlite`] crate. 
+    /// If the database does not yet exist it will attempt to create it. By default,
+    /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
+    /// the method [`open_redis`](User::open_redis).
+    /// ```rust, no_run
+    /// # use rocket_auth::{Error, Users};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result <(), Error> {
+    /// let users = Users::open_rusqlite("database.db")?;
+    ///
+    /// rocket::build()
+    ///     .manage(users)
+    ///     .launch()
+    ///     .await;
+    /// # Ok(()) }
+    /// ```
+    #[cfg(feature = "rusqlite")]
+    pub fn open_rusqlite(path: impl AsRef<Path>) -> Result<Self> {
+        use tokio::sync::Mutex;
+        let users = Users {
+            conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
+            sess: Box::new(chashmap::CHashMap::new()),
+        };
+        futures::executor::block_on(users.conn.init())?;
+        Ok(users)
     }
 
     /// It opens a postgres database connection using [`sqlx`]. I've got to admit I haven't tested this feature yet, so

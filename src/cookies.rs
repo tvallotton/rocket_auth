@@ -11,18 +11,19 @@ use serde_json::{from_str};
 /// verifying the validity of the session data is unnecessary. 
 /// 
 /// Note that, 
-/// session data is already captured by the [`Auth`] guard and stored in the public `session` field. 
+/// session data is already captured by the [`Auth`](`crate::Auth`) guard and stored in the public [`session`](`crate::Auth`) field. 
 /// So it is not necesarry to use them together. 
 pub struct Session {
-    /// The user id as it is stored on the database. 
+    /// The user id as it is stored on the database.
     pub id: i32,
-    /// The user email. 
+    /// The user email.
     pub email: String,
     /// An random authentication token key.
     pub auth_key: String,
     /// It represents the Unix time in which the user logged in. It is measured in seconds. 
     pub time_stamp: i32,
 }
+
 #[async_trait]
 impl<'r> FromRequest<'r> for Session {
     type Error = Error;

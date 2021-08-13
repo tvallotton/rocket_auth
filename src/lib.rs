@@ -3,13 +3,9 @@
 //! The available features are:
 //! * `sqlite-db`: for interacting with a SQLite database using [`sqlx`].
 //! * `postgres-db`: for interacting with a Postgresql database with [`sqlx`].
-//! * `tokio-postgres-db`: for interacting with a Postgresql database with [`tokio_postgres`].
+//! * `tokio-postgres`: for interacting with a Postgresql database with [`tokio_postgres`].
 //! * `redis-session`: for storing sessions on a redis server using [`redis`].
 //!
-//! By default this crate stores sessions on a concurrent hashmap.
-//! As a result, sessions will only be stored as long as the rocket application runs uninterrupted.
-//! In order to store persistent sessions, it is recommended to connect the [`Users`](`Users::open_redis`) instance to a [redis server](https://redis.io/) .
-//! This requires the `redis-session` feature to be enabled.
 //!
 //! `rocket_auth` uses private cookies to store session data.
 //! This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.
@@ -43,7 +39,7 @@
 //!
 //!
 //! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
-//! For more information see [`Auth`]. Because of Rust's ownership rules, you may not retrieve both `rocket::http::CookieJar` and the [`Auth`] guard
+//! For more information see [`Auth`]. Because of Rust's ownership rules, you may not retrieve both [`rocket::http::CookieJar`] and the [`Auth`] guard
 //! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example:
 //! ```rust,no_run
@@ -125,6 +121,8 @@
 //! }
 //! ```
 //!
+// #![warn(missing_docs)]
+
 mod cookies;
 mod db;
 mod error;
@@ -136,7 +134,7 @@ mod user;
 #[cfg(test)]
 mod tests;
 
-use std::fmt::Debug;
+use std::{fmt::Debug};
 
 use prelude::*;
 use rocket::FromForm;
@@ -188,11 +186,28 @@ pub struct Signup {
 }
 impl Debug for Signup {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Signup {{ email: \"{0}\", password: \"*****\" }}", self.email)
+        write!(
+            f,
+            "Signup {{ email: \"{0}\", password: \"*****\" }}",
+            self.email
+        )
     }
 }
 impl Debug for Login {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Signup {{ email: \"{0}\", password: \"*****\" }}", self.email)
+        write!(
+            f,
+            "Signup {{ email: \"{0}\", password: \"*****\" }}",
+            self.email
+        )
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct AdminUser(User);
+
+impl Debug for AdminUser {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Admin{:?}", self.0)
     }
 }
