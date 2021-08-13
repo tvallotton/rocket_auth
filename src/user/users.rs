@@ -23,7 +23,7 @@ impl Users {
     ///     .await;
     /// # Ok(()) }
     /// ```
-    #[cfg(feature = "sqlite-db")]
+    #[cfg(feature = "sqlx-sqlite")]
     #[throws(Error)]
     pub async fn open_sqlite(path: &str) -> Self {
         let conn = sqlx::SqlitePool::connect(path).await?;
@@ -113,7 +113,7 @@ impl Users {
     /// # Ok(()) }
     ///
     /// ```
-    #[cfg(feature = "postgres-db")]
+    #[cfg(feature = "sqlx-postgres")]
     pub async fn open_postgres(path: &str) -> Result<Self> {
         use sqlx::PgPool;
         let conn = PgPool::connect(path).await?;

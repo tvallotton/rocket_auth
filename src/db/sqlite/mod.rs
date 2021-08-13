@@ -80,9 +80,9 @@ impl DBConnection for Mutex<rusqlite::Connection> {
     }
 }
 
-#[cfg(feature = "sqlite-db")]
+#[cfg(feature = "sqlx-sqlite")]
 use sqlx::{sqlite::SqliteConnection, *};
-#[cfg(feature = "sqlite-db")]
+#[cfg(feature = "sqlx-sqlite")]
 #[rocket::async_trait]
 impl DBConnection for Mutex<SqliteConnection> {
     async fn init(&self) -> Result<()> {

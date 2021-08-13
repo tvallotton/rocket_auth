@@ -2,10 +2,10 @@
 rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 The available features are:
-* `sqlite-db`: for interacting with a SQLite database using `sqlx`.
-* `postgres-db`: for interacting with a Postgresql database with `sqlx`.
+* `sqlx-sqlite`: for interacting with a SQLite database using `sqlx`.
+* `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
 * `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
-* `redis-session`: for storing sessions on a redis server using `redis`.
+* `redis`: for storing sessions on a redis server using `redis`.
 * `rusqlite`: for interacting with a SQLite database using `rusqlite`.
 
 `rocket_auth` uses private cookies to store session data.
@@ -20,7 +20,7 @@ To use `rocket_auth` include it as a dependency in your Cargo.toml file:
 ```ini
 [dependencies.rocket_auth]
 version = "0.4.0"
-features = ["sqlite-db"]
+features = ["sqlx-sqlite"]
 ```
 # Quick overview
 This crate provides three guards:

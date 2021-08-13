@@ -1,4 +1,4 @@
-#[cfg(feature = "postgres-db")]
+#[cfg(feature = "sqlx-postgres")]
 mod postgres;
 
 mod sqlite;

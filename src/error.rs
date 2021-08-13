@@ -9,7 +9,7 @@ pub enum Error {
     #[error("That email address already exists. Try logging in.")]
     EmailAlreadyExists,
 
-    #[cfg(feature = "sqlite-db")]
+    #[cfg(feature = "sqlx-sqlite")]
     #[error("The mutex guarding the Sqlite connection was posioned.")]
     MutexPoisonError,
 
@@ -19,8 +19,8 @@ pub enum Error {
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
-    #[cfg(feature = "sqlite-db")]
-    #[cfg(feature = "postgres-db")]
+    #[cfg(feature = "sqlx-sqlite")]
+    #[cfg(feature = "sqlx-postgres")]
     #[error("SqlxError: {0}")]
     SqlxError(#[from] sqlx::Error),
 
@@ -73,7 +73,7 @@ pub enum Error {
     RedisError(#[from] redis::RedisError),
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
-    #[cfg(feature = "postgres-db")]
+    #[cfg(feature = "sqlx-postgres")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
     #[cfg(feature = "tokio-postgres")]
@@ -82,9 +82,9 @@ pub enum Error {
 }
 
 /*****  CONVERSIONS  *****/
-#[cfg(feature = "sqlite-db")]
+#[cfg(feature = "sqlx-sqlite")]
 use std::sync::PoisonError;
-#[cfg(feature = "sqlite-db")]
+#[cfg(feature = "sqlx-sqlite")]
 impl<T> From<PoisonError<T>> for Error {
     fn from(_error: PoisonError<T>) -> Error {
         Error::MutexPoisonError
