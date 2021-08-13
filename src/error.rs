@@ -68,7 +68,7 @@ pub enum Error {
 
     #[error("Incorrect email or password")]
     UnauthorizedError,
-    #[cfg(feature = "redis-session")]
+    #[cfg(feature = "redis")]
     #[error("RedisError")]
     RedisError(#[from] redis::RedisError),
     #[error("SerdeError: {0}")]

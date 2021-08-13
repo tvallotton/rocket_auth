@@ -2,7 +2,7 @@ use crate::prelude::*;
 use std::time::Duration;
 pub mod default;
 
-#[cfg(feature = "redis-session")]
+#[cfg(feature = "redis")]
 pub mod redis;
 
 

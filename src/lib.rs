@@ -4,7 +4,8 @@
 //! * `sqlx-sqlite`: for interacting with a SQLite database using [`sqlx`].
 //! * `sqlx-postgres`: for interacting with a Postgresql database with [`sqlx`].
 //! * `tokio-postgres`: for interacting with a Postgresql database with [`tokio_postgres`].
-//! * `redis-session`: for storing sessions on a redis server using [`redis`].
+//! * `redis`: for storing sessions on a redis server using [`redis`].
+//! * `rusqlite`: for interacting with a SQLite database using [`rusqlite`].
 //!
 //!
 //! `rocket_auth` uses private cookies to store session data.

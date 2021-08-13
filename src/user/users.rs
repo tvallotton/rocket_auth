@@ -64,7 +64,7 @@ impl Users {
     ///
     /// # Ok(()) }
     /// ```
-    #[cfg(feature = "redis-session")]
+    #[cfg(feature = "redis")]
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
         let client = redis::Client::open(path)?;
         self.sess = Box::new(client);

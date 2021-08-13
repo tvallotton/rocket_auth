@@ -17,7 +17,7 @@ all-features = true
 
 
 [features]
-# default = ["sqlx-sqlite",  "sqlx-postgres", "redis-session", "tokio-sqlx-postgres", "rusqlite"]
+# default = ["sqlx-sqlite",  "sqlx-postgres", "redis", "tokio-sqlx-postgres", "rusqlite"]
 sqlx-sqlite = ["sqlx/sqlite", "futures", "tokio"]
 sqlx-postgres = ["futures", "tokio", "sqlx/postgres"]
 
@@ -78,7 +78,7 @@ optional = true
 
 
 [dev-dependencies]
-rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlx-sqlite",  "sqlx-postgres", "tokio-postgres", "rusqlite"]}
+rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlx-sqlite",  "sqlx-postgres", "tokio-postgres", "rusqlite", "redis"]}
 
 
 
