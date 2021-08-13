@@ -85,8 +85,6 @@ So it is not necessary to retrieve Users when using `Auth`.
 A simple example of how to query a user with the `Users` struct:
 
 ```rust
-# use rocket::{get, State};
-# use serde_json::json;
 use rocket_auth::Users;
 
 #[get("/see-user/<id>")]
@@ -94,7 +92,6 @@ async fn see_user(id: i32, users: &State<Users>) -> String {
     let user = users.get_by_id(id).await.unwrap();
     format!("{}", json!(user))
 }
-# fn main() {}
 ```
 
 A `Users` instance can be constructed by connecting it to the database with the methods `open_sqlite`,
@@ -105,8 +102,6 @@ A `Users` instance can be constructed by connecting it to the database with the 
 The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
 Additionally, yo can use it to render special content if the client is authenticated or not.
 ```rust
-# use rocket::*;
-# use rocket_auth::User;
 #[get("/private-content")]
 fn private_content(user: User) -> &'static str {
     "If you can see this, you are logged in."
