@@ -18,7 +18,6 @@ all-features = true
 
 
 [features]
-# default = ["sqlx-sqlite",  "sqlx-postgres", "redis", "tokio-sqlx-postgres", "rusqlite"]
 sqlx-sqlite = ["sqlx/sqlite"]
 sqlx-postgres = ["sqlx/postgres"]
 
@@ -41,11 +40,8 @@ async-trait = "0.1.50"
 fehler = "1.0.0"
 
 
-
-
 [dependencies.sqlx]
 version = "0.5.5"
-# features = ["runtime-tokio-rustls"]
 optional = true
 
 
