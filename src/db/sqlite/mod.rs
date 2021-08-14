@@ -6,6 +6,7 @@ use rocket::async_trait;
 use sql::*;
 use tokio::sync::Mutex;
 
+#[cfg(feature = "rusqlite")]
 use rusqlite::*;
 
 #[cfg(feature = "rusqlite")]
