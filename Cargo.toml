@@ -45,7 +45,7 @@ fehler = "1.0.0"
 
 [dependencies.sqlx]
 version = "0.5.5"
-features = ["runtime-tokio-rustls"]
+# features = ["runtime-tokio-rustls"]
 optional = true
 
 
@@ -98,3 +98,8 @@ features = ["aio", "tokio-comp"]
 [dev-dependencies.rocket_dyn_templates]
 version = "0.1.0-rc.1"
 features = ["tera"]
+
+
+[dev-dependencies.sqlx]
+version = "0.5.5"
+features = ["runtime-tokio-rustls"]

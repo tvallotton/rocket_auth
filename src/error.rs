@@ -19,8 +19,7 @@ pub enum Error {
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
-    #[cfg(feature = "sqlx-sqlite")]
-    #[cfg(feature = "sqlx-postgres")]
+    #[cfg(any(feature = "sqlx-sqlite", feature = "sqlx-postgres"))]
     #[error("SqlxError: {0}")]
     SqlxError(#[from] sqlx::Error),
 
