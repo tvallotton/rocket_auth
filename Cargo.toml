@@ -38,6 +38,7 @@ chashmap = "2.2.2"
 thiserror = "1.0.25"
 async-trait = "0.1.50"
 fehler = "1.0.0"
+chrono = "0.4.19"
 
 
 [dependencies.sqlx]

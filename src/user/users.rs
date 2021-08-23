@@ -6,8 +6,8 @@ use crate::prelude::*;
 use std::path::Path;
 
 impl Users {
-    /// It creates a `Users` instance by connecting  it to a sqlite database. 
-    /// This method uses the [`sqlx`] crate. 
+    /// It creates a `Users` instance by connecting  it to a sqlite database.
+    /// This method uses the [`sqlx`] crate.
     /// If the database does not yet exist it will return an Error. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
     /// the method [`open_redis`](User::open_redis).
@@ -72,7 +72,7 @@ impl Users {
     }
 
     /// It creates a `Users` instance by connecting  it to a sqlite database.
-    /// This method uses [`rusqlite`] crate. 
+    /// This method uses [`rusqlite`] crate.
     /// If the database does not yet exist it will attempt to create it. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
     /// the method [`open_redis`](User::open_redis).
@@ -89,14 +89,15 @@ impl Users {
     /// # Ok(()) }
     /// ```
     #[cfg(feature = "rusqlite")]
-    pub fn open_rusqlite(path: impl AsRef<Path>) -> Result<Self> {
+    #[throws(Error)]
+    pub fn open_rusqlite(path: impl AsRef<Path>) -> Self {
         use tokio::sync::Mutex;
         let users = Users {
             conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
             sess: Box::new(chashmap::CHashMap::new()),
         };
         futures::executor::block_on(users.conn.init())?;
-        Ok(users)
+        users
     }
 
     /// It opens a postgres database connection using [`sqlx`]. I've got to admit I haven't tested this feature yet, so
@@ -114,17 +115,16 @@ impl Users {
     ///
     /// ```
     #[cfg(feature = "sqlx-postgres")]
-    pub async fn open_postgres(path: &str) -> Result<Self> {
+    #[throws(Error)]
+    pub async fn open_postgres(path: &str) -> Self {
         use sqlx::PgPool;
         let conn = PgPool::connect(path).await?;
-
         conn.init().await?;
-
         let users = Users {
             conn: Box::new(conn),
             sess: Box::new(chashmap::CHashMap::new()),
         };
-        Ok(users)
+        users
     }
     /// It querys a user by their email.
     /// ```

@@ -169,16 +169,14 @@ pub use error::Error;
 /// # fn main() {}
 /// ```
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
 pub struct User {
     id: i32,
     email: String,
+    pub is_admin: bool,
     #[serde(skip_serializing)]
     password: String,
-    pub is_admin: bool,
 }
-
-
 
 /// The [`AdminUser`] guard can be used analogously to [`User`].
 /// It will restrict content so it can be viewed by admins only.
@@ -190,7 +188,7 @@ pub struct User {
 ///    format!("Hello {}.", user.email());
 /// }
 /// ```
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
 pub struct AdminUser(User);
 
 impl Debug for AdminUser {
@@ -199,7 +197,6 @@ impl Debug for AdminUser {
     }
 }
 
-
 /// The `Users` struct is used to query users from the database, as well as to create, modify and delete them.
 pub struct Users {
     conn: Box<dyn DBConnection>,
@@ -207,7 +204,7 @@ pub struct Users {
 }
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
-#[derive(FromForm, Deserialize, Clone)]
+#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub struct Login {
     pub email: String,
     password: String,
@@ -215,7 +212,7 @@ pub struct Login {
 
 /// The `Signup` form is used along with the [`Auth`] guard to create new users.
 
-#[derive(FromForm, Deserialize, Clone)]
+#[derive(FromForm, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Signup {
     pub email: String,
     password: String,

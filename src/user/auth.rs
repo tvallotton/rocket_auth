@@ -97,7 +97,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now() as i32,
+            time_stamp: chrono::Utc::now().timestamp(),
         };
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
@@ -123,7 +123,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now() as i32,
+            time_stamp: chrono::Utc::now().timestamp(),
         };
         let to_str = format!("{}", json!(session));
         let cookie = Cookie::new("rocket_auth", to_str);
@@ -303,10 +303,4 @@ impl<'a> Auth<'a> {
     }
 }
 
-use std::time::{SystemTime, UNIX_EPOCH};
-fn now() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_else(|_| Duration::from_secs(0))
-        .as_secs()
-}
+
