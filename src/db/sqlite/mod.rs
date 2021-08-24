@@ -1,4 +1,5 @@
 mod sql;
+#[cfg(feature = "rusqlite")]
 use std::convert::{TryFrom, TryInto};
 
 use crate::prelude::{Result, *};
@@ -29,20 +30,20 @@ impl<'a> TryFrom<&rusqlite::Row<'a>> for crate::User {
 impl DBConnection for Mutex<rusqlite::Connection> {
     async fn init(&self) -> Result<()> {
         let conn = self.lock().await;
-        conn.execute(sql::CREATE_TABLE, [])?;
+        conn.execute(CREATE_TABLE, [])?;
         Ok(())
     }
 
     async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
         let conn = self.lock().await;
-        conn.execute(sql::INSERT_USER, params![email, hash, is_admin])?;
+        conn.execute(INSERT_USER, params![email, hash, is_admin])?;
         Ok(())
     }
 
     async fn update_user(&self, user: &User) -> Result<()> {
         let conn = self.lock().await;
         conn.execute(
-            sql::UPDATE_USER,
+            UPDATE_USER,
             params![user.id, user.email, user.password, user.is_admin],
         )?;
         Ok(())
@@ -50,20 +51,20 @@ impl DBConnection for Mutex<rusqlite::Connection> {
 
     async fn delete_user_by_id(&self, user_id: i32) -> Result<()> {
         let conn = self.lock().await;
-        conn.execute(sql::REMOVE_BY_ID, params![user_id])?;
+        conn.execute(REMOVE_BY_ID, params![user_id])?;
         Ok(())
     }
 
     async fn delete_user_by_email(&self, email: &str) -> Result<()> {
         let conn = self.lock().await;
-        conn.execute(sql::REMOVE_BY_EMAIL, params![email])?;
+        conn.execute(REMOVE_BY_EMAIL, params![email])?;
         Ok(())
     }
 
     async fn get_user_by_id(&self, user_id: i32) -> Result<User> {
         let conn = self.lock().await;
         let user = conn.query_row(
-            sql::SELECT_BY_ID, //
+            SELECT_BY_ID, //
             params![user_id],
             |row| row.try_into(),
         )?;
@@ -73,7 +74,7 @@ impl DBConnection for Mutex<rusqlite::Connection> {
     async fn get_user_by_email(&self, email: &str) -> Result<User> {
         let conn = self.lock().await;
         let user = conn.query_row(
-            sql::SELECT_BY_EMAIL, //
+            SELECT_BY_EMAIL, //
             params![email],
             |row| row.try_into(),
         )?;
@@ -84,7 +85,7 @@ impl DBConnection for Mutex<rusqlite::Connection> {
 #[cfg(feature = "sqlx-sqlite")]
 use sqlx::{sqlite::SqliteConnection, *};
 #[cfg(feature = "sqlx-sqlite")]
-#[rocket::async_trait]
+#[async_trait]
 impl DBConnection for Mutex<SqliteConnection> {
     async fn init(&self) -> Result<()> {
         let mut db = self.lock().await;

@@ -3,6 +3,7 @@ use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
 use sqlx::*;
+
 use std::result::Result;
 use std::*;
 #[get("/login")]

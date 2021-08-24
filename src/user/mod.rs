@@ -68,7 +68,7 @@ impl Users {
         let result = self.create_user(email, password, false).await;
         match result {
             Ok(_) => (),
-
+            #[cfg(feature="sqlx")]
             Err(Error::SqlxError(sqlx::Error::Database(error))) => {
                 if error.code() == Some("23000".into()) {
                     throw!(Error::EmailAlreadyExists)

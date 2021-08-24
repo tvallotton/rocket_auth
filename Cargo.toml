@@ -75,12 +75,6 @@ version = "1.4.0"
 features = ["rt", "rt-multi-thread"]
 
 
-
-[dev-dependencies]
-rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlx-sqlite",  "sqlx-postgres", "tokio-postgres", "rusqlite", "redis", "sqlx-mysql"]}
-
-
-
 [dev-dependencies.rocket]
 version = "0.5.0-rc.1"
 features = ["secrets", "json"]
