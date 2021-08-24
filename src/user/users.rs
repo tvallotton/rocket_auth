@@ -10,7 +10,7 @@ impl Users {
     /// This method uses the [`sqlx`] crate.
     /// If the database does not yet exist it will return an Error. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
-    /// the method [`open_redis`](User::open_redis).
+    /// the method [`open_redis`](crate::Users::open_redis).
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # #[tokio::main]
@@ -72,10 +72,10 @@ impl Users {
     }
 
     /// It creates a `Users` instance by connecting  it to a sqlite database.
-    /// This method uses [`rusqlite`] crate.
+    /// This method uses the [`rusqlite`] crate.
     /// If the database does not yet exist it will attempt to create it. By default,
     /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
-    /// the method [`open_redis`](User::open_redis).
+    /// the method [`open_redis`](Users::open_redis).
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # #[tokio::main]
