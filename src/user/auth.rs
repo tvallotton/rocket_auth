@@ -17,18 +17,18 @@ use std::time::Duration;
 /// use rocket_auth::{Users, Error, Auth, Signup, Login};
 ///
 /// #[post("/signup", data="<form>")]
-/// async fn signup(form: Form<Signup>, mut auth: Auth<'_>) {
+/// async fn signup(form: Form<Signup>, auth: Auth<'_>) {
 ///     auth.signup(&form).await;
 ///     auth.login(&form.into());
 /// }
 ///
 /// #[post("/login", data="<form>")]
-/// fn login(form: Form<Login>, mut auth: Auth) {
+/// fn login(form: Form<Login>, auth: Auth) {
 ///     auth.login(&form);
 /// }
 ///
 /// #[get("/logout")]
-/// fn logout(mut auth: Auth) {
+/// fn logout(auth: Auth) {
 ///     auth.logout();
 /// }
 /// #[tokio::main]
@@ -83,7 +83,7 @@ impl<'a> Auth<'a> {
     /// # use rocket::{get, post, form::Form};
     /// # use rocket_auth::{Auth, Login};
     /// #[post("/login", data="<form>")]
-    /// fn login(form: Form<Login>, mut auth: Auth) {
+    /// fn login(form: Form<Login>, auth: Auth) {
     ///     auth.login(&form);
     /// }
     /// ```
@@ -107,7 +107,7 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::{Login, Auth};
     /// # use std::time::Duration;
     /// #[post("/login", data="<form>")]
-    /// fn login(form: Form<Login>, mut auth: Auth) {
+    /// fn login(form: Form<Login>, auth: Auth) {
     ///     let one_hour = Duration::from_secs(60 * 60);
     ///     auth.login_for(&form, one_hour);
     /// }
@@ -135,7 +135,7 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::{Auth, Signup, Error};
     /// # use std::time::Duration;
     /// #[post("/signup", data="<form>")]
-    /// async fn signup(form: Form<Signup>, mut auth: Auth<'_>) -> Result<&'static str, Error>{
+    /// async fn signup(form: Form<Signup>, auth: Auth<'_>) -> Result<&'static str, Error>{
     ///     auth.signup(&form).await?;
     ///     auth.login(&form.into()).await?;
     ///     Ok("Logged in")
@@ -153,7 +153,7 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::{Auth, Signup};
     /// # use std::time::Duration;
     /// #[post("/signup", data="<form>")]
-    /// fn signup_for(form: Form<Signup>, mut auth: Auth) {
+    /// fn signup_for(form: Form<Signup>, auth: Auth) {
     ///     let one_hour = Duration::from_secs(60 * 60);
     ///     auth.signup_for(&form, one_hour);
     /// }
@@ -214,7 +214,7 @@ impl<'a> Auth<'a> {
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/logout")]
-    /// fn logout(mut auth: Auth)  {
+    /// fn logout(auth: Auth)  {
     ///     auth.logout();
     /// }
     /// ```
@@ -229,7 +229,7 @@ impl<'a> Auth<'a> {
     /// # use rocket::get;
     /// # use rocket_auth::Auth;
     /// #[get("/delete-my-account")]
-    /// fn delete(mut auth: Auth)  {
+    /// fn delete(auth: Auth)  {
     ///     auth.delete();
     /// }
     /// ```
@@ -249,7 +249,7 @@ impl<'a> Auth<'a> {
     /// # use rocket_auth::Auth;
     /// # use rocket::post;
     /// # #[post("/change")]
-    /// # fn example(mut auth: Auth<'_>) {
+    /// # fn example(auth: Auth<'_>) {
     ///     auth.change_password("new password");
     /// # }
     /// ```
@@ -268,7 +268,7 @@ impl<'a> Auth<'a> {
     /// Changes the email of the currently authenticated user
     /// ```
     /// # use rocket_auth::Auth;
-    /// # fn func(mut auth: Auth) {
+    /// # fn func(auth: Auth) {
     /// auth.change_email("new@email.com".into());
     /// # }
     /// ```
@@ -291,7 +291,7 @@ impl<'a> Auth<'a> {
     /// It is intended to be used primarily
     /// with the `?` operator.
     /// ```
-    /// # fn func(mut auth: rocket_auth::Auth) -> Result<(), rocket_auth::Error> {
+    /// # fn func(auth: rocket_auth::Auth) -> Result<(), rocket_auth::Error> {
     /// auth.get_session()?;
     /// # Ok(())
     /// # }

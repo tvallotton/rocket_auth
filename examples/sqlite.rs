@@ -10,9 +10,8 @@ fn get_login() -> Template {
     Template::render("login", json!({}))
 }
 
-
 #[post("/login", data = "<form>")]
-async fn post_login(mut auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
+async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
     let result = auth.login(&form).await;
     println!("login attempt: {:?}", result);
     result?;
@@ -25,7 +24,7 @@ async fn get_signup() -> Template {
 }
 
 #[post("/signup", data = "<form>")]
-async fn post_signup(mut auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
+async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
 
@@ -38,12 +37,12 @@ async fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth<'_>) -> Result<Template, Error> {
+fn logout(auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout()?;
     Ok(Template::render("logout", json!({})))
 }
 #[get("/delete")]
-async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
+async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
     Ok(Template::render("deleted", json!({})))
 }
@@ -75,7 +74,6 @@ async fn main() -> Result<(), Error> {
                 logout,
                 delete,
                 show_all_users,
-                
             ],
         )
         .manage(conn)

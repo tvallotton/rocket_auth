@@ -40,28 +40,27 @@ Finally it has two structures for queries:
 
 
 The `Auth` guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
-For more information see `Auth`. Because of Rust's ownership rules, you may not retrieve both `rocket::http::CookieJar` and the `Auth` guard
-simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field `Auth::cookies`.
+For more information see `Auth`.
  A working example:
 ```rust
 use rocket::{get, post, form::Form, routes};
 use rocket_auth::{Users, Error, Auth, Signup, Login};
 
 #[post("/signup", data="<form>")]
-async fn signup(form: Form<Signup>, mut auth: Auth<'_>) -> Result<&'static str, Error> {
+async fn signup(form: Form<Signup>, auth: Auth<'_>) -> Result<&'static str, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into());
     Ok("You signed up.")
 }
 
 #[post("/login", data="<form>")]
-async fn login(form: Form<Login>, mut auth: Auth<'_>) -> Result<&'static str, Error>{
+async fn login(form: Form<Login>, auth: Auth<'_>) -> Result<&'static str, Error>{
     auth.login(&form).await?;
     Ok("You're logged in.")
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth<'_>) {
+fn logout(auth: Auth<'_>) {
     auth.logout();
 }
 #[tokio::main]
