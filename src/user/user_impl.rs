@@ -1,6 +1,6 @@
 use super::auth::Auth;
 use super::rand_string;
-use crate::forms::SafePassword;
+
 use crate::prelude::*;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
@@ -25,7 +25,7 @@ impl User {
     /// ```
     #[throws(Error)]
     pub fn set_password(&mut self, new: &str) {
-        new.is_secure()?;
+        crate::forms::is_secure(new)?;
         let password = new.as_bytes();
         let salt = rand_string(10);
         let config = argon2::Config::default();
@@ -74,11 +74,13 @@ impl User {
     ///     Ok("Your user email was changed".into())
     /// }
     /// ```
-    pub fn set_email(&mut self, email: &str) -> Result<()> {
-        use crate::forms::ValidEmail;
-        email.is_valid()?;
-        self.email = email.into();
-        Ok(())
+    #[throws(Error)]
+    pub fn set_email(&mut self, email: &str) {
+        if validator::validate_email(email) {
+            self.email = email.into();
+        } else {
+            throw!(Error::InvalidEmailAddressError)
+        }
     }
 }
 

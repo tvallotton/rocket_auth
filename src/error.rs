@@ -39,9 +39,6 @@ pub enum Error {
     #[error("UnmanagedStateError")]
     UnmanagedStateError,
 
-    #[error("FormValidationError")]
-    FormValidationError,
-
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
 
@@ -50,28 +47,27 @@ pub enum Error {
 
     #[error("Incorrect email or password.")]
     InvalidCredentialsError,
-    #[error("The password must be at least 8 characters long.")]
-    UnsafePasswordTooShort,
 
-    #[error("The password must include a digit.")]
-    UnsafePasswordHasNoDigit,
+    #[error("{0}")]
+    FormValidationError(#[from] validator::ValidationError),
 
-    #[error("The password must include an upper case character.")]
-    UnsafePasswordHasNoUpper,
-
-    #[error("The password must include a lower case character.")]
-    UnsafePasswordHasNoLower,
+    #[error("FormValidationErrors: {0}")]
+    FormValidationErrors(#[from] validator::ValidationErrors),
 
     #[error("Incorrect email or password")]
     UnauthorizedError,
+
     #[cfg(feature = "redis")]
     #[error("RedisError")]
     RedisError(#[from] redis::RedisError),
+
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
+
     #[cfg(feature = "sqlx-postgres")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
+    
     #[cfg(feature = "tokio-postgres")]
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
@@ -100,11 +96,20 @@ impl Error {
             | InvalidCredentialsError
             | EmailAlreadyExists
             | UnauthorizedError
-            | UserNotFoundError
-            | UnsafePasswordTooShort
-            | UnsafePasswordHasNoDigit
-            | UnsafePasswordHasNoLower
-            | UnsafePasswordHasNoUpper => format!("{}", self),
+            | UserNotFoundError => format!("{}", self),
+            FormValidationErrors(source) => {
+                source
+                    .field_errors()
+                    .into_iter()
+                    .map(|(_, error)| error)
+                    .map(IntoIterator::into_iter)
+                    .map(|errs| {
+                        errs //
+                            .map(|err| &err.code)
+                            .fold(String::new(), |a, b| a + &b)
+                    })
+                    .fold(String::new(), |a, b| a + &b)
+            }
             #[cfg(debug_assertions)]
             e => return format!("{}", e),
             #[allow(unreachable_patterns)]

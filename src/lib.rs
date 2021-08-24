@@ -149,8 +149,7 @@ mod tests;
 
 use std::fmt::Debug;
 
-use prelude::*;
-use rocket::FromForm;
+pub use prelude::*;
 
 // pub use language::Language;
 pub use crate::user::auth::Auth;
@@ -201,36 +200,4 @@ impl Debug for AdminUser {
 pub struct Users {
     conn: Box<dyn DBConnection>,
     sess: Box<dyn SessionManager>,
-}
-
-/// The `Login` form is used along with the [`Auth`] guard to authenticate users.
-#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Login {
-    pub email: String,
-    password: String,
-}
-
-/// The `Signup` form is used along with the [`Auth`] guard to create new users.
-#[derive(FromForm, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Signup {
-    pub email: String,
-    password: String,
-}
-impl Debug for Signup {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Signup {{ email: {:?}, password: \"*****\" }}",
-            self.email
-        )
-    }
-}
-impl Debug for Login {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Signup {{ email: {:?}, password: \"*****\" }}",
-            self.email
-        )
-    }
 }

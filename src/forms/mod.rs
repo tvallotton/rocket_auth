@@ -1,25 +1,62 @@
 use crate::prelude::*;
-pub use crate::{Login, Signup};
-use lazy_static::lazy_static;
-use regex::Regex;
 
-const EMAIL_REGEX: &str = r"^[\w\-\.]+@([\w-]+\.)+[\w\-]{2,4}$";
+// use lazy_static::lazy_static;
+// use regex::Regex;
 
-impl Signup {
-    /// It checks whether the form is valid.
-    /// It is not necesay to check if a form is valid when
-    /// using [`Auth::signup`](crate::Auth::signup), since that function
-    /// does it already.
-    pub fn is_valid(&self) -> Result<()> {
-        self.password.is_secure()?;
-        self.email.is_valid()?;
-        Ok(())
+// const EMAIL_REGEX: &str = r"^[\w\-\.]+@([\w-]+\.)+[\w\-]{2,4}$";
+
+/// The `Login` form is used along with the [`Auth`] guard to authenticate users.
+#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, Validate)]
+pub struct Login {
+    #[validate(email)]
+    pub email: String,
+    pub(crate) password: String,
+}
+
+/// The `Signup` form is used along with the [`Auth`] guard to create new users.
+#[derive(FromForm, Deserialize, Clone, PartialEq, Eq, Hash, Validate)]
+pub struct Signup {
+    #[validate(email)]
+    pub email: String,
+    #[validate(
+        custom = "is_long",
+        custom = "has_number",
+        custom = "has_lowercase",
+        custom = "has_uppercase"
+    )]
+    pub(crate) password: String,
+}
+impl Debug for Signup {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Signup {{ email: {:?}, password: \"*****\" }}",
+            self.email
+        )
+    }
+}
+impl Debug for Login {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Signup {{ email: {:?}, password: \"*****\" }}",
+            self.email
+        )
     }
 }
 
 impl From<Signup> for Login {
     fn from(form: Signup) -> Login {
         Login {
+            email: form.email,
+            password: form.password,
+        }
+    }
+}
+
+impl From<Login> for Signup {
+    fn from(form: Login) -> Signup {
+        Self {
             email: form.email,
             password: form.password,
         }
@@ -34,73 +71,57 @@ impl<T: Deref<Target = Signup>> From<T> for Login {
         }
     }
 }
-
-pub trait ValidEmail {
-    fn is_valid(&self) -> Result<()>;
+#[throws(ValidationError)]
+pub(crate) fn is_secure(password: &str) {
+    is_long(password)?;
+    has_uppercase(password)?;
+    has_lowercase(password)?;
+    has_number(password)?;
 }
 
-pub trait SafePassword {
-    // const UPER_CASE: &'static str = "ASDFGHJKLQWERTYUIOPZXCVBNM";
-    // const LOWER_CASE: &'static str = "qwertyuiopasdfhjklzxcvbn";
-    // const NUMBER: &'static str = "1234567890";
-    // const SYMBOLS: &'static str = "~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/";
-
-    fn is_secure(&self) -> Result<()> {
-        self.is_long()?;
-        self.has_number()?;
-        self.has_uppercase()?;
-        self.has_lowercase()?;
-        Ok(())
-    }
-    fn has_number(&self) -> Result<()>;
-    fn is_long(&self) -> Result<()>;
-    fn has_uppercase(&self) -> Result<()>;
-    fn has_lowercase(&self) -> Result<()>;
-}
-
-impl ValidEmail for str {
-    fn is_valid(&self) -> Result<()> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(EMAIL_REGEX).unwrap();
-        }
-        if RE.is_match(self) {
-            Ok(())
-        } else {
-            Err(Error::InvalidEmailAddressError)
-        }
+#[throws(ValidationError)]
+fn is_long(password: &str) {
+    if password.len() < 8 {
+        throw!(ValidationError::new(
+            "The password must be at least 8 characters long.\n"
+        ));
     }
 }
-
-impl SafePassword for str {
-    fn is_long(&self) -> Result<()> {
-        if self.len() > 8 {
-            Ok(())
-        } else {
-            Err(Error::UnsafePasswordTooShort)
+#[allow(unreachable_code)]
+#[throws(ValidationError)]
+fn has_uppercase(password: &str) {
+    for c in password.chars() {
+        if c.is_uppercase() {
+            return;
         }
     }
-    fn has_uppercase(&self) -> Result<()> {
-        for c in self.chars() {
-            if c.is_uppercase() {
-                return Ok(());
-            }
+    throw!(ValidationError::new(
+        "The password must include least one uppercase caracter.\n"
+    ));
+}
+#[allow(unreachable_code)]
+#[throws(ValidationError)]
+fn has_lowercase(password: &str) {
+    for c in password.chars() {
+        if c.is_lowercase() {
+            return;
         }
-        Err(Error::UnsafePasswordHasNoUpper)
     }
-    fn has_lowercase(&self) -> Result<()> {
-        for c in self.chars() {
-            if c.is_lowercase() {
-                return Ok(());
-            }
+    // throw!(Error::UnsafePasswordHasNoLower)
+    throw!(ValidationError::new(
+        "The password must include least one uppercase caracter.\n"
+    ))
+}
+#[allow(unreachable_code)]
+#[throws(ValidationError)]
+fn has_number(password: &str) {
+    for c in password.chars() {
+        if c.is_numeric() {
+            return;
         }
-        Err(Error::UnsafePasswordHasNoLower)
     }
-    fn has_number(&self) -> Result<()> {
-        for c in self.chars() {
-            if c.is_numeric() {
-                return Ok(());
-            }
-        }
-        Err(Error::UnsafePasswordHasNoDigit)
-    }
+    throw!(ValidationError::new(
+        "The password has to contain at least one digit.\n"
+    ))
+    // throw!(Error::UnsafePasswordHasNoDigit)
 }

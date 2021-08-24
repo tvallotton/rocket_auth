@@ -1,4 +1,3 @@
-use crate::forms::ValidEmail;
 use crate::prelude::*;
 use rocket::http::Status;
 use rocket::http::{Cookie, CookieJar};
@@ -274,10 +273,12 @@ impl<'a> Auth<'a> {
     /// auth.change_email("new@email.com".into());
     /// # }
     /// ```
-
-    pub async fn change_email(&self, email: String) -> Result<()> {
+    #[throws(Error)]
+    pub async fn change_email(&self, email: String) {
         if self.is_auth() {
-            email.is_valid()?;
+            if !validator::validate_email(&email) {
+                throw!(Error::InvalidEmailAddressError)
+            }
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id).await?;
             user.email = email;

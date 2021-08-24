@@ -24,6 +24,7 @@ pub struct Session {
     pub auth_key: String,
 }
 
+
 #[async_trait]
 impl<'r> FromRequest<'r> for Session {
     type Error = Error;
@@ -40,6 +41,5 @@ impl<'r> FromRequest<'r> for Session {
 #[throws(as Option)]
 fn get_session(cookies: &CookieJar) -> Session {
     let session = cookies.get_private("rocket_auth")?;
-
     from_str(session.value()).ok()?
 }
