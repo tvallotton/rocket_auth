@@ -41,7 +41,7 @@
 //! ## Auth guard
 //! The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
 //! For more information see [`Auth`]. Because of Rust's ownership rules, you may not retrieve both [`rocket::http::CookieJar`] and the [`Auth`] guard
-//! simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
+//! simultaneously. However, retrieving cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
 //!  A working example:
 //! ```rust,no_run
 //! use rocket::{get, post, form::Form, routes};

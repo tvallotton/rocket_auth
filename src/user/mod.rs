@@ -90,7 +90,7 @@ impl Users {
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key_for(user.id, time)?
         } else {
-            throw!(Error::InvalidCredentialsError)
+            throw!(Error::UnauthorizedError)
         }
     }
 }

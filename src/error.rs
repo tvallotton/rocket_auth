@@ -3,20 +3,43 @@ use std::*;
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    /// This error occures when attempting to create a user with an invalid email address. 
+    /// This error occurs when attempting to create a user with an invalid email address.
     #[error("That is not a valid email address.")]
     InvalidEmailAddressError,
-    /// This error is thrown when a user tries to sign up with an email that already exists. 
-    #[error("That email address already exists. Try logging in.")]
-    EmailAlreadyExists,
-    /// This error only occures if the application panics while holding a locked mutex. 
+
+    /// This error only occurs if the application panics while holding a locked mutex.
     #[cfg(feature = "sqlx-sqlite")]
     #[error("The mutex guarding the Sqlite connection was posioned.")]
     MutexPoisonError,
 
-    /// Trhown when the requested user does not exists. 
+    /// Thrown when the requested user does not exists.
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
+
+    /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
+    /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
+    #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
+    UnmanagedStateError,
+
+    #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
+    UnauthenticatedError,
+    /// This error occurs when a user tries to log in, but their account doesn't exists.
+    #[error("The email \"{0}\" is not registered. Try signing up first.")]
+    EmailDoesNotExist(String),
+    /// This error is thrown when a user tries to sign up with an email that already exists.
+    #[error("That email address already exists. Try logging in.")]
+    EmailAlreadyExists,
+    /// This error occurs when the user does exists, but their password was incorrect.
+    #[error("Incorrect email or password")]
+    UnauthorizedError,
+
+    /// A wrapper around [`validator::ValidationError`].
+    #[error("{0}")]
+    FormValidationError(#[from] validator::ValidationError),
+
+    /// A wrapper around [`validator::ValidationErrors`].
+    #[error("FormValidationErrors: {0}")]
+    FormValidationErrors(#[from] validator::ValidationErrors),
 
     /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx-sqlite", feature = "sqlx-postgres"))]
@@ -31,41 +54,21 @@ pub enum Error {
     #[error("RusqliteError: {0}")]
     RusqliteError(#[from] rusqlite::Error),
 
-
-    /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app. 
-    /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`. 
-    #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
-    UnmanagedStateError,
-    
-    #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
-    UnauthenticatedError,
-
-    #[error("The email \"{0}\" is not registered. Try signing up first.")]
-    EmailDoesNotExist(String),
-
-    #[error("Incorrect email or password.")]
-    InvalidCredentialsError,
-
-    #[error("{0}")]
-    FormValidationError(#[from] validator::ValidationError),
-
-    #[error("FormValidationErrors: {0}")]
-    FormValidationErrors(#[from] validator::ValidationErrors),
-
-    #[error("Incorrect email or password")]
-    UnauthorizedError,
-
+    /// A wrapper around [`redis::RedisError`].
     #[cfg(feature = "redis")]
     #[error("RedisError")]
     RedisError(#[from] redis::RedisError),
 
+    /// A wrapper around [`serde_json::Error`].
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
 
+    /// A wrapper around [`std::io::Error`].
     #[cfg(feature = "sqlx-postgres")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
-    
+
+    /// A wrapper around [`tokio_postgres::Error`].
     #[cfg(feature = "tokio-postgres")]
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
@@ -86,7 +89,6 @@ impl Error {
     fn message(&self) -> String {
         match self {
             InvalidEmailAddressError
-            | InvalidCredentialsError
             | EmailAlreadyExists
             | UnauthorizedError
             | UserNotFoundError => format!("{}", self),

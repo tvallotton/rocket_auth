@@ -33,7 +33,7 @@ impl Users {
     }
     /// Initializes the user table in the database. It won't drop the table if it already exists.
     /// It is necessary to call it explicitly when casting the `Users` struct from an already
-    /// stablished database connection and if the table hasn't been created yet. If the table
+    /// established database connection and if the table hasn't been created yet. If the table
     /// already exists then this step is not necessary.
     /// ```rust,
     /// # use sqlx::{sqlite::SqlitePool, Connection};
@@ -153,7 +153,7 @@ impl Users {
         users
     }
 
-    /// It querys a user by their email.
+    /// It queries a user by their email.
     /// ```
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};
@@ -170,7 +170,7 @@ impl Users {
         self.conn.get_user_by_email(email).await?
     }
 
-    /// It querys a user by their email.
+    /// It queries a user by their email.
     /// ```
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, Users};

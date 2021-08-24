@@ -11,7 +11,7 @@ use serde_json::from_str;
 ///
 /// Note that,
 /// session data is already captured by the [`Auth`](`crate::Auth`) guard and stored in the public [`session`](`crate::Auth`) field.
-/// So it is not necesarry to use them together.
+/// So it is not necessary to use them together.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Session {
     /// It represents the Unix time in which the user logged in. It is measured in seconds.
