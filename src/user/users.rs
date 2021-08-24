@@ -65,10 +65,10 @@ impl Users {
     /// # Ok(()) }
     /// ```
     #[cfg(feature = "redis")]
-    pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) -> Result<()> {
+    #[throws(Error)]
+    pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) {
         let client = redis::Client::open(path)?;
         self.sess = Box::new(client);
-        Ok(())
     }
 
     /// It creates a `Users` instance by connecting  it to a sqlite database.
@@ -138,8 +138,9 @@ impl Users {
     /// }
     /// # fn main() {}
     /// ```
-    pub async fn get_by_email(&self, email: &str) -> Result<User> {
-        self.conn.get_user_by_email(email).await
+    #[throws(Error)]
+    pub async fn get_by_email(&self, email: &str) -> User {
+        self.conn.get_user_by_email(email).await?
     }
 
     /// It querys a user by their email.
@@ -154,8 +155,9 @@ impl Users {
     /// # }
     /// # fn main() {}
     /// ```
-    pub async fn get_by_id(&self, user_id: i32) -> Result<User> {
-        self.conn.get_user_by_id(user_id).await
+    #[throws(Error)]
+    pub async fn get_by_id(&self, user_id: i32) -> User {
+        self.conn.get_user_by_id(user_id).await?
     }
 
     /// Inserts a new user in the database. It will fail if the user already exists.
@@ -169,13 +171,13 @@ impl Users {
     /// }
     /// # fn main() {}
     /// ```
-    pub async fn create_user(&self, email: &str, password: &str, is_admin: bool) -> Result<()> {
+    #[throws(Error)]
+    pub async fn create_user(&self, email: &str, password: &str, is_admin: bool) {
         let password = password.as_bytes();
         let salt = rand_string(30);
         let config = argon2::Config::default();
         let hash = argon2::hash_encoded(password, salt.as_bytes(), &config).unwrap();
         self.conn.create_user(email, &hash, is_admin).await?;
-        Ok(())
     }
 
     /// Deletes a user from de database. Note that this method won't delete the session.
@@ -185,10 +187,10 @@ impl Users {
     ///     users.delete(id)?;
     ///     Ok("The user has been deleted.")
     /// }
-    pub async fn delete(&self, id: i32) -> Result<()> {
+    #[throws(Error)]
+    pub async fn delete(&self, id: i32) {
         self.sess.remove(id)?;
         self.conn.delete_user_by_id(id).await?;
-        Ok(())
     }
 
     /// Modifies a user in the database.
@@ -201,9 +203,9 @@ impl Users {
     /// users.modify(&user).await?;
     /// # Ok(())}
     /// ```
-    pub async fn modify(&self, user: &User) -> Result<()> {
+    #[throws(Error)]
+    pub async fn modify(&self, user: &User) {
         self.conn.update_user(user).await?;
-        Ok(())
     }
 }
 

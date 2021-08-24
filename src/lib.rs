@@ -17,7 +17,7 @@
 //!
 //!
 //! To use `rocket_auth` include it as a dependency in your Cargo.toml file:
-//! ```
+//! ```ini
 //! [dependencies.rocket_auth]
 //! version = "0.3.0"
 //! features = ["sqlx-sqlite"]
@@ -56,9 +56,9 @@
 //! }
 //!
 //! #[post("/login", data="<form>")]
-//! async fn login(form: Form<Login>, mut auth: Auth<'_>) -> Result<&'static str, Error>{
+//! async fn login(form: rocket::serde::json::Json<Login>, mut auth: Auth<'_>) -> Result<&'static str, Error> {
 //!     auth.login(&form).await?;
-//!     Ok("You're logged in.")
+//!     Ok("You're logged in.");
 //! }
 //!
 //! #[get("/logout")]
@@ -185,7 +185,7 @@ pub struct User {
 /// # use rocket_auth::AdminUser;
 /// #[get("/admin-panel")]
 /// fn admin_panel(user: AdminUser) -> String {
-///    format!("Hello {}.", user.email());
+///    format!("Hello {}.", user.email())
 /// }
 /// ```
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
@@ -204,14 +204,13 @@ pub struct Users {
 }
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
-#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Login {
     pub email: String,
     password: String,
 }
 
 /// The `Signup` form is used along with the [`Auth`] guard to create new users.
-
 #[derive(FromForm, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Signup {
     pub email: String,
@@ -221,7 +220,7 @@ impl Debug for Signup {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Signup {{ email: \"{0}\", password: \"*****\" }}",
+            "Signup {{ email: {:?}, password: \"*****\" }}",
             self.email
         )
     }
@@ -230,7 +229,7 @@ impl Debug for Login {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Signup {{ email: \"{0}\", password: \"*****\" }}",
+            "Signup {{ email: {:?}, password: \"*****\" }}",
             self.email
         )
     }

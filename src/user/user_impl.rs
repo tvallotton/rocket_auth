@@ -88,7 +88,7 @@ impl Debug for User {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "User {{ id: {:?}, email: {:?}, is_admin: {:?}}}",
+            "User {{ id: {:?}, email: {:?}, is_admin: {:?}, password: \"*****\" }}",
             self.id, self.email, self.is_admin
         )
     }

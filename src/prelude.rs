@@ -12,3 +12,6 @@ pub(crate) use std::ops::Deref;
 pub(crate) use std::time::Duration;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub fn now() -> i64 {
+    chrono::Utc::now().timestamp()
+}

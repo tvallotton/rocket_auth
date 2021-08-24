@@ -1,40 +1,37 @@
 use super::SessionManager;
 use crate::prelude::*;
 
-
-use redis::{Commands, Client};
+use redis::{Client, Commands};
 
 const YEAR_IN_SECS: usize = 365 * 60 * 60 * 24;
 
 impl SessionManager for Client {
-    fn insert(&self, id: i32, key: String) -> Result<()> {
+    #[throws(Error)]
+    fn insert(&self, id: i32, key: String) {
         let mut cnn = self.get_connection()?;
         cnn.set_ex(id, key, YEAR_IN_SECS)?;
-        Ok(())
     }
-    fn insert_for(&self, id: i32, key: String, time: Duration) -> Result<()> {
+    #[throws(Error)]
+    fn insert_for(&self, id: i32, key: String, time: Duration) {
         let mut cnn = self.get_connection()?;
         cnn.set_ex(id, key, time.as_secs() as usize)?;
-        Ok(())
     }
-    fn remove(&self, id: i32) -> Result<()> {
+    #[throws(Error)]
+    fn remove(&self, id: i32) {
         let mut cnn = self.get_connection()?;
         cnn.del(id)?;
-        Ok(())
     }
-    fn get(&self, id: i32) -> Option<String> {
+    #[throws(as Option)]
+    fn get(&self, id: i32) -> String {
         let mut cnn = self.get_connection().ok()?;
         let key = cnn.get(id).ok()?;
-        Some(key)
+        key
     }
-    fn clear_all(&self) -> Result<()> {
+    #[throws(Error)]
+    fn clear_all(&self) {
         let mut cnn = self.get_connection()?;
         redis::Cmd::new().arg("FLUSHDB").execute(&mut cnn);
-        Ok(())
     }
-    fn clear_expired(&self) -> Result<()> {
-        Ok(())
-    }
+    #[throws(Error)]
+    fn clear_expired(&self) {}
 }
-
-

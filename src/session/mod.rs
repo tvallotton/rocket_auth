@@ -17,7 +17,7 @@ pub trait SessionManager: Send + Sync {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthKey {
-    expires: u64,
+    expires: i64,
     secret: String,
 }
 

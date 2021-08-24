@@ -97,7 +97,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: chrono::Utc::now().timestamp(),
+            time_stamp: now(),
         };
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
@@ -123,7 +123,7 @@ impl<'a> Auth<'a> {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: chrono::Utc::now().timestamp(),
+            time_stamp: now(),
         };
         let to_str = format!("{}", json!(session));
         let cookie = Cookie::new("rocket_auth", to_str);
@@ -302,5 +302,3 @@ impl<'a> Auth<'a> {
         Ok(session)
     }
 }
-
-
