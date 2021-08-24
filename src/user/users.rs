@@ -101,30 +101,6 @@ impl Users {
         users
     }
 
-    /// It creates a `Users` instance by connecting  it to a mysql database.
-    /// This method uses the [`sqlx`] crate.
-    ///
-    /// ```rust, no_run
-    /// # use rocket_auth::{Error, Users};
-    /// # async fn func(DATABASE_URL: &str) -> Result<(), Error> {
-    /// let users = Users::open_mysql(DATABASE_URL).await?;
-    ///
-    /// rocket::build()
-    ///     .manage(users)
-    ///     .launch();
-    /// # Ok(()) }
-    ///
-    /// ```
-
-    #[cfg(feature = "sqlx-mysql")]
-    #[throws(Error)]
-    pub async fn open_mysql(path: &str) -> Self {
-        let conn = sqlx::MySqlPool::connect(path).await?;
-        let users: Users = conn.into();
-        users.create_table().await?;
-        users
-    }
-
     /// It creates a `Users` instance by connecting  it to a postgres database.
     /// This method uses the [`sqlx`] crate.
     ///
@@ -152,6 +128,31 @@ impl Users {
         };
         users
     }
+
+    /// It creates a `Users` instance by connecting  it to a mysql database.
+    /// This method uses the [`sqlx`] crate.
+    ///
+    /// ```rust
+    /// # use rocket_auth::{Error, Users};
+    /// # async fn func(DATABASE_URL: &str) -> Result<(), Error> {
+    /// let users = Users::open_mysql(DATABASE_URL).await?;
+    ///
+    /// rocket::build()
+    ///     .manage(users)
+    ///     .launch();
+    /// # Ok(()) }
+    ///
+    /// ```
+
+    #[cfg(feature = "sqlx-mysql")]
+    #[throws(Error)]
+    pub async fn open_mysql(path: &str) -> Self {
+        let conn = sqlx::MySqlPool::connect(path).await?;
+        let users: Users = conn.into();
+        users.create_table().await?;
+        users
+    }
+
     /// It querys a user by their email.
     /// ```
     /// # use rocket::{State, get};
@@ -210,8 +211,8 @@ impl Users {
     /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// ```
     /// #[get("/delete_user/<id>")]
-    /// fn delete_user(id: i32, users: State<Users>) -> Result<String> {
-    ///     users.delete(id)?;
+    /// async fn delete_user(id: i32, users: &State<Users>) -> Result<String> {
+    ///     users.delete(id).await?;
     ///     Ok("The user has been deleted.")
     /// }
     /// ```

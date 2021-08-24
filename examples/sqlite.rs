@@ -1,4 +1,4 @@
-use rocket::{State, form::*, get, http::CookieJar, post, response::Redirect, routes};
+use rocket::{State, form::*, get, post, response::Redirect, routes};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
