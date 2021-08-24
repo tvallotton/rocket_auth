@@ -4,9 +4,10 @@ It supports connections for SQLite and Postgresql. It lets you create, delete, a
 The available features are:
 * `sqlx-sqlite`: for interacting with a SQLite database using `sqlx`.
 * `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
-* `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
+* `sqlx-mysql`: for interacting with a MySql database with `sqlx`.
 * `redis`: for storing sessions on a redis server using `redis`.
 * `rusqlite`: for interacting with a SQLite database using `rusqlite`.
+* `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
 
 `rocket_auth` uses private cookies to store session data.
 This means that in order for cookies to be properly decrypted between launches, a `secret_key` must be set.

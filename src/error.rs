@@ -3,42 +3,40 @@ use std::*;
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    /// This error occures when attempting to create a user with an invalid email address. 
     #[error("That is not a valid email address.")]
     InvalidEmailAddressError,
-
+    /// This error is thrown when a user tries to sign up with an email that already exists. 
     #[error("That email address already exists. Try logging in.")]
     EmailAlreadyExists,
-
+    /// This error only occures if the application panics while holding a locked mutex. 
     #[cfg(feature = "sqlx-sqlite")]
     #[error("The mutex guarding the Sqlite connection was posioned.")]
     MutexPoisonError,
 
-    #[error("An error occured trying to retrieve the current time.")]
-    SystemTimeError(#[from] time::SystemTimeError),
-
+    /// Trhown when the requested user does not exists. 
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
+    /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx-sqlite", feature = "sqlx-postgres"))]
     #[error("SqlxError: {0}")]
     SqlxError(#[from] sqlx::Error),
-
+    /// A wrapper around [`argon2::Error`].
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
 
-    #[error("Unspecified")]
-    Unspecified,
-
+    /// A wrapper around [`rusqlite::Error`].
     #[cfg(feature = "rusqlite")]
     #[error("RusqliteError: {0}")]
     RusqliteError(#[from] rusqlite::Error),
 
-    #[error("QueryError")]
-    QueryError,
 
-    #[error("UnmanagedStateError")]
+    /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app. 
+    /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`. 
+    #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
     UnmanagedStateError,
-
+    
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
 
@@ -83,11 +81,6 @@ impl<T> From<PoisonError<T>> for Error {
     }
 }
 
-impl From<()> for Error {
-    fn from(_: ()) -> Error {
-        Error::Unspecified
-    }
-}
 use self::Error::*;
 impl Error {
     fn message(&self) -> String {
@@ -106,7 +99,7 @@ impl Error {
                     .map(|errs| {
                         errs //
                             .map(|err| &err.code)
-                            .fold(String::new(), |a, b| a + &b)
+                            .fold(String::new(), |a, b| a + b)
                     })
                     .fold(String::new(), |a, b| a + &b)
             }
