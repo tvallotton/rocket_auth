@@ -58,7 +58,7 @@
 //! #[post("/login", data="<form>")]
 //! async fn login(form: rocket::serde::json::Json<Login>, mut auth: Auth<'_>) -> Result<&'static str, Error> {
 //!     auth.login(&form).await?;
-//!     Ok("You're logged in.");
+//!     Ok("You're logged in.")
 //! }
 //!
 //! #[get("/logout")]
@@ -131,7 +131,7 @@
 //! # use rocket_auth::AdminUser;
 //! #[get("/admin-panel")]
 //! fn admin_panel(user: AdminUser) -> String {
-//!    format!("Hello {}.", user.email());
+//!    format!("Hello {}.", user.email())
 //! }
 //! ```
 // #![warn(missing_docs)]

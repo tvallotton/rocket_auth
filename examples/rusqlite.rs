@@ -3,8 +3,8 @@ use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use rusqlite::Connection;
 use serde_json::json;
-use std::{convert::TryInto, result::Result};
 use std::*;
+use std::{convert::TryInto, result::Result};
 use tokio::sync::Mutex;
 #[get("/login")]
 fn get_login() -> Template {
@@ -25,7 +25,7 @@ async fn get_signup() -> Template {
 }
 
 #[post("/signup", data = "<form>")]
-async fn post_signup(mut auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
+async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
 
@@ -38,12 +38,12 @@ async fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(mut auth: Auth<'_>) -> Result<Template, Error> {
+fn logout(auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout()?;
     Ok(Template::render("logout", json!({})))
 }
 #[get("/delete")]
-async fn delete(mut auth: Auth<'_>) -> Result<Template, Error> {
+async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
     Ok(Template::render("deleted", json!({})))
 }

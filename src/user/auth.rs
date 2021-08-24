@@ -9,8 +9,7 @@ use serde_json::json;
 use std::time::Duration;
 
 /// The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
-/// For more information see [`Auth`]. Because of rust's ownership rules, you may not retrieve both `rocket::http::Cookies` and the [`Auth`] guard
-/// simultaneously. However, retrieveng cookies is not needed since `Auth` stores them in the public field [`Auth::cookies`].
+/// For more information see [`Auth`].
 ///  A working example:
 /// ```rust,no_run
 ///
@@ -89,7 +88,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn login(&mut self, form: &Login) {
+    pub async fn login(&self, form: &Login) {
         let key = self.users.login(form).await?;
         let user = self.users.get_by_email(&form.email).await?;
         let session = Session {
@@ -114,7 +113,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn login_for(&mut self, form: &Login, time: Duration) {
+    pub async fn login_for(&self, form: &Login, time: Duration) {
         let key = self.users.login_for(form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
 
@@ -143,7 +142,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn signup(&mut self, form: &Signup) {
+    pub async fn signup(&self, form: &Signup) {
         self.users.signup(form).await?;
     }
 
@@ -160,7 +159,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn signup_for(&mut self, form: &Signup, time: Duration) {
+    pub async fn signup_for(&self, form: &Signup, time: Duration) {
         self.users.signup(form).await?;
         self.login_for(&form.clone().into(), time).await?;
     }
@@ -220,7 +219,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub fn logout(&mut self) {
+    pub fn logout(&self) {
         let session = self.get_session()?;
         self.users.logout(session)?;
         self.cookies.remove_private(Cookie::named("rocket_auth"));
@@ -235,7 +234,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn delete(&mut self) {
+    pub async fn delete(&self) {
         if self.is_auth() {
             let session = self.get_session()?;
             self.users.delete(session.id).await?;
@@ -283,9 +282,8 @@ impl<'a> Auth<'a> {
             let mut user = self.users.get_by_id(session.id).await?;
             user.email = email;
             self.users.modify(&user).await?;
-            Ok(())
         } else {
-            Err(Error::UnauthorizedError)
+            throw!(Error::UnauthorizedError)
         }
     }
 
