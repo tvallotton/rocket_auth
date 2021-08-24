@@ -29,18 +29,19 @@ impl Users {
         let conn = sqlx::SqlitePool::connect(path).await?;
         let users: Users = conn.into();
         users.create_table().await?;
-        users.conn.init().await?;
         users
     }
     /// Initializes the user table in the database. It won't drop the table if it already exists.
     /// It is necessary to call it explicitly when casting the `Users` struct from an already
     /// stablished database connection and if the table hasn't been created yet. If the table
     /// already exists then this step is not necessary.
-    /// ```rust,no_run
+    /// ```rust,
+    /// # use sqlx::{sqlite::SqlitePool, Connection};
     /// # use rocket_auth::{Users, Error};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Error> {
-    /// let mut users = Users::open_sqlite("database.db").await?;
+    /// let mut conn = SqlitePool::connect("database.db").await?;
+    /// let mut users: Users = conn.into();
     /// users.open_redis("redis://127.0.0.1/")?;
     /// users.create_table().await?;
     /// # Ok(()) }
@@ -51,7 +52,7 @@ impl Users {
     }
     /// Opens a redis connection. It allows for sessions to be stored persistently across
     /// different launches. Note that persistent sessions also require a `secret_key` to be set in the [Rocket.toml](https://rocket.rs/v0.5-rc/guide/configuration/#configuration) configuration file.
-    /// ```rust,no_run
+    /// ```rust,
     /// # use rocket_auth::{Users, Error};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Error> {
@@ -100,8 +101,33 @@ impl Users {
         users
     }
 
-    /// It opens a postgres database connection using [`sqlx`]. I've got to admit I haven't tested this feature yet, so
-    /// don't waste your time debugging if it doesn't work.
+    /// It creates a `Users` instance by connecting  it to a mysql database.
+    /// This method uses the [`sqlx`] crate.
+    ///
+    /// ```rust, no_run
+    /// # use rocket_auth::{Error, Users};
+    /// # async fn func(DATABASE_URL: &str) -> Result<(), Error> {
+    /// let users = Users::open_mysql(DATABASE_URL).await?;
+    ///
+    /// rocket::build()
+    ///     .manage(users)
+    ///     .launch();
+    /// # Ok(()) }
+    ///
+    /// ```
+
+    #[cfg(feature = "sqlx-mysql")]
+    #[throws(Error)]
+    pub async fn open_mysql(path: &str) -> Self {
+        let conn = sqlx::MySqlPool::connect(path).await?;
+        let users: Users = conn.into();
+        users.create_table().await?;
+        users
+    }
+
+    /// It creates a `Users` instance by connecting  it to a postgres database.
+    /// This method uses the [`sqlx`] crate.
+    ///
     /// ```rust, no_run
     /// # use rocket_auth::{Error, Users};
     /// # #[tokio::main]
@@ -182,11 +208,13 @@ impl Users {
 
     /// Deletes a user from de database. Note that this method won't delete the session.
     /// To do that use [`Auth::delete`](crate::Auth::delete).
+    /// ```
     /// #[get("/delete_user/<id>")]
     /// fn delete_user(id: i32, users: State<Users>) -> Result<String> {
     ///     users.delete(id)?;
     ///     Ok("The user has been deleted.")
     /// }
+    /// ```
     #[throws(Error)]
     pub async fn delete(&self, id: i32) {
         self.sess.remove(id)?;
@@ -210,7 +238,7 @@ impl Users {
 }
 
 /// A `Users` instance can also be created from a database connection.
-/// ```
+/// ```rust
 /// # use rocket_auth::{Users, Error};
 /// # use tokio_postgres::NoTls;
 /// # async fn func() -> Result<(), Error> {
@@ -233,7 +261,7 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 
 /// Additionally, `Users` can be created from a tuple,
 /// where the first element is a database connection, and the second is a redis connection.
-/// ```
+/// ```rust
 /// # use rocket_auth::{Users, Error};
 /// # extern crate tokio_postgres;
 /// # use tokio_postgres::NoTls;

@@ -20,6 +20,7 @@ all-features = true
 [features]
 sqlx-sqlite = ["sqlx/sqlite"]
 sqlx-postgres = ["sqlx/postgres"]
+sqlx-mysql = ["sqlx/mysql"]
 
 
 [dependencies.rusqlite]
@@ -76,7 +77,7 @@ features = ["rt", "rt-multi-thread"]
 
 
 [dev-dependencies]
-rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlx-sqlite",  "sqlx-postgres", "tokio-postgres", "rusqlite", "redis"]}
+rocket_auth = {version = "*", path = "../rocket_auth", features = ["sqlx-sqlite",  "sqlx-postgres", "tokio-postgres", "rusqlite", "redis", "sqlx-mysql"]}
 
 
 

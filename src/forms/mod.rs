@@ -1,9 +1,5 @@
 use crate::prelude::*;
 
-// use lazy_static::lazy_static;
-// use regex::Regex;
-
-// const EMAIL_REGEX: &str = r"^[\w\-\.]+@([\w-]+\.)+[\w\-]{2,4}$";
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
 #[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, Validate)]

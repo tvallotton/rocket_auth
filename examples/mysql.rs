@@ -1,8 +1,8 @@
-use rocket::{State, form::*, get, http::CookieJar, post, response::Redirect, routes};
+use rocket::{form::*, get, post, response::Redirect, routes, State};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-use sqlx::*;
+use sqlx::{postgres::PgPool, *};
 use std::result::Result;
 use std::*;
 #[get("/login")]
@@ -48,7 +48,7 @@ async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<Template, Error> {
+async fn show_all_users(conn: &State<MySqlPool>, user: Option<User>) -> Result<Template, Error> {
     let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
     println!("{:?}", users);
     Ok(Template::render(
@@ -59,9 +59,9 @@ async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let conn = SqlitePool::connect("database.db").await?;
+    let conn = MySqlPool::connect("mysql://test_user:password@localhost/test").await?;
     let users: Users = conn.clone().into();
-
+    users.create_table().await?;
     rocket::build()
         .mount(
             "/",
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Error> {
                 post_login,
                 logout,
                 delete,
-                show_all_users,
+                show_all_users
             ],
         )
         .manage(conn)

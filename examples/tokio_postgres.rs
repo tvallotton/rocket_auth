@@ -1,10 +1,11 @@
-use rocket::{State, form::*, get, http::CookieJar, post, response::Redirect, routes};
+use rocket::{form::*, get, post, response::Redirect, routes, State};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
-use sqlx::*;
-use std::result::Result;
+
 use std::*;
+use std::{convert::TryInto, result::Result};
+use tokio_postgres::{connect, Client};
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
@@ -48,9 +49,15 @@ async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<Template, Error> {
-    let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
-    println!("{:?}", users);
+async fn show_all_users(client: &State<sync::Arc<Client>>, user: Option<User>) -> Result<Template, Error> {
+    let users: Vec<User> = client
+        .query("select * from users;", &[])
+        .await?
+        .into_iter()
+        .map(TryInto::try_into)
+        .flatten()
+        .collect();
+
     Ok(Template::render(
         "users",
         json!({"users": users, "user": user}),
@@ -59,9 +66,16 @@ async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let conn = SqlitePool::connect("database.db").await?;
-    let users: Users = conn.clone().into();
+    use tokio_postgres::NoTls;
+    let (client, conn) = connect("host=localhost user=postgres", NoTls).await?;
+    let client = sync::Arc::new(client);
+    let users: Users = client.clone().into();
 
+    tokio::spawn(async move {
+        if let Err(e) = conn.await {
+            eprintln!("TokioPostgresError: {}", e);
+        }
+    });
     rocket::build()
         .mount(
             "/",
@@ -73,10 +87,10 @@ async fn main() -> Result<(), Error> {
                 post_login,
                 logout,
                 delete,
-                show_all_users,
+                show_all_users
             ],
         )
-        .manage(conn)
+        .manage(client)
         .manage(users)
         .attach(Template::fairing())
         .launch()

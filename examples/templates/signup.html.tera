@@ -14,7 +14,7 @@
                 <input type="password" class="form-control" name="password" required>
             </div>
         </div>
-        <button class="btn btn-primary" type="submit">Signup</button>
+        <button class="btn btn-primary" type="submit">Sign up</button>
     </form>
 </div>
 {% endblock body %}
