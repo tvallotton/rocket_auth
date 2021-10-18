@@ -62,6 +62,7 @@ async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<
 async fn main() -> Result<(), Error> {
     let conn = SqlitePool::connect("database.db").await?;
     let users: Users = conn.clone().into();
+    users.create_table().await?; 
 
     rocket::build()
         .mount(

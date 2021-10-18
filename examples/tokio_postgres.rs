@@ -70,12 +70,14 @@ async fn main() -> Result<(), Error> {
     let (client, conn) = connect("host=localhost user=postgres", NoTls).await?;
     let client = sync::Arc::new(client);
     let users: Users = client.clone().into();
+    
 
     tokio::spawn(async move {
         if let Err(e) = conn.await {
             eprintln!("TokioPostgresError: {}", e);
         }
     });
+    users.create_table().await?; 
     rocket::build()
         .mount(
             "/",
