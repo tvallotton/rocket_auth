@@ -186,7 +186,7 @@ impl Users {
     /// ```
     #[throws(Error)]
     pub async fn delete(&self, id: i32) {
-        self.sess.remove(id)?;
+        self.sess.remove(id).await?;
         self.conn.delete_user_by_id(id).await?;
     }
 

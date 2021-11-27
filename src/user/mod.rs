@@ -15,8 +15,8 @@ pub fn rand_string(size: usize) -> String {
 }
 
 impl Users {
-    fn is_auth(&self, session: &Session) -> bool {
-        let option = self.sess.get(session.id);
+    async fn is_auth(&self, session: &Session) -> bool {
+        let option = self.sess.get(session.id).await;
         if let Some(auth_key) = option {
             auth_key == session.auth_key
         } else {
@@ -34,29 +34,29 @@ impl Users {
             .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
-            self.set_auth_key(user.id)?
+            self.set_auth_key(user.id).await?
         } else {
             throw!(Error::UnauthorizedError)
         }
     }
     #[throws(Error)]
-    fn logout(&self, session: &Session) {
-        if self.is_auth(session) {
-            self.sess.remove(session.id)?;
+    async fn logout(&self, session: &Session) {
+        if self.is_auth(session).await {
+            self.sess.remove(session.id).await?;
         }
     }
 
     #[throws(Error)]
-    fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
+    async fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
         let key = rand_string(10);
-        self.sess.insert_for(user_id, key.clone(), time)?;
+        self.sess.insert_for(user_id, key.clone(), time).await?;
         key
     }
 
     #[throws(Error)]
-    fn set_auth_key(&self, user_id: i32) -> String {
+    async fn set_auth_key(&self, user_id: i32) -> String {
         let key = rand_string(15);
-        self.sess.insert(user_id, key.clone())?;
+        self.sess.insert(user_id, key.clone()).await?;
         key
     }
 
@@ -68,7 +68,7 @@ impl Users {
         let result = self.create_user(email, password, false).await;
         match result {
             Ok(_) => (),
-            #[cfg(feature="sqlx")]
+            #[cfg(feature = "sqlx")]
             Err(Error::SqlxError(sqlx::Error::Database(error))) => {
                 if error.code() == Some("23000".into()) {
                     throw!(Error::EmailAlreadyExists)
@@ -88,7 +88,7 @@ impl Users {
         let user = self.conn.get_user_by_email(&form.email).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
-            self.set_auth_key_for(user.id, time)?
+            self.set_auth_key_for(user.id, time).await?
         } else {
             throw!(Error::UnauthorizedError)
         }

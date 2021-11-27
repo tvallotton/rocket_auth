@@ -180,9 +180,9 @@ impl<'a> Auth<'a> {
     /// }
     /// # fn main() {}
     /// ```
-    pub fn is_auth(&self) -> bool {
+    pub async fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
-            self.users.is_auth(session)
+            self.users.is_auth(session).await
         } else {
             false
         }
@@ -198,7 +198,7 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     pub async fn get_user(&self) -> Option<User> {
-        if !self.is_auth() {
+        if !self.is_auth().await {
             return None;
         }
         let id = self.session.as_ref()?.id;
@@ -219,9 +219,9 @@ impl<'a> Auth<'a> {
     /// }
     /// ```
     #[throws(Error)]
-    pub fn logout(&self) {
+    pub async fn logout(&self) {
         let session = self.get_session()?;
-        self.users.logout(session)?;
+        self.users.logout(session).await?;
         self.cookies.remove_private(Cookie::named("rocket_auth"));
     }
     /// Deletes the account of the currently authenticated user.
@@ -235,7 +235,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn delete(&self) {
-        if self.is_auth() {
+        if self.is_auth().await {
             let session = self.get_session()?;
             self.users.delete(session.id).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
@@ -255,7 +255,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_password(&self, password: &str) {
-        if self.is_auth() {
+        if self.is_auth().await {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id).await?;
             user.set_password(password)?;
@@ -274,7 +274,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_email(&self, email: String) {
-        if self.is_auth() {
+        if self.is_auth().await {
             if !validator::validate_email(&email) {
                 throw!(Error::InvalidEmailAddressError)
             }
