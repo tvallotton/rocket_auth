@@ -5,7 +5,6 @@
 //! * `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
 //! * `sqlx-mysql`: for interacting with a MySql database with `sqlx`.
 //! * `redis`: for storing sessions on a redis server using `redis`.
-//! * `rusqlite`: for interacting with a SQLite database using `rusqlite`.
 //! * `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
 //!
 //!
@@ -98,7 +97,7 @@
 //! ```
 //!
 //! A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
-//! [`open_postgres`](Users::open_postgres) or [`open_rusqlite`](Users::open_rusqlite). Furthermore, it can be constructed from a working connection.
+//! or [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection.
 //!
 //!
 //! ## User guard

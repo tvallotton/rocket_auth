@@ -2,9 +2,6 @@ use super::rand_string;
 use crate::db::DBConnection;
 use crate::prelude::*;
 
-#[cfg(feature = "rusqlite")]
-use std::path::Path;
-
 impl Users {
     /// It creates a `Users` instance by connecting  it to a sqlite database.
     /// This method uses the [`sqlx`] crate.
@@ -70,35 +67,6 @@ impl Users {
     pub fn open_redis(&mut self, path: impl redis::IntoConnectionInfo) {
         let client = redis::Client::open(path)?;
         self.sess = Box::new(client);
-    }
-
-    /// It creates a `Users` instance by connecting  it to a sqlite database.
-    /// This method uses the [`rusqlite`] crate.
-    /// If the database does not yet exist it will attempt to create it. By default,
-    /// sessions will be stored on a concurrent HashMap. In order to have persistent sessions see
-    /// the method [`open_redis`](Users::open_redis).
-    /// ```rust, no_run
-    /// # use rocket_auth::{Error, Users};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result <(), Error> {
-    /// let users = Users::open_rusqlite("database.db")?;
-    ///
-    /// rocket::build()
-    ///     .manage(users)
-    ///     .launch()
-    ///     .await;
-    /// # Ok(()) }
-    /// ```
-    #[cfg(feature = "rusqlite")]
-    #[throws(Error)]
-    pub fn open_rusqlite(path: impl AsRef<Path>) -> Self {
-        use tokio::sync::Mutex;
-        let users = Users {
-            conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
-            sess: Box::new(chashmap::CHashMap::new()),
-        };
-        futures::executor::block_on(users.conn.init())?;
-        users
     }
 
     /// It creates a `Users` instance by connecting  it to a postgres database.
