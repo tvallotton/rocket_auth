@@ -38,8 +38,8 @@ async fn index(user: Option<User>) -> Template {
 }
 
 #[get("/logout")]
-fn logout(auth: Auth<'_>) -> Result<Template, Error> {
-    auth.logout()?;
+async fn logout(auth: Auth<'_>) -> Result<Template, Error> {
+    auth.logout().await?;
     Ok(Template::render("logout", json!({})))
 }
 #[get("/delete")]

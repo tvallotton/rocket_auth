@@ -10,7 +10,6 @@ impl SessionManager for Client {
     async fn insert(&self, id: i32, key: String) -> Result {
         let mut cnn = self.get_async_connection().await?;
         cnn.set_ex(id, key, YEAR_IN_SECS).await?;
-
         Ok(())
     }
 
