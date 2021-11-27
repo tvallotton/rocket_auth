@@ -15,7 +15,7 @@
 //!
 //!
 //! To use `rocket_auth` include it as a dependency in your Cargo.toml file:
-//! ```
+//! ```toml
 //! [dependencies.rocket_auth]
 //! version = "0.4.0"
 //! features = ["sqlx-sqlite"]
@@ -163,7 +163,6 @@ pub use error::Error;
 /// fn private_content(user: User) -> &'static str {
 ///     "If you can see this, you are logged in."
 /// }
-/// # fn main() {}
 /// ```
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]

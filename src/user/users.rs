@@ -131,7 +131,6 @@ impl Users {
     ///     let user = users.get_by_email(&email).await?;
     ///     Ok(format!("{:?}", user))
     /// }
-    /// # fn main() {}
     /// ```
     #[throws(Error)]
     pub async fn get_by_email(&self, email: &str) -> User {
@@ -148,7 +147,6 @@ impl Users {
     ///  format!("{:?}", user);
     /// # Ok(())
     /// # }
-    /// # fn main() {}
     /// ```
     #[throws(Error)]
     pub async fn get_by_id(&self, user_id: i32) -> User {
@@ -164,7 +162,6 @@ impl Users {
     ///     users.create_user(&email, &password, true).await?;
     ///     Ok("User created successfully".into())
     /// }
-    /// # fn main() {}
     /// ```
     #[throws(Error)]
     pub async fn create_user(&self, email: &str, password: &str, is_admin: bool) {
@@ -178,8 +175,11 @@ impl Users {
     /// Deletes a user from de database. Note that this method won't delete the session.
     /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// ```
+    /// # use rocket_auth::Result; 
+    /// # use rocket::{get, State}; 
+    /// # use rocket_auth::Users;
     /// #[get("/delete_user/<id>")]
-    /// async fn delete_user(id: i32, users: &State<Users>) -> Result<String> {
+    /// async fn delete_user(id: i32, users: &State<Users>) -> Result<&'static str> {
     ///     users.delete(id).await?;
     ///     Ok("The user has been deleted.")
     /// }

@@ -171,14 +171,13 @@ impl<'a> Auth<'a> {
     /// # use rocket::{get};
     /// # use rocket_auth::{Auth};
     /// #[get("/am-I-authenticated")]
-    /// fn is_auth(auth: Auth<'_>) -> &'static str {
-    ///     if auth.is_auth() {
+    /// async fn is_auth(auth: Auth<'_>) -> &'static str {
+    ///     if auth.is_auth().await {
     ///         "Yes you are."
     ///     } else {
     ///         "nope."
     ///     }
     /// }
-    /// # fn main() {}
     /// ```
     pub async fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
@@ -267,10 +266,13 @@ impl<'a> Auth<'a> {
 
     /// Changes the email of the currently authenticated user
     /// ```
-    /// # use rocket_auth::Auth;
-    /// # fn func(auth: Auth) {
-    /// auth.change_email("new@email.com".into());
-    /// # }
+    /// # use rocket::post; 
+    /// # use rocket_auth::{Auth, Result};
+    /// #[post("/user/change-email", data="<new_email>")]
+    /// async fn change_email(new_email: String, auth: Auth<'_>) -> Result {
+    ///     auth.change_email(new_email).await?;
+    ///     Ok(())
+    /// }
     /// ```
     #[throws(Error)]
     pub async fn change_email(&self, email: String) {
