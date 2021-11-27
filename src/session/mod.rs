@@ -7,12 +7,12 @@ pub mod redis;
 
 
 pub trait SessionManager: Send + Sync {
-    fn insert(&self, id: i32, key: String) -> Result<()>;
-    fn insert_for(&self, id: i32, key: String, time: Duration) -> Result<()>;
-    fn remove(&self, id: i32) -> Result<()>;
+    fn insert(&self, id: i32, key: String) -> Result;
+    fn insert_for(&self, id: i32, key: String, time: Duration) -> Result;
+    fn remove(&self, id: i32) -> Result;
     fn get(&self, id: i32) -> Option<String>;
-    fn clear_all(&self) -> Result<()>;
-    fn clear_expired(&self) -> Result<()>;
+    fn clear_all(&self) -> Result;
+    fn clear_expired(&self) -> Result;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

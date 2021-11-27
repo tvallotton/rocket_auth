@@ -296,8 +296,9 @@ impl<'a> Auth<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn get_session(&self) -> Result<&Session> {
+    #[throws(Error)]
+    pub fn get_session(&self) -> &Session {
         let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
-        Ok(session)
+        session
     }
 }
