@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::cookies::Authenticated;
+use crate::{cookies, prelude::*};
 use rocket::http::Status;
 use rocket::http::{Cookie, CookieJar};
 use rocket::request::FromRequest;
@@ -48,7 +49,7 @@ pub struct Auth<'a> {
     /// `Auth` includes in its fields a [`Users`] instance. Therefore, it is not necessary to retrieve `Users` when using this guard.
     pub users: &'a State<Users>,
     pub cookies: &'a CookieJar<'a>,
-    pub session: Option<Session>,
+    pub(crate) session: Option<Session>,
 }
 
 #[async_trait]
@@ -91,12 +92,12 @@ impl<'a> Auth<'a> {
     pub async fn login(&self, form: &Login) {
         let key = self.users.login(form).await?;
         let user = self.users.get_by_email(&form.email).await?;
-        let session = Session {
+        let session = Session::Authenticated(cookies::Authenticated {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now(),
-        };
+            timestamp: now(),
+        });
         let to_str = format!("{}", json!(session));
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
     }
@@ -117,12 +118,12 @@ impl<'a> Auth<'a> {
         let key = self.users.login_for(form, time).await?;
         let user = self.users.get_by_email(&form.email).await?;
 
-        let session = Session {
+        let session = Session::Authenticated(Authenticated {
             id: user.id,
             email: user.email,
             auth_key: key,
-            time_stamp: now(),
-        };
+            timestamp: now(),
+        });
         let to_str = format!("{}", json!(session));
         let cookie = Cookie::new("rocket_auth", to_str);
         self.cookies.add_private(cookie);
@@ -181,7 +182,7 @@ impl<'a> Auth<'a> {
     /// ```
     pub async fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
-            self.users.is_auth(session).await
+            self.users.is_auth(session).await.is_some()
         } else {
             false
         }
@@ -200,7 +201,7 @@ impl<'a> Auth<'a> {
         if !self.is_auth().await {
             return None;
         }
-        let id = self.session.as_ref()?.id;
+        let id = self.session.as_ref()?.id().ok()?;
         if let Ok(user) = self.users.get_by_id(id).await {
             Some(user)
         } else {
@@ -236,7 +237,7 @@ impl<'a> Auth<'a> {
     pub async fn delete(&self) {
         if self.is_auth().await {
             let session = self.get_session()?;
-            self.users.delete(session.id).await?;
+            self.users.delete(session.id()?).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
         } else {
             throw!(Error::UnauthenticatedError)
@@ -256,7 +257,7 @@ impl<'a> Auth<'a> {
     pub async fn change_password(&self, password: &str) {
         if self.is_auth().await {
             let session = self.get_session()?;
-            let mut user = self.users.get_by_id(session.id).await?;
+            let mut user = self.users.get_by_id(session.id()?).await?;
             user.set_password(password)?;
             self.users.modify(&user).await?;
         } else {
@@ -266,7 +267,7 @@ impl<'a> Auth<'a> {
 
     /// Changes the email of the currently authenticated user
     /// ```
-    /// # use rocket::post; 
+    /// # use rocket::post;
     /// # use rocket_auth::{Auth, Result};
     /// #[post("/user/change-email", data="<new_email>")]
     /// async fn change_email(new_email: String, auth: Auth<'_>) -> Result {
@@ -281,7 +282,7 @@ impl<'a> Auth<'a> {
                 throw!(Error::InvalidEmailAddressError)
             }
             let session = self.get_session()?;
-            let mut user = self.users.get_by_id(session.id).await?;
+            let mut user = self.users.get_by_id(session.id()?).await?;
             user.email = email;
             self.users.modify(&user).await?;
         } else {
@@ -299,7 +300,7 @@ impl<'a> Auth<'a> {
     /// # }
     /// ```
     #[throws(Error)]
-    pub fn get_session(&self) -> &Session {
+    pub(crate) fn get_session(&self) -> &Session {
         let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
         session
     }

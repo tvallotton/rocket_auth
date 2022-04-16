@@ -15,13 +15,13 @@ pub fn rand_string(size: usize) -> String {
 }
 
 impl Users {
-    async fn is_auth(&self, session: &Session) -> bool {
-        let option = self.sess.get(session.id).await;
-        if let Some(auth_key) = option {
-            auth_key == session.auth_key
-        } else {
-            false
+    async fn is_auth(&self, session: &Session) -> Option<()> {
+        let auth = session.auth()?;
+        let auth_key = self.sess.get(auth.id).await?;
+        if auth_key == auth.auth_key {
+            return Some(());
         }
+        None
     }
 
     #[throws(Error)]
@@ -41,8 +41,8 @@ impl Users {
     }
     #[throws(Error)]
     async fn logout(&self, session: &Session) {
-        if self.is_auth(session).await {
-            self.sess.remove(session.id).await?;
+        if self.is_auth(session).await.is_some() {
+            self.sess.remove(session.id()?).await?;
         }
     }
 
