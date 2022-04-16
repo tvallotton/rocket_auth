@@ -151,7 +151,6 @@ pub use prelude::*;
 
 // pub use language::Language;
 pub use crate::user::auth::Auth;
-pub use cookies::Session;
 pub use error::Error;
 
 /// The `User` guard can be used to restrict content so it can only be viewed by authenticated users.

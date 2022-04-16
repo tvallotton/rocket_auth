@@ -9,21 +9,52 @@ use serde_json::from_str;
 /// may have expired. The Session guard is intended for purposes where
 /// verifying the validity of the session data is unnecessary.
 ///
-/// Note that,
-/// session data is already captured by the [`Auth`](`crate::Auth`) guard and stored in the public [`session`](`crate::Auth`) field.
+/// Note that, session data is already captured by the [`Auth`](`crate::Auth`)
+/// guard and stored in the public [`session`](`crate::Auth`) field.
 /// So it is not necessary to use them together.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Session {
-    /// It represents the Unix time in which the user logged in. It is measured in seconds.
-    pub time_stamp: i64,
-    /// The user id as it is stored on the database.
-    pub id: i32,
-    /// The user email.
-    pub email: String,
-    /// An random authentication token key.
-    pub auth_key: String,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub(crate) enum Session {
+    Authenticated(Authenticated),
+    Unauthenticated(Unauthenticated),
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub(crate) struct Authenticated {
+    /// It represents the Unix time in which the user logged in. It is measured in seconds.
+    pub(crate) timestamp: i64,
+    /// The user id as it is stored on the database.
+    pub(crate) id: i32,
+    /// The user email.
+    pub(crate) email: String,
+    /// A random authentication token key.
+    pub(crate) auth_key: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub(crate) struct Unauthenticated {}
+
+impl Session {
+    #[throws(Error)]
+    pub(crate) fn id(&self) -> i32 {
+        match self {
+            Session::Authenticated(Authenticated { id, .. }) => *id,
+            _ => throw!(Error::UnauthenticatedError),
+        }
+    }
+    pub(crate) fn auth(&self) -> Option<&Authenticated> {
+        match self {
+            Session::Authenticated(auth) => Some(auth),
+            _ => None,
+        }
+    }
+    #[allow(dead_code)]
+    pub(crate) fn unauth(&self) -> Option<&Unauthenticated> {
+        match self {
+            Session::Unauthenticated(unauth) => Some(unauth),
+            _ => None,
+        }
+    }
+}
 
 #[async_trait]
 impl<'r> FromRequest<'r> for Session {

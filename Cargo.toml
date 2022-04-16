@@ -36,6 +36,7 @@ fehler = "1.0.0"
 chrono = "0.4.19"
 validator = { version = "0.14.0", features = ["derive"] }
 rocket_lang = "0.0.2"
+rocket-sessions = "0.0.1"
 
 
 [dependencies.sqlx]
