@@ -33,13 +33,13 @@ impl User {
         self.password = hash;
     }
 
-    /// Compares the password of the currently authenticated user with a new password.
+    /// Compares the password of the currently authenticated user with a another password.
     /// Useful for checking password before resetting email/password.
     /// To avoid bruteforcing this function should not be directly accessible from a route.
     /// Additionally, it is good to implement rate limiting on routes using this function.
     #[throws(Error)]
-    pub async fn compare_password(&self, new_password: &str) -> bool {
-        verify_encoded(&self.password, new_password.as_bytes())?
+    pub fn compare_password(&self, password: &str) -> bool {
+        verify_encoded(&self.password, password.as_bytes())?
     }
 
     /// This is an accessor function for the private `id` field.

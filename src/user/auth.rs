@@ -7,7 +7,6 @@ use rocket::Request;
 use rocket::State;
 use serde_json::json;
 use std::time::Duration;
-use argon2::verify_encoded;
 
 /// The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
 /// For more information see [`Auth`].
@@ -305,16 +304,16 @@ impl<'a> Auth<'a> {
         session
     }
 
-    /// Compares the password of the currently authenticated user with a new password.
+    /// Compares the password of the currently authenticated user with another password.
     /// Useful for checking password before resetting email/password.
     /// To avoid bruteforcing this function should not be directly accessible from a route.
     /// Additionally, it is good to implement rate limiting on routes using this function.
     #[throws(Error)]
-    pub async fn compare_password(&self, new_password: &str) -> bool {
+    pub async fn compare_password(&self, password: &str) -> bool {
         if self.is_auth().await {
-            let session = self.get_session()?;
-            let mut user: User = self.users.get_by_id(session.id).await?;
-            verify_encoded(&user.password, new_password.as_bytes())?
+            let session = self.get_session()?; 
+            let user: User = self.users.get_by_id(session.id).await?;
+            user.compare_password(password)?
         } else {
             throw!(Error::UnauthorizedError)
         }
