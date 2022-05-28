@@ -141,12 +141,14 @@ mod forms;
 pub mod prelude;
 mod session;
 mod user;
+mod crsf_token; 
+
 
 #[cfg(test)]
 mod tests;
 
 use std::fmt::Debug;
-
+pub use crsf_token::CsrfToken; 
 pub use prelude::*;
 
 // pub use language::Language;
