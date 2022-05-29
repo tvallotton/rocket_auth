@@ -61,7 +61,7 @@ async fn show_all_users(conn: &State<PgPool>, user: Option<User>) -> Result<Temp
 async fn main() -> Result<(), Error> {
     let conn = PgPool::connect("postgres://user:password@localhost/").await?;
     let users: Users = conn.clone().into();
-    users.create_table().await?; 
+    users.create_table().await?;
     rocket::build()
         .mount(
             "/",

@@ -1,4 +1,4 @@
-use rocket::{State, form::*, get, post, response::Redirect, routes};
+use rocket::{form::*, get, post, response::Redirect, routes, State};
 use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
@@ -62,7 +62,7 @@ async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<
 async fn main() -> Result<(), Error> {
     let conn = SqlitePool::connect("database.db").await?;
     let users: Users = conn.clone().into();
-    users.create_table().await?; 
+    users.create_table().await?;
 
     rocket::build()
         .mount(

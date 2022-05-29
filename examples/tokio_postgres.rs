@@ -49,7 +49,10 @@ async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(client: &State<sync::Arc<Client>>, user: Option<User>) -> Result<Template, Error> {
+async fn show_all_users(
+    client: &State<sync::Arc<Client>>,
+    user: Option<User>,
+) -> Result<Template, Error> {
     let users: Vec<User> = client
         .query("select * from users;", &[])
         .await?
@@ -70,14 +73,13 @@ async fn main() -> Result<(), Error> {
     let (client, conn) = connect("host=localhost user=postgres", NoTls).await?;
     let client = sync::Arc::new(client);
     let users: Users = client.clone().into();
-    
 
     tokio::spawn(async move {
         if let Err(e) = conn.await {
             eprintln!("TokioPostgresError: {}", e);
         }
     });
-    users.create_table().await?; 
+    users.create_table().await?;
     rocket::build()
         .mount(
             "/",
