@@ -144,8 +144,8 @@ impl<'r> FromRequest<'r> for AdminUser {
     }
 }
 
-use std::ops::*;
 use argon2::verify_encoded;
+use std::ops::*;
 
 impl Deref for AdminUser {
     type Target = User;

@@ -175,8 +175,8 @@ impl Users {
     /// Deletes a user from de database. Note that this method won't delete the session.
     /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// ```
-    /// # use rocket_auth::Result; 
-    /// # use rocket::{get, State}; 
+    /// # use rocket_auth::Result;
+    /// # use rocket::{get, State};
     /// # use rocket_auth::Users;
     /// #[get("/delete_user/<id>")]
     /// async fn delete_user(id: i32, users: &State<Users>) -> Result<&'static str> {

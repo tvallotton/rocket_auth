@@ -18,7 +18,7 @@ impl Users {
     async fn is_auth(&self, session: &Session) -> Option<()> {
         let auth = session.auth()?;
         let auth_key = self.sess.get(auth.id).await?;
-        if auth_key == auth.auth_key {
+        if auth_key == auth.session_id {
             return Some(());
         }
         None

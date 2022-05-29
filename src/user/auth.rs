@@ -95,7 +95,7 @@ impl<'a> Auth<'a> {
         let session = Session::Authenticated(cookies::Authenticated {
             id: user.id,
             email: user.email,
-            auth_key: key,
+            session_id: key,
             timestamp: now(),
         });
         let to_str = format!("{}", json!(session));
@@ -121,7 +121,7 @@ impl<'a> Auth<'a> {
         let session = Session::Authenticated(Authenticated {
             id: user.id,
             email: user.email,
-            auth_key: key,
+            session_id: key,
             timestamp: now(),
         });
         let to_str = format!("{}", json!(session));
@@ -312,7 +312,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn compare_password(&self, password: &str) -> bool {
         if self.is_auth().await {
-            let session = self.get_session()?; 
+            let session = self.get_session()?;
             let user: User = self.users.get_by_id(session.id()?).await?;
             user.compare_password(password)?
         } else {
