@@ -48,16 +48,16 @@ impl Users {
 
     #[throws(Error)]
     async fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
-        let key = rand_string(10);
-        self.sess.insert_for(user_id, key.clone(), time).await?;
-        key
+        let session_id = rand_string(32);
+        self.sess.insert(user_id, &session_id, time).await?;
+        session_id
     }
 
     #[throws(Error)]
     async fn set_auth_key(&self, user_id: i32) -> String {
-        let key = rand_string(15);
-        self.sess.insert(user_id, key.clone()).await?;
-        key
+        let duration = 7 * 24 * 60 * 60;
+        let duration = Duration::from_secs(duration);
+        self.set_auth_key_for(user_id, duration).await?
     }
 
     #[throws(Error)]

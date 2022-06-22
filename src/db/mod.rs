@@ -1,8 +1,8 @@
+#[cfg(feature = "sqlx-mysql")]
+mod mysql;
 #[cfg(feature = "sqlx-postgres")]
 mod postgres;
-#[cfg(feature="sqlx-mysql")]
-mod mysql;
-#[cfg(feature="sqlx-sqlite")]
+#[cfg(feature = "sqlx-sqlite")]
 mod sqlite;
 #[cfg(feature = "tokio-postgres")]
 mod tokio_postgres;
@@ -10,7 +10,7 @@ mod tokio_postgres;
 use crate::prelude::*;
 
 #[rocket::async_trait]
-pub trait DBConnection: Send + Sync {
+pub(crate) trait DBConnection: Send + Sync {
     async fn init(&self) -> Result;
     async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error>;
     async fn update_user(&self, user: &User) -> Result;
@@ -45,7 +45,6 @@ impl<T: DBConnection> DBConnection for std::sync::Arc<T> {
     }
 }
 
-
 #[rocket::async_trait]
 impl<T: DBConnection> DBConnection for tokio::sync::Mutex<T> {
     async fn init(&self) -> Result {
@@ -70,4 +69,3 @@ impl<T: DBConnection> DBConnection for tokio::sync::Mutex<T> {
         self.lock().await.get_user_by_email(email).await
     }
 }
-

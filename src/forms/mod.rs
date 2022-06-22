@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
 #[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, Validate)]
 pub struct Login {

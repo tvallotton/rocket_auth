@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use super::AuthKey;
 use super::SessionManager;
 use crate::prelude::*;
@@ -5,8 +7,12 @@ use chashmap::CHashMap;
 
 #[async_trait]
 impl SessionManager for CHashMap<i32, AuthKey> {
-    async fn insert(&self, id: i32, key: String) -> Result {
-        self.insert(id, key.into());
+    async fn insert(&self, user_id: i32, session_id: &str, time: Duration) -> Result {
+        let key = AuthKey {
+            expires: time.as_secs() as i64,
+            secret: session_id.into(),
+        };
+        self.insert(user_id, key);
         Ok(())
     }
 
@@ -22,15 +28,6 @@ impl SessionManager for CHashMap<i32, AuthKey> {
 
     async fn clear_all(&self) -> Result {
         self.clear();
-        Ok(())
-    }
-
-    async fn insert_for(&self, id: i32, key: String, time: Duration) -> Result {
-        let key = AuthKey {
-            expires: time.as_secs() as i64,
-            secret: key,
-        };
-        self.insert(id, key);
         Ok(())
     }
 

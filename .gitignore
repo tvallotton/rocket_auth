@@ -3,3 +3,4 @@ Cargo.lock
 examples/database.db
 .vscode
 .DS_Store
+.*

@@ -27,11 +27,14 @@ pub(crate) struct Authenticated {
     pub(crate) id: i32,
     /// The user email.
     pub(crate) email: String,
-    /// A random authentication token key.
-    pub(crate) auth_key: String,
+    /// a random session identifier.
+    pub(crate) session_id: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub(crate) struct Unauthenticated {}
+pub(crate) struct Unauthenticated {
+    /// a random session identifier.
+    pub(crate) session_id: String,
+}
 
 impl Session {
     #[throws(Error)]

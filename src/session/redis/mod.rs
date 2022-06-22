@@ -3,19 +3,12 @@ use crate::prelude::*;
 
 use redis::{AsyncCommands, Client};
 
-const YEAR_IN_SECS: usize = 365 * 60 * 60 * 24;
-
 #[async_trait]
 impl SessionManager for Client {
-    async fn insert(&self, id: i32, key: String) -> Result {
+    async fn insert(&self, user_id: i32, session_id: &str, time: Duration) -> Result {
         let mut cnn = self.get_async_connection().await?;
-        cnn.set_ex(id, key, YEAR_IN_SECS).await?;
-        Ok(())
-    }
-
-    async fn insert_for(&self, id: i32, key: String, time: Duration) -> Result {
-        let mut cnn = self.get_async_connection().await?;
-        cnn.set_ex(id, key, time.as_secs() as usize).await?;
+        cnn.set_ex(session_id, user_id, time.as_secs() as usize)
+            .await?;
         Ok(())
     }
 

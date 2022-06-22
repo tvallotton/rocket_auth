@@ -133,23 +133,23 @@
 //! }
 //! ```
 
-
 mod cookies;
+mod csrf_token;
 mod db;
 mod error;
 mod forms;
+#[macro_export]
 pub mod prelude;
 mod session;
 mod user;
-mod crsf_token; 
-
+mod config; 
 
 #[cfg(test)]
 mod tests;
 
-use std::fmt::Debug;
-pub use crsf_token::CsrfToken; 
+pub use csrf_token::CsrfToken;
 pub use prelude::*;
+use std::fmt::Debug;
 
 // pub use language::Language;
 pub use crate::user::auth::Auth;
