@@ -24,7 +24,7 @@ sqlx-mysql = ["sqlx/mysql"]
 
 
 [dependencies.rusqlite]
-version = "0.25.3"
+version = ">=0.25.3"
 optional = true
 
 
