@@ -63,7 +63,7 @@ impl Users {
     #[throws(Error)]
     async fn signup(&self, form: &Signup) {
         form.validate()?;
-        let email = &form.email;
+        let email = &form.email.to_lowercase();
         let password = &form.password;
         let result = self.create_user(email, password, false).await;
         match result {
