@@ -16,7 +16,7 @@ pub(crate) const UPDATE_USER: &str = "
 UPDATE users SET 
     email = ?2,
     password = ?3,
-    is_admin = ?4,
+    is_admin = ?4
 WHERE
     id = ?1;
 ";
