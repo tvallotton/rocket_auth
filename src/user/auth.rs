@@ -304,4 +304,19 @@ impl<'a> Auth<'a> {
         let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
         session
     }
+
+    /// Compares the password of the currently authenticated user with another password.
+    /// Useful for checking password before resetting email/password.
+    /// To avoid bruteforcing this function should not be directly accessible from a route.
+    /// Additionally, it is good to implement rate limiting on routes using this function.
+    #[throws(Error)]
+    pub async fn compare_password(&self, password: &str) -> bool {
+        if self.is_auth().await {
+            let session = self.get_session()?; 
+            let user: User = self.users.get_by_id(session.id()?).await?;
+            user.compare_password(password)?
+        } else {
+            throw!(Error::UnauthorizedError)
+        }
+    }
 }
