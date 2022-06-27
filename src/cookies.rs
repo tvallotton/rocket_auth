@@ -1,4 +1,8 @@
-use crate::prelude::*;
+use crate::user::rand_string;
+use crate::{prelude::*, CsrfToken};
+use once_cell::sync::Lazy;
+use rand::distributions::Alphanumeric;
+use rand::prelude::*;
 use rocket::http::{CookieJar, Status};
 use rocket::request::{FromRequest, Outcome, Request};
 use serde_json::from_str;
@@ -37,6 +41,29 @@ pub(crate) struct Unauthenticated {
 }
 
 impl Session {
+    /// returns the csrf token for this session.
+    pub(crate) fn csrf_token(&self) -> CsrfToken {
+        /// Secret key used to generate csrf tokens for sessions
+        static SECRET_KEY: Lazy<String> = Lazy::new(|| rand_string(32));
+        let mut seeder = rand_seeder::Seeder::from((self.session_id(), &*SECRET_KEY));
+
+        let crsf_token = seeder
+            .make_rng::<SmallRng>()
+            .sample_iter(&Alphanumeric)
+            .take(32)
+            .map(char::from)
+            .collect();
+        CsrfToken(crsf_token)
+    }
+    /// returns the session identifier. This is used to look up
+    /// the user in the session manager.
+    pub fn session_id(&self) -> &str {
+        match self {
+            Self::Unauthenticated(unauth) => &*unauth.session_id,
+            Self::Authenticated(auth) => &*auth.session_id,
+        }
+    }
+
     #[throws(Error)]
     pub(crate) fn id(&self) -> i32 {
         match self {
@@ -57,6 +84,12 @@ impl Session {
             _ => None,
         }
     }
+
+    #[throws(as Option)]
+    pub(crate)fn from_cookies(cookies: &CookieJar) -> Session {
+        let session = cookies.get_private("rocket_auth")?;
+        from_str(session.value()).ok()?
+    }
 }
 
 #[async_trait]
@@ -65,15 +98,10 @@ impl<'r> FromRequest<'r> for Session {
     async fn from_request(request: &'r Request<'_>) -> Outcome<Session, Self::Error> {
         let cookies = request.cookies();
 
-        if let Some(session) = get_session(cookies) {
+        if let Some(session) = Self::from_cookies(cookies) {
             Outcome::Success(session)
         } else {
             Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
         }
     }
-}
-#[throws(as Option)]
-fn get_session(cookies: &CookieJar) -> Session {
-    let session = cookies.get_private("rocket_auth")?;
-    from_str(session.value()).ok()?
 }

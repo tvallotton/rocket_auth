@@ -3,25 +3,23 @@ mod user_impl;
 mod users;
 use crate::prelude::*;
 use argon2::verify_encoded as verify;
+use rand::{distributions::Alphanumeric, Rng, SeedableRng};
 
-use rand::random;
 pub fn rand_string(size: usize) -> String {
-    (0..)
-        .map(|_| random::<char>())
-        .filter(|c| c.is_ascii())
-        .map(char::from)
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
         .take(size)
+        .map(char::from)
         .collect()
 }
 
 impl Users {
-    async fn is_auth(&self, session: &Session) -> Option<()> {
+    async fn is_auth(&self, session: &Session) -> bool {
+        self.user_id(session).await.is_some()
+    }
+    async fn user_id(&self, session: &Session) -> Option<i32> {
         let auth = session.auth()?;
-        let auth_key = self.sess.get(auth.id).await?;
-        if auth_key == auth.session_id {
-            return Some(());
-        }
-        None
+        self.sess.get(&auth.session_id).await?
     }
 
     #[throws(Error)]
@@ -41,15 +39,15 @@ impl Users {
     }
     #[throws(Error)]
     async fn logout(&self, session: &Session) {
-        if self.is_auth(session).await.is_some() {
-            self.sess.remove(session.id()?).await?;
+        if self.is_auth(session).await {
+            self.sess.destroy(session.session_id()).await;
         }
     }
 
     #[throws(Error)]
     async fn set_auth_key_for(&self, user_id: i32, time: Duration) -> String {
         let session_id = rand_string(32);
-        self.sess.insert(user_id, &session_id, time).await?;
+        self.sess.create_auth(&session_id, user_id, time).await?;
         session_id
     }
 

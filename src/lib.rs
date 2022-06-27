@@ -148,8 +148,10 @@ mod config;
 mod tests;
 
 pub use csrf_token::CsrfToken;
+pub use config::Config; 
 pub use prelude::*;
 use std::fmt::Debug;
+
 
 // pub use language::Language;
 pub use crate::user::auth::Auth;

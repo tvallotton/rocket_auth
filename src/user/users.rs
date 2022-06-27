@@ -1,6 +1,7 @@
 use super::rand_string;
 use crate::db::DBConnection;
 use crate::prelude::*;
+use crate::session::default::DefaultManager;
 
 impl Users {
     /// It creates a `Users` instance by connecting  it to a sqlite database.
@@ -92,7 +93,7 @@ impl Users {
         conn.init().await?;
         let users = Users {
             conn: Box::new(conn),
-            sess: Box::new(chashmap::CHashMap::new()),
+            sess: Box::new(DefaultManager::default()),
         };
         users
     }
@@ -185,9 +186,8 @@ impl Users {
     /// }
     /// ```
     #[throws(Error)]
-    pub async fn delete(&self, id: i32) {
-        self.sess.remove(id).await?;
-        self.conn.delete_user_by_id(id).await?;
+    pub async fn delete(&self, user_id: i32) {
+        self.conn.delete_user_by_id(user_id).await?;
     }
 
     /// Modifies a user in the database.
@@ -223,7 +223,7 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
     fn from(db: Conn) -> Users {
         Users {
             conn: Box::from(db),
-            sess: Box::new(chashmap::CHashMap::new()),
+            sess: Box::new(DefaultManager::default()),
         }
     }
 }

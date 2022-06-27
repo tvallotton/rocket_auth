@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use rocket::http::Cookie;
+
 use rocket::http::SameSite;
 use std::time::Duration;
 
@@ -14,7 +14,7 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub struct Config {
     /// defaults to WriteOnly.
-    pub require_csrf_token: RequiredCrsf,
+    pub require_csrf_token: RequiredCsrf,
 
     /// defaults to strict
     pub same_site: SameSite,
@@ -31,7 +31,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            require_csrf_token: RequiredCrsf::WriteOnly,
+            require_csrf_token: RequiredCsrf::WriteOnly,
             same_site: SameSite::Strict,
             secure_cookie: true,
             private_session_cookie: true,
@@ -48,18 +48,18 @@ pub enum CsrfGeneration {
 }
 
 #[derive(Debug, Clone)]
-pub enum RequiredCrsf {
+pub enum RequiredCsrf {
     /// No authenticated action will require a csrf_token.
     /// Setting this option to never implies that the cookies
     /// containing the session data will be automatically
     /// set to `"strict"`, and that post requests comming from
     /// a different origin will be blocked by default. Beware, not
     /// all [browsers support same-site](https://caniuse.com/same-site-cookie-attribute)
-    /// cookies, which would make them
-    /// vulnerable to
+    /// cookies, which would make users of these browsers
+    /// vulnerable to cross site request forgery attacks. 
     Never,
     /// Only `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"` methods will require
-    /// a csrf_token.
+    /// a csrf_token. This is the default behavior. 
     WriteOnly,
     /// All authetincated actions will require a valid
     /// csrf_token.

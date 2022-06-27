@@ -1,12 +1,15 @@
-use crate::cookies::Authenticated;
-use crate::{cookies, prelude::*};
+use crate::cookies::{Authenticated, Unauthenticated};
+use crate::user::rand_string;
+use crate::{cookies, prelude::*, session, CsrfToken};
+use cookie::time;
+use rocket::http::private::cookie::CookieBuilder;
 use rocket::http::Status;
 use rocket::http::{Cookie, CookieJar};
 use rocket::request::FromRequest;
 use rocket::request::Outcome;
 use rocket::Request;
 use rocket::State;
-use serde_json::json;
+use serde_json::{json, to_string};
 use std::time::Duration;
 
 /// The [`Auth`] guard allows to log in, log out, sign up, modify, and delete the currently (un)authenticated user.
@@ -28,7 +31,7 @@ use std::time::Duration;
 ///     auth.login(&form);
 /// }
 ///
-/// #[get("/logout")]
+/// #[post("/logout")]
 /// fn logout(auth: Auth) {
 ///     auth.logout();
 /// }
@@ -77,6 +80,32 @@ impl<'r> FromRequest<'r> for Auth<'r> {
 }
 
 impl<'a> Auth<'a> {
+    
+    pub async fn csrf_token(&self) -> CsrfToken {
+        match &self.session {
+            Some(session) => session.csrf_token(),
+            None => {
+                // this is necessary so if users call `crsf_token()` twice
+                // the previous csrf token doesn't get invalidated by resetting the
+                // rocket_auth cookie
+                if let Some(session) = Session::from_cookies(self.cookies) {
+                    return session.csrf_token();
+                }
+                self.create_session().await.csrf_token()
+            }
+        }
+    }
+    
+    async fn create_session(&self) -> Session {
+        let session = Session::Unauthenticated(Unauthenticated {
+            session_id: rand_string(32),
+        });
+        let cookie_value = to_string(&session).unwrap();
+        self.cookies
+            .add_private(Cookie::new("rocket_auth", cookie_value));
+        session
+    }
+
     /// Logs in the user through a parsed form or json.
     /// The session is set to expire in one year by default.
     /// For a custom expiration date use [`Auth::login_for`].
@@ -98,7 +127,7 @@ impl<'a> Auth<'a> {
             session_id: key,
             timestamp: now(),
         });
-        let to_str = format!("{}", json!(session));
+        let to_str = to_string(&session).unwrap();
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
     }
 
@@ -182,7 +211,7 @@ impl<'a> Auth<'a> {
     /// ```
     pub async fn is_auth(&self) -> bool {
         if let Some(session) = &self.session {
-            self.users.is_auth(session).await.is_some()
+            self.users.is_auth(session).await
         } else {
             false
         }

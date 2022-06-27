@@ -1,8 +1,7 @@
 use crate::prelude::try_outcome;
-use crate::{cookies::Unauthenticated, Users};
-use crate::{Auth, Session::*};
 
 use crate::{error::Error, user::rand_string, Session};
+use once_cell::sync::Lazy;
 use rocket::State;
 use rocket::{
     async_trait,
@@ -16,10 +15,11 @@ use std::ops::Deref;
 
 /// The `CsrfToken` struct is used to prevent cross
 /// site request forgery attacks. When used as a request
-/// guard, it sets the csrf_token in the users session.
-/// Then the token should be placed in the form or the
-/// json being sent by the client so it can be verified in
-/// future requests.
+/// guard, it retrieves the csrf_token from the users
+/// session. If the user does not have a session, one will be
+/// created for them. Then the token should be placed in the
+/// form or the json being sent by the client so it can be
+/// verified in future requests.
 /// ```rust
 /// #[get("/delete-account")]
 /// fn delete_account(token: CsrfToken) -> Template {
@@ -27,8 +27,8 @@ use std::ops::Deref;
 ///     Template::delete("/delete-account", &cxt)
 /// }
 /// #[delete("/delete-account")]
-/// fn delete_account(user: User) -> Redirect {
-///     user.delete().await;
+/// fn delete_account(auth: Auth<'_>) -> Redirect {
+///     auth.delete().await;
 ///     Redirect::to(uri!("/"))
 /// }
 /// ```
@@ -46,10 +46,10 @@ use std::ops::Deref;
 /// the token sent by the client.
 ///
 /// CSRF tokens are only checked when using the `"POST"`, `"PUT"`, `"PATCH"`, or
-/// `"DELETE"` methods.
+/// `"DELETE"` methods. This behavior can be configured with [Config](`crate::config::Config`).
 ///
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CsrfToken(String);
+pub struct CsrfToken(pub(crate) String);
 
 #[async_trait]
 impl<'r> FromRequest<'r> for CsrfToken {
@@ -65,7 +65,7 @@ impl<'r> FromRequest<'r> for CsrfToken {
         let session: Session = try_outcome!(outcome);
         // let outcome = request.guard().await;
         // let users: State<Users> = try_outcome!(outcome);
-        
+
         // match session {
         //     Authenticated(auth) => {
         //         users.sess.insert(id, key)
