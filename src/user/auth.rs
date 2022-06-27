@@ -1,8 +1,7 @@
 use crate::cookies::{Authenticated, Unauthenticated};
 use crate::user::rand_string;
-use crate::{cookies, prelude::*, session, CsrfToken};
-use cookie::time;
-use rocket::http::private::cookie::CookieBuilder;
+use crate::{cookies, prelude::*, CsrfToken};
+
 use rocket::http::Status;
 use rocket::http::{Cookie, CookieJar};
 use rocket::request::FromRequest;
@@ -80,7 +79,6 @@ impl<'r> FromRequest<'r> for Auth<'r> {
 }
 
 impl<'a> Auth<'a> {
-    
     pub async fn csrf_token(&self) -> CsrfToken {
         match &self.session {
             Some(session) => session.csrf_token(),
@@ -95,7 +93,7 @@ impl<'a> Auth<'a> {
             }
         }
     }
-    
+
     async fn create_session(&self) -> Session {
         let session = Session::Unauthenticated(Unauthenticated {
             session_id: rand_string(32),

@@ -3,7 +3,7 @@ mod user_impl;
 mod users;
 use crate::prelude::*;
 use argon2::verify_encoded as verify;
-use rand::{distributions::Alphanumeric, Rng, SeedableRng};
+use rand::{distributions::Alphanumeric, Rng};
 
 pub fn rand_string(size: usize) -> String {
     rand::thread_rng()

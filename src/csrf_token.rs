@@ -1,12 +1,10 @@
 use crate::prelude::try_outcome;
+use crate::Auth;
 
-use crate::{error::Error, user::rand_string, Session};
-use once_cell::sync::Lazy;
-use rocket::State;
+use crate::error::Error;
+
 use rocket::{
     async_trait,
-    form::FromForm,
-    http::{hyper::header::REFERER, Cookie, Method::*},
     request::{FromRequest, Outcome},
     Request,
 };
@@ -55,24 +53,9 @@ pub struct CsrfToken(pub(crate) String);
 impl<'r> FromRequest<'r> for CsrfToken {
     type Error = Error;
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        //  if user has a session {
-        //    set csrf_token for that session
-        //  } else {
-        //    create session for user
-        //    set csrf_token for the new session
-        // }
         let outcome = request.guard().await;
-        let session: Session = try_outcome!(outcome);
-        // let outcome = request.guard().await;
-        // let users: State<Users> = try_outcome!(outcome);
-
-        // match session {
-        //     Authenticated(auth) => {
-        //         users.sess.insert(id, key)
-        //     }
-        // }
-
-        todo!()
+        let auth: Auth = try_outcome!(outcome);
+        Outcome::Success(auth.csrf_token().await)
     }
 }
 

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::SessionManager;
 use super::{Auth, SessionEntry, Unauth};
@@ -11,8 +11,8 @@ pub struct Entry {
     expires: i64,
     secret: SessionEntry,
 }
-#[derive(Default)]
-pub struct DefaultManager(CHashMap<String, Entry>);
+#[derive(Default, Clone)]
+pub struct DefaultManager(Arc<CHashMap<String, Entry>>);
 
 #[async_trait]
 impl SessionManager for DefaultManager {
@@ -39,8 +39,7 @@ impl SessionManager for DefaultManager {
 
     async fn get(&self, session_id: &str) -> Option<SessionEntry> {
         let key = self.0.get(session_id)?;
-
-        Some(key.secret.clone())
+        Some(key.secret)
     }
 
     async fn destroy_all(&self) -> Result {
@@ -49,7 +48,13 @@ impl SessionManager for DefaultManager {
     }
 
     async fn destroy_by_user(&self, user_id: i32) -> Result {
-        todo!()
+        let manager = self.clone();
+        tokio::task::spawn_blocking(move || async move {
+            manager
+                .0
+                .retain(|_, value| value.expires > now() || value.secret == Auth(user_id))
+        });
+        Ok(())
     }
 
     async fn init(self) {

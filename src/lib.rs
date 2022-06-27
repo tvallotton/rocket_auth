@@ -138,7 +138,7 @@ mod csrf_token;
 mod db;
 mod error;
 mod forms;
-#[macro_export]
+
 pub mod prelude;
 mod session;
 mod user;

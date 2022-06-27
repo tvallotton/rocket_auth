@@ -1,4 +1,4 @@
-use super::{SessionEntry, Auth, Unauth};
+use super::{SessionEntry, Auth};
 use super::SessionManager;
 use crate::prelude::*;
 use redis::{AsyncCommands, Client};
