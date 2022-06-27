@@ -46,7 +46,7 @@ use std::ops::Deref;
 /// CSRF tokens are only checked when using the `"POST"`, `"PUT"`, `"PATCH"`, or
 /// `"DELETE"` methods. This behavior can be configured with [Config](`crate::config::Config`).
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CsrfToken(pub(crate) String);
 
 #[async_trait]

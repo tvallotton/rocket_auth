@@ -12,7 +12,7 @@ INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3);
 ";
 
 pub(crate) const UPDATE_USER: &str = "
-UPDATE table SET 
+UPDATE users SET 
     email = $2,
     password = $3,
     is_admin = $4,

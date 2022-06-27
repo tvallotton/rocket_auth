@@ -23,7 +23,6 @@
 //! # Quick overview
 //! This crate provides three guards:
 //! * [`Auth`]: Manages authentication.
-//! * [`Session`]: Used to retrieve session data from client cookies.
 //! * [`User`]: Restricts content, so it can be viewed by authenticated clients only.
 //!
 //!
