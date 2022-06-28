@@ -1,31 +1,28 @@
-use std::fmt::Debug;
-
-
+use derive_builder::Builder; 
 use rocket::http::SameSite;
+use std::fmt::Debug;
 use std::time::Duration;
 
 /// ```rust
 /// let config = Config::new()
 ///     .require_csrf_token(RequireCsrf::WriteOnly)
 ///     .same_site_credentials(SameSite::Lax)
-///     .session_expiration(Duration::from_secs(15 * 24 * 60.pow(2)));
+///     .session_expiration(Duration::from_secs(15 * 24 * 60i32.powi(2)));
 ///
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Builder)]
+#[builder(pattern = "owned")]
 pub struct Config {
     /// defaults to WriteOnly.
     pub require_csrf_token: RequiredCsrf,
-
     /// defaults to strict
     pub same_site: SameSite,
     /// defaults to true
     pub secure_cookie: bool,
     /// defaults to true
     pub private_session_cookie: bool,
-    /// defaults to a week.
+    /// defaults to one week.
     pub session_expiration: Duration,
-
-    pub csrf_token_generation: CsrfGeneration,
 }
 
 impl Default for Config {
@@ -36,15 +33,8 @@ impl Default for Config {
             secure_cookie: true,
             private_session_cookie: true,
             session_expiration: Duration::from_secs(7 * 24 * 60 * 60),
-            csrf_token_generation: CsrfGeneration::PerSession,
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub enum CsrfGeneration {
-    PerRequest,
-    PerSession,
 }
 
 #[derive(Debug, Clone)]
@@ -56,10 +46,10 @@ pub enum RequiredCsrf {
     /// a different origin will be blocked by default. Beware, not
     /// all [browsers support same-site](https://caniuse.com/same-site-cookie-attribute)
     /// cookies, which would make users of these browsers
-    /// vulnerable to cross site request forgery attacks. 
+    /// vulnerable to cross site request forgery attacks.
     Never,
     /// Only `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"` methods will require
-    /// a csrf_token. This is the default behavior. 
+    /// a csrf_token. This is the default behavior.
     WriteOnly,
     /// All authetincated actions will require a valid
     /// csrf_token.

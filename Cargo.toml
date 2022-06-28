@@ -39,6 +39,7 @@ rocket-sessions = "0.0.1"
 once_cell = "1.12.0"
 rand_seeder = "0.2.3"
 cookie = "0.16.0"
+derive_builder = "0.11.2"
 
 
 [dependencies.sqlx]
