@@ -13,8 +13,6 @@ fn get_login() -> Template {
 
 #[post("/login", data = "<form>")]
 async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
-    println!("{:?}", auth.login(&form).await);
-
     Ok(Redirect::to("/"))
 }
 
@@ -55,7 +53,6 @@ async fn show_all_users(
     let users: Vec<User> = query_as("select * from users;")
         .fetch_all(&mut *conn.lock().await)
         .await?;
-    println!("{:?}", users);
     Ok(Template::render(
         "users",
         json!({"users": users, "user": user}),

@@ -14,7 +14,6 @@ fn get_login() -> Template {
 #[post("/login", data = "<form>")]
 async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
     let result = auth.login(&form).await;
-    println!("login attempt: {:?}", result);
     result?;
     Ok(Redirect::to("/"))
 }

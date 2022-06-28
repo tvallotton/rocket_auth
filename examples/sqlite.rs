@@ -14,7 +14,6 @@ fn get_login() -> Template {
 #[post("/login", data = "<form>")]
 async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
     let result = auth.login(&form).await;
-    println!("login attempt: {:?}", result);
     result?;
     Ok(Redirect::to("/"))
 }
@@ -51,7 +50,6 @@ async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
 #[get("/show_all_users")]
 async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<Template, Error> {
     let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
-    println!("{:?}", users);
     Ok(Template::render(
         "users",
         json!({"users": users, "user": user}),
