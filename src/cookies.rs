@@ -20,7 +20,7 @@ pub struct Session {
     pub id: i32,
     /// The user email.
     pub email: String,
-    /// An random authentication token key.
+    /// A random authentication token key.
     pub auth_key: String,
 }
 

@@ -9,10 +9,10 @@ pub enum Error {
 
     /// This error only occurs if the application panics while holding a locked mutex.
     #[cfg(feature = "sqlx-sqlite")]
-    #[error("The mutex guarding the Sqlite connection was posioned.")]
+    #[error("The mutex guarding the Sqlite connection was poisoned.")]
     MutexPoisonError,
 
-    /// Thrown when the requested user does not exists.
+    /// Thrown when the requested user does not exist.
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError,
 
@@ -23,13 +23,13 @@ pub enum Error {
 
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
     UnauthenticatedError,
-    /// This error occurs when a user tries to log in, but their account doesn't exists.
+    /// This error occurs when a user tries to log in, but their account doesn't exist.
     #[error("The email \"{0}\" is not registered. Try signing up first.")]
     EmailDoesNotExist(String),
     /// This error is thrown when a user tries to sign up with an email that already exists.
     #[error("That email address already exists. Try logging in.")]
     EmailAlreadyExists,
-    /// This error occurs when the user does exists, but their password was incorrect.
+    /// This error occurs when the user does exist, but their password was incorrect.
     #[error("Incorrect email or password")]
     UnauthorizedError,
 
