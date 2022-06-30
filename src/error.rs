@@ -4,11 +4,6 @@ use std::*;
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    /// This error only occurs if the application panics while holding a locked mutex.
-    #[cfg(any(feature = "sqlx-sqlite", feature = "rusqlite"))]
-    #[error("The mutex guarding the Sqlite connection was poisoned.")]
-    MutexPoisonError,
-
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
     /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
     #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
@@ -60,15 +55,6 @@ pub enum Error {
 }
 
 /*****  CONVERSIONS  *****/
-#[cfg(feature = "sqlx-sqlite")]
-use std::sync::PoisonError;
-#[cfg(feature = "sqlx-sqlite")]
-impl<T> From<PoisonError<T>> for Error {
-    fn from(_error: PoisonError<T>) -> Error {
-        Error::MutexPoisonError
-    }
-}
-
 impl From<Vec<ValidationError>> for Error {
     fn from(error: Vec<ValidationError>) -> Error {
         Error::Validation(error)
