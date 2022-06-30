@@ -246,7 +246,7 @@ impl Users {
 /// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
 /// let users: Users = client.into();
 /// // we create the user table in the
-/// // database if it does not exists.
+/// // database if it does not exist.
 /// users.create_table();
 /// # Ok(())}
 /// ```
@@ -273,7 +273,7 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 ///
 /// let users: Users = (db_client, redis_client).into();
 /// // we create the user table in the
-/// // database if it does not exists.
+/// // database if it does not exist.
 /// users.create_table();
 /// # Ok(())}
 /// ```

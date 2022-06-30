@@ -34,7 +34,7 @@ impl User {
     }
 
     /// This is an accessor function for the private `id` field.
-    /// This field is private so it is not modified by accident when updating a user.
+    /// This field is private, so that it is not modified by accident when updating a user.
     /// ```rust
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, User};

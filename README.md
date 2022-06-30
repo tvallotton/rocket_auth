@@ -35,7 +35,7 @@ It also includes two structs to be parsed from forms and json data:
 * `Login`: Used to authenticate users.
 
 
-Finally it has two structures for queries:
+Finally, it has two structures for queries:
 * `Users`: It allows to query users to the database.
 * `User`: It is the response of a query.
 
@@ -99,7 +99,7 @@ A `Users` instance can be constructed by connecting it to the database with the 
 
 
 ## User guard
-The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
+The `User` guard can be used to restrict content, so that it can only be viewed by authenticated users.
 Additionally, you can use it to render special content if the client is authenticated or not.
 ```rust
 #[get("/private-content")]
@@ -123,7 +123,7 @@ fn admins_only(user: AdminUser) -> &'static str {
 
 ## AdminUser guard
 The `AdminUser` guard can be used analogously to `User`.
-It will restrict content so it can be viewed by admins only.
+It will restrict content, so that it can be viewed by admins only.
 ```rust
 # use rocket::*;
 # use rocket_auth::AdminUser;
