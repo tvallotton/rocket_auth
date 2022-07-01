@@ -77,7 +77,7 @@ impl User {
     #[throws(Error)]
     pub fn set_email(&mut self, email: &str) {
         if validator::validate_email(email) {
-            self.email = email.into();
+            self.email = email.to_lowercase();
         } else {
             throw!(Error::InvalidEmailAddressError)
         }
