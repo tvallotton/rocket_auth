@@ -62,7 +62,7 @@ async fn main() -> Result<(), Error> {
     let conn = PgPool::connect("postgres://user:password@localhost/").await?;
     let users: Users = conn.clone().into();
     users.create_table().await?; 
-    rocket::build()
+    let _ = rocket::build()
         .mount(
             "/",
             routes![

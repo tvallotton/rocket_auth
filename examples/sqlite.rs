@@ -64,7 +64,7 @@ async fn main() -> Result<(), Error> {
     let users: Users = conn.clone().into();
     users.create_table().await?; 
 
-    rocket::build()
+    let _ = rocket::build()
         .mount(
             "/",
             routes![

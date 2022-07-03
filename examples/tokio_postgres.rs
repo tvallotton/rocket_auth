@@ -78,7 +78,7 @@ async fn main() -> Result<(), Error> {
         }
     });
     users.create_table().await?; 
-    rocket::build()
+    let _ = rocket::build()
         .mount(
             "/",
             routes![
