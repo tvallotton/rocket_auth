@@ -88,7 +88,7 @@ impl User {
         if validator::validate_email(email) {
             self.email = email.to_lowercase();
         } else {
-            throw!(Error::InvalidEmailAddressError)
+            throw!(ValidationError::InvalidEmailAddressError)
         }
     }
 }

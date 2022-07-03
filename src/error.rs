@@ -1,12 +1,9 @@
+pub use crate::forms::ValidationError;
 use std::*;
 
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    /// This error occurs when attempting to create a user with an invalid email address.
-    #[error("That is not a valid email address.")]
-    InvalidEmailAddressError, // used
-
     /// This error only occurs if the application panics while holding a locked mutex.
     #[cfg(feature = "sqlx-sqlite")]
     #[error("The mutex guarding the Sqlite connection was poisoned.")]
@@ -83,7 +80,6 @@ impl<T> From<PoisonError<T>> for Error {
     }
 }
 
-use crate::forms::ValidationError;
 impl From<Vec<ValidationError>> for Error {
     fn from(error: Vec<ValidationError>) -> Error {
         Error::Validation(error)
@@ -99,10 +95,7 @@ use self::Error::*;
 impl Error {
     fn message(&self) -> String {
         match self {
-            InvalidEmailAddressError
-            | EmailAlreadyExists
-            | UnauthorizedError
-            | UserNotFoundError => format!("{}", self),
+            InvalidEmailAddressError => format!("{}", self),
             #[cfg(debug_assertions)]
             e => return format!("{}", e),
             #[allow(unreachable_patterns)]
