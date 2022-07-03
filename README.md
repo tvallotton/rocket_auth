@@ -6,6 +6,7 @@ The available features are:
 * `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
 * `sqlx-mysql`: for interacting with a MySql database with `sqlx`.
 * `redis`: for storing sessions on a redis server using `redis`.
+* `rusqlite`: for interacting with a SQLite database using `rusqlite`.
 * `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
 
 `rocket_auth` uses private cookies to store session data.
