@@ -1,5 +1,7 @@
 use crate::prelude::*;
-
+pub use error::SignupError;
+use SignupError::*;
+mod error;
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
 #[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, Validate)]
@@ -14,14 +16,15 @@ pub struct Login {
 pub struct Signup {
     #[validate(email)]
     pub email: String,
-    #[validate(
-        custom = "is_long",
-        custom = "has_number",
-        custom = "has_lowercase",
-        custom = "has_uppercase"
-    )]
     pub(crate) password: String,
 }
+
+impl Signup {
+    fn validate(&self) -> Result<(), Vec<SignupError>> {
+        is_secure(&self.password)
+    }
+}
+
 impl Debug for Signup {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -67,57 +70,40 @@ impl<T: Deref<Target = Signup>> From<T> for Login {
         }
     }
 }
-#[throws(ValidationError)]
-pub(crate) fn is_secure(password: &str) {
-    is_long(password)?;
-    has_uppercase(password)?;
-    has_lowercase(password)?;
-    has_number(password)?;
+
+pub(crate) fn is_secure(password: &str) -> Result<(), Vec<SignupError>> {
+    let mut errors = vec![];
+    if is_too_short(password) {
+        errors.push(PasswordTooShort)
+    }
+    if missing_lowercase(password) {
+        errors.push(PasswordMissingLowercase);
+    }
+    if missing_uppercase(password) {
+        errors.push(PasswordMissingUppercase);
+    }
+    if missing_number(password) {
+        errors.push(PasswordMissingNumber);
+    }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }
 
-#[throws(ValidationError)]
-fn is_long(password: &str) {
-    if password.len() < 8 {
-        throw!(ValidationError::new(
-            "The password must be at least 8 characters long.\n"
-        ));
-    }
+fn is_too_short(password: &str) -> bool {
+    password.len() < 8
 }
-#[allow(unreachable_code)]
-#[throws(ValidationError)]
-fn has_uppercase(password: &str) {
-    for c in password.chars() {
-        if c.is_uppercase() {
-            return;
-        }
-    }
-    throw!(ValidationError::new(
-        "The password must include least one uppercase caracter.\n"
-    ));
+
+fn missing_uppercase(password: &str) -> bool {
+    !password.chars().any(char::is_uppercase)
 }
-#[allow(unreachable_code)]
-#[throws(ValidationError)]
-fn has_lowercase(password: &str) {
-    for c in password.chars() {
-        if c.is_lowercase() {
-            return;
-        }
-    }
-    // throw!(Error::UnsafePasswordHasNoLower)
-    throw!(ValidationError::new(
-        "The password must include least one uppercase caracter.\n"
-    ))
+
+fn missing_lowercase(password: &str) -> bool {
+    !password.chars().any(char::is_lowercase)
 }
-#[allow(unreachable_code)]
-#[throws(ValidationError)]
-fn has_number(password: &str) {
-    for c in password.chars() {
-        if c.is_numeric() {
-            return;
-        }
-    }
-    throw!(ValidationError::new(
-        "The password has to contain at least one digit.\n"
-    ))
-    // throw!(Error::UnsafePasswordHasNoDigit)
+
+fn missing_number(password: &str) -> bool {
+    !password.chars().any(char::is_numeric)
 }

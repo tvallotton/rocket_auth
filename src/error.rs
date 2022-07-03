@@ -9,10 +9,10 @@ pub enum Error {
 
     /// This error only occurs if the application panics while holding a locked mutex.
     #[cfg(feature = "sqlx-sqlite")]
-    #[error("The mutex guarding the Sqlite connection was posioned.")]
+    #[error("The mutex guarding the Sqlite connection was poisoned.")]
     MutexPoisonError,
 
-    /// Thrown when the requested user does not exists.
+    /// Thrown when the requested user does not exist.
     #[error("Could not find any user that fits the specified requirements.")]
     UserNotFoundError, // unused
 
@@ -39,6 +39,9 @@ pub enum Error {
     /// A wrapper around [`validator::ValidationError`].
     #[error("{0}")]
     FormValidationError(#[from] validator::ValidationError),
+
+    #[error("{0:?}")]
+    Signup(Vec<crate::forms::SignupError>),
 
     /// A wrapper around [`validator::ValidationErrors`].
     #[error("FormValidationErrors: {0}")]
@@ -78,7 +81,6 @@ pub enum Error {
     TokioPostgresError(#[from] tokio_postgres::Error),
 }
 
-
 /*****  CONVERSIONS  *****/
 #[cfg(feature = "sqlx-sqlite")]
 use std::sync::PoisonError;
@@ -86,6 +88,13 @@ use std::sync::PoisonError;
 impl<T> From<PoisonError<T>> for Error {
     fn from(_error: PoisonError<T>) -> Error {
         Error::MutexPoisonError
+    }
+}
+
+use crate::forms::SignupError;
+impl From<Vec<SignupError>> for Error {
+    fn from(error: Vec<SignupError>) -> Error {
+        Error::Signup(error)
     }
 }
 
@@ -140,7 +149,6 @@ impl<'r> Responder<'r, 'static> for Error {
 }
 #[derive(Serialize)]
 struct Foo {
-    bar: i32, 
-    baz: &'static str, 
+    bar: i32,
+    baz: &'static str,
 }
-

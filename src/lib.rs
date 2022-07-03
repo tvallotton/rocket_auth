@@ -5,6 +5,7 @@
 //! * `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
 //! * `sqlx-mysql`: for interacting with a MySql database with `sqlx`.
 //! * `redis`: for storing sessions on a redis server using `redis`.
+//! * `rusqlite`: for interacting with a SQLite database using `rusqlite`.
 //! * `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
 //!
 //!
@@ -32,8 +33,8 @@
 //! * [`Login`]: Used to authenticate users.
 //!
 //!
-//! Finally it has two structures for queries:
-//! * [`Users`]: It allows to query users to the database.
+//! Finally, it has two structures for queries:
+//! * [`Users`]: It allows querying users to the database.
 //! * [`User`]: It is the response of a query.
 //!
 //!
@@ -97,11 +98,11 @@
 //! ```
 //!
 //! A [`Users`] instance can be constructed by connecting it to the database with the methods [`open_sqlite`](Users::open_sqlite),
-//! or [`open_postgres`](Users::open_postgres). Furthermore, it can be constructed from a working connection.
+//! [`open_postgres`](Users::open_postgres) or [`open_rusqlite`](Users::open_rusqlite). Furthermore, it can be constructed from a working connection.
 //!
 //!
 //! ## User guard
-//! The [`User`] guard can be used to restrict content so it can only be viewed by authenticated users.
+//! The [`User`] guard can be used to restrict content, so that it can only be viewed by authenticated users.
 //! Additionally, you can use it to render special content if the client is authenticated or not.
 //! ```rust
 //! # use rocket::*;
@@ -123,7 +124,7 @@
 //!
 //! ## AdminUser guard
 //! The [`AdminUser`] guard can be used analogously to [`User`].
-//! It will restrict content so it can be viewed by admins only.
+//! It will restrict content, so that it can be viewed by admins only.
 //! ```
 //! # use rocket::*;
 //! # use rocket_auth::AdminUser;
@@ -154,7 +155,7 @@ pub use prelude::*;
 pub use crate::user::auth::Auth;
 pub use error::Error;
 
-/// The `User` guard can be used to restrict content so it can only be viewed by authenticated users.
+/// The `User` guard can be used to restrict content, so that it can only be viewed by authenticated users.
 /// ```rust
 /// #
 /// # use rocket::{get};
@@ -175,7 +176,7 @@ pub struct User {
 }
 
 /// The [`AdminUser`] guard can be used analogously to [`User`].
-/// It will restrict content so it can be viewed by admins only.
+/// It will restrict content, so that it can be viewed by admins only.
 /// ```
 /// # use rocket::*;
 /// # use rocket_auth::AdminUser;

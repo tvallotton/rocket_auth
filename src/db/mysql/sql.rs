@@ -12,10 +12,10 @@ INSERT INTO users (email, password, is_admin) VALUES (?, ?, ?);
 ";
 
 pub(crate) const UPDATE_USER: &str = "
-UPDATE table SET 
+UPDATE users SET 
     email = ?,
     password = ?,
-    is_admin = ?,
+    is_admin = ?
 WHERE
     id = ?
 ";

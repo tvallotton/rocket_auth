@@ -91,7 +91,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn login(&self, form: &Login) {
         let key = self.users.login(form).await?;
-        let user = self.users.get_by_email(&form.email).await?;
+        let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
         let session = Session::Authenticated(cookies::Authenticated {
             id: user.id,
             email: user.email,
@@ -116,7 +116,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn login_for(&self, form: &Login, time: Duration) {
         let key = self.users.login_for(form, time).await?;
-        let user = self.users.get_by_email(&form.email).await?;
+        let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
 
         let session = Session::Authenticated(Authenticated {
             id: user.id,
@@ -283,7 +283,7 @@ impl<'a> Auth<'a> {
             }
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id()?).await?;
-            user.email = email;
+            user.email = email.to_lowercase();
             self.users.modify(&user).await?;
         } else {
             throw!(Error::UnauthorizedError)
