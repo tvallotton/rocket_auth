@@ -40,9 +40,9 @@ thiserror = "1.0.31"
 async-trait = "0.1.56"
 fehler = "1.0.0"
 chrono = "0.4.19"
-validator = { version = "0.15.0", features = ["derive"] }
 rocket-sessions = "0.0.1"
 rocket_lang = "0.1.2"
+validator = "0.15.0"
 
 
 

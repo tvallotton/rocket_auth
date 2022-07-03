@@ -1,27 +1,35 @@
 use crate::prelude::*;
 pub use error::SignupError;
+use validator::validate_email;
 use SignupError::*;
 mod error;
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
-#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq, Validate)]
+#[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub struct Login {
-    #[validate(email)]
     pub email: String,
     pub(crate) password: String,
 }
 
 /// The `Signup` form is used along with the [`Auth`] guard to create new users.
-#[derive(FromForm, Deserialize, Clone, PartialEq, Eq, Hash, Validate)]
+#[derive(FromForm, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct Signup {
-    #[validate(email)]
     pub email: String,
     pub(crate) password: String,
 }
 
 impl Signup {
-    fn validate(&self) -> Result<(), Vec<SignupError>> {
-        is_secure(&self.password)
+    pub fn validate(&self) -> Result<(), Vec<SignupError>> {
+        let password = is_secure(&self.password);
+        let email = validate_email(&self.email);
+        match (password, email) {
+            (Ok(()), false) => Err(vec![InvalidEmailAddressError]),
+            (Err(mut errors), false) => {
+                errors.push(InvalidEmailAddressError);
+                Err(errors)
+            }
+            (result, _) => result,
+        }
     }
 }
 

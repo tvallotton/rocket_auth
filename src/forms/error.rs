@@ -3,6 +3,8 @@ use thiserror::Error;
 /// The vaidation error
 #[derive(Error, Debug)]
 pub enum SignupError {
+    #[error("The email address is not valid.")]
+    InvalidEmailAddressError, 
     #[error("That email already exists, try logging in.")]
     EmailAlreadyExists, 
     #[error("The password should be at least 8 characters long.")]

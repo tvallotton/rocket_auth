@@ -36,16 +36,8 @@ pub enum Error {
     #[error("Incorrect email or password")]
     UnauthorizedError, // used
 
-    /// A wrapper around [`validator::ValidationError`].
-    #[error("{0}")]
-    FormValidationError(#[from] validator::ValidationError),
-
     #[error("{0:?}")]
     Signup(Vec<crate::forms::SignupError>),
-
-    /// A wrapper around [`validator::ValidationErrors`].
-    #[error("FormValidationErrors: {0}")]
-    FormValidationErrors(#[from] validator::ValidationErrors),
 
     /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx"))]
@@ -106,19 +98,6 @@ impl Error {
             | EmailAlreadyExists
             | UnauthorizedError
             | UserNotFoundError => format!("{}", self),
-            FormValidationErrors(source) => {
-                source
-                    .field_errors()
-                    .into_iter()
-                    .map(|(_, error)| error)
-                    .map(IntoIterator::into_iter)
-                    .map(|errs| {
-                        errs //
-                            .map(|err| &err.code)
-                            .fold(String::new(), |a, b| a + b)
-                    })
-                    .fold(String::new(), |a, b| a + &b)
-            }
             #[cfg(debug_assertions)]
             e => return format!("{}", e),
             #[allow(unreachable_patterns)]
