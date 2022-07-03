@@ -79,7 +79,7 @@ async fn main() -> Result<(), Error> {
             ],
         )
         .manage(conn)
-        .manage(users)
+        // .manage(users)
         .attach(Template::fairing())
         .launch()
         .await
