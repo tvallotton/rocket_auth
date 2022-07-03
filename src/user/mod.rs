@@ -29,7 +29,7 @@ impl Users {
         let form_pwd = &form.password.as_bytes();
         let user = self
             .conn
-            .get_user_by_email(&form.email)
+            .get_user_by_email(&form.email.to_lowercase())
             .await
             .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
         let user_pwd = &user.password;
@@ -85,7 +85,7 @@ impl Users {
     #[throws(Error)]
     async fn login_for(&self, form: &Login, time: Duration) -> String {
         let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email).await?;
+        let user = self.conn.get_user_by_email(&form.email.to_lowercase()).await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key_for(user.id, time).await?

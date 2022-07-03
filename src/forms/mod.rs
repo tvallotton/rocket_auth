@@ -92,7 +92,7 @@ fn has_uppercase(password: &str) {
         }
     }
     throw!(ValidationError::new(
-        "The password must include least one uppercase caracter.\n"
+        "The password must include least one uppercase character.\n"
     ));
 }
 #[allow(unreachable_code)]
@@ -105,7 +105,7 @@ fn has_lowercase(password: &str) {
     }
     // throw!(Error::UnsafePasswordHasNoLower)
     throw!(ValidationError::new(
-        "The password must include least one uppercase caracter.\n"
+        "The password must include least one uppercase character.\n"
     ))
 }
 #[allow(unreachable_code)]

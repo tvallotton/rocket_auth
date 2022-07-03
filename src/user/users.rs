@@ -32,7 +32,7 @@ impl Users {
     /// It is necessary to call it explicitly when casting the `Users` struct from an already
     /// established database connection and if the table hasn't been created yet. If the table
     /// already exists then this step is not necessary.
-    /// ```rust,
+    /// ```rust,no_run
     /// # use sqlx::{sqlite::SqlitePool, Connection};
     /// # use rocket_auth::{Users, Error};
     /// # #[tokio::main]
@@ -49,7 +49,7 @@ impl Users {
     }
     /// Opens a redis connection. It allows for sessions to be stored persistently across
     /// different launches. Note that persistent sessions also require a `secret_key` to be set in the [Rocket.toml](https://rocket.rs/v0.5-rc/guide/configuration/#configuration) configuration file.
-    /// ```rust,
+    /// ```rust,no_run
     /// # use rocket_auth::{Users, Error};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Error> {
@@ -214,7 +214,7 @@ impl Users {
 /// let (client, connection) = tokio_postgres::connect("host=localhost user=postgres", NoTls).await?;
 /// let users: Users = client.into();
 /// // we create the user table in the
-/// // database if it does not exists.
+/// // database if it does not exist.
 /// users.create_table();
 /// # Ok(())}
 /// ```
@@ -241,7 +241,7 @@ impl<Conn: 'static + DBConnection> From<Conn> for Users {
 ///
 /// let users: Users = (db_client, redis_client).into();
 /// // we create the user table in the
-/// // database if it does not exists.
+/// // database if it does not exist.
 /// users.create_table();
 /// # Ok(())}
 /// ```

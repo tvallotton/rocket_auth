@@ -43,7 +43,7 @@ impl User {
     }
 
     /// This is an accessor function for the private `id` field.
-    /// This field is private so it is not modified by accident when updating a user.
+    /// This field is private, so that it is not modified by accident when updating a user.
     /// ```rust
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, User};
@@ -86,7 +86,7 @@ impl User {
     #[throws(Error)]
     pub fn set_email(&mut self, email: &str) {
         if validator::validate_email(email) {
-            self.email = email.into();
+            self.email = email.to_lowercase();
         } else {
             throw!(Error::InvalidEmailAddressError)
         }
