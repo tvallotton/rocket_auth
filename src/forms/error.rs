@@ -2,7 +2,7 @@ use thiserror::Error;
 
 /// The vaidation error
 #[derive(Error, Debug)]
-pub enum SignupError {
+pub enum ValidationError {
     #[error("The email address is not valid.")]
     InvalidEmailAddressError, 
     #[error("That email already exists, try logging in.")]

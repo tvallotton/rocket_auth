@@ -1,7 +1,7 @@
 use crate::prelude::*;
-pub use error::SignupError;
+pub use error::ValidationError;
 use validator::validate_email;
-use SignupError::*;
+use ValidationError::*;
 mod error;
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
@@ -19,7 +19,7 @@ pub struct Signup {
 }
 
 impl Signup {
-    pub fn validate(&self) -> Result<(), Vec<SignupError>> {
+    pub fn validate(&self) -> Result<(), Vec<ValidationError>> {
         let password = is_secure(&self.password);
         let email = validate_email(&self.email);
         match (password, email) {
@@ -79,7 +79,7 @@ impl<T: Deref<Target = Signup>> From<T> for Login {
     }
 }
 
-pub(crate) fn is_secure(password: &str) -> Result<(), Vec<SignupError>> {
+pub(crate) fn is_secure(password: &str) -> Result<(), Vec<ValidationError>> {
     let mut errors = vec![];
     if is_too_short(password) {
         errors.push(PasswordTooShort)

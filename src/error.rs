@@ -37,7 +37,7 @@ pub enum Error {
     UnauthorizedError, // used
 
     #[error("{0:?}")]
-    Signup(Vec<crate::forms::SignupError>),
+    Validation(Vec<crate::forms::ValidationError>),
 
     /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx"))]
@@ -83,10 +83,15 @@ impl<T> From<PoisonError<T>> for Error {
     }
 }
 
-use crate::forms::SignupError;
-impl From<Vec<SignupError>> for Error {
-    fn from(error: Vec<SignupError>) -> Error {
-        Error::Signup(error)
+use crate::forms::ValidationError;
+impl From<Vec<ValidationError>> for Error {
+    fn from(error: Vec<ValidationError>) -> Error {
+        Error::Validation(error)
+    }
+}
+impl From<ValidationError> for Error {
+    fn from(error: ValidationError) -> Error {
+        Error::Validation(vec![error])
     }
 }
 
