@@ -5,7 +5,7 @@ use std::*;
 pub enum Error {
     /// This error occurs when attempting to create a user with an invalid email address.
     #[error("That is not a valid email address.")]
-    InvalidEmailAddressError,
+    InvalidEmailAddressError, // used
 
     /// This error only occurs if the application panics while holding a locked mutex.
     #[cfg(feature = "sqlx-sqlite")]
@@ -14,24 +14,27 @@ pub enum Error {
 
     /// Thrown when the requested user does not exists.
     #[error("Could not find any user that fits the specified requirements.")]
-    UserNotFoundError,
+    UserNotFoundError, // unused
 
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
     /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
     #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
-    UnmanagedStateError,
+    UnmanagedStateError, // used
 
     #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
-    UnauthenticatedError,
+    UnauthenticatedError, // unused
+
     /// This error occurs when a user tries to log in, but their account doesn't exists.
     #[error("The email \"{0}\" is not registered. Try signing up first.")]
-    EmailDoesNotExist(String),
+    EmailDoesNotExist(String), // used
+
     /// This error is thrown when a user tries to sign up with an email that already exists.
     #[error("That email address already exists. Try logging in.")]
-    EmailAlreadyExists,
+    EmailAlreadyExists, // used
+
     /// This error occurs when the user does exists, but their password was incorrect.
     #[error("Incorrect email or password")]
-    UnauthorizedError,
+    UnauthorizedError, // used
 
     /// A wrapper around [`validator::ValidationError`].
     #[error("{0}")]
@@ -45,6 +48,7 @@ pub enum Error {
     #[cfg(any(feature = "sqlx"))]
     #[error("SqlxError: {0}")]
     SqlxError(#[from] sqlx::Error),
+
     /// A wrapper around [`argon2::Error`].
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
@@ -73,6 +77,7 @@ pub enum Error {
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
 }
+
 
 /*****  CONVERSIONS  *****/
 #[cfg(feature = "sqlx-sqlite")]
@@ -116,6 +121,7 @@ impl Error {
 use rocket::http::ContentType;
 use rocket::request::Request;
 use rocket::response::{self, Responder, Response};
+use serde::Serialize;
 use serde_json::*;
 use std::io::Cursor;
 
@@ -132,3 +138,9 @@ impl<'r> Responder<'r, 'static> for Error {
             .ok()
     }
 }
+#[derive(Serialize)]
+struct Foo {
+    bar: i32, 
+    baz: &'static str, 
+}
+
