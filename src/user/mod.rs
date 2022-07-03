@@ -36,7 +36,7 @@ impl Users {
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key(user.id).await?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
     #[throws(Error)]
@@ -71,7 +71,7 @@ impl Users {
             #[cfg(feature = "sqlx")]
             Err(Error::SqlxError(sqlx::Error::Database(error))) => {
                 if error.code() == Some("23000".into()) {
-                    throw!(Error::EmailAlreadyExists)
+                    throw!(ValidationError::EmailAlreadyExists)
                 } else {
                     throw!(Error::SqlxError(sqlx::Error::Database(error)))
                 }
@@ -90,7 +90,7 @@ impl Users {
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key_for(user.id, time).await?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 }

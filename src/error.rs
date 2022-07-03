@@ -5,40 +5,29 @@ use std::*;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     /// This error only occurs if the application panics while holding a locked mutex.
-    #[cfg(feature = "sqlx-sqlite")]
+    #[cfg(any(feature = "sqlx-sqlite", feature = "rusqlite"))]
     #[error("The mutex guarding the Sqlite connection was poisoned.")]
     MutexPoisonError,
-
-    /// Thrown when the requested user does not exist.
-    #[error("Could not find any user that fits the specified requirements.")]
-    UserNotFoundError, // unused
 
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
     /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
     #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
     UnmanagedStateError, // used
 
-    #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
-    UnauthenticatedError, // unused
-
     /// This error occurs when a user tries to log in, but their account doesn't exists.
     #[error("The email \"{0}\" is not registered. Try signing up first.")]
     EmailDoesNotExist(String), // used
 
-    /// This error is thrown when a user tries to sign up with an email that already exists.
-    #[error("That email address already exists. Try logging in.")]
-    EmailAlreadyExists, // used
-
     /// This error occurs when the user does exists, but their password was incorrect.
     #[error("Incorrect email or password")]
-    UnauthorizedError, // used
+    Unauthorized, // used
 
     #[error("{0:?}")]
     Validation(Vec<crate::forms::ValidationError>),
 
     /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx"))]
-    #[error("SqlxError: {0}")]
+    #[error("SQLxError: {0}")]
     SqlxError(#[from] sqlx::Error),
 
     /// A wrapper around [`argon2::Error`].

@@ -240,7 +240,7 @@ impl<'a> Auth<'a> {
             self.users.delete(session.id()?).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
         } else {
-            throw!(Error::UnauthenticatedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -261,7 +261,7 @@ impl<'a> Auth<'a> {
             user.set_password(password)?;
             self.users.modify(&user).await?;
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -286,7 +286,7 @@ impl<'a> Auth<'a> {
             user.email = email.to_lowercase();
             self.users.modify(&user).await?;
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -301,7 +301,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub(crate) fn get_session(&self) -> &Session {
-        let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
+        let session = self.session.as_ref().ok_or(Error::Unauthorized)?;
         session
     }
 
@@ -316,7 +316,7 @@ impl<'a> Auth<'a> {
             let user: User = self.users.get_by_id(session.id()?).await?;
             user.compare_password(password)?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 }

@@ -119,7 +119,7 @@ impl<'r> FromRequest<'r> for User {
         if let Some(user) = auth.get_user().await {
             Outcome::Success(user)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
         }
     }
 }
@@ -140,7 +140,7 @@ impl<'r> FromRequest<'r> for AdminUser {
                 return Outcome::Success(AdminUser(user));
             }
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
     }
 }
 
@@ -164,7 +164,7 @@ impl std::convert::TryFrom<User> for AdminUser {
         if value.is_admin {
             Ok(AdminUser(value))
         } else {
-            Err(Error::UnauthorizedError)
+            Err(Error::Unauthorized)
         }
     }
 }

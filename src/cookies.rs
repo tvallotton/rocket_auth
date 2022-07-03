@@ -38,7 +38,7 @@ impl Session {
     pub(crate) fn id(&self) -> i32 {
         match self {
             Session::Authenticated(Authenticated { id, .. }) => *id,
-            _ => throw!(Error::UnauthenticatedError),
+            _ => throw!(Error::Unauthorized),
         }
     }
     pub(crate) fn auth(&self) -> Option<&Authenticated> {
@@ -65,7 +65,7 @@ impl<'r> FromRequest<'r> for Session {
         if let Some(session) = get_session(cookies) {
             Outcome::Success(session)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
         }
     }
 }
