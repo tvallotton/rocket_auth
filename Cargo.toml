@@ -100,4 +100,4 @@ features = ["runtime-tokio-rustls"]
 
 [dev-dependencies.rocket_auth]
 path = "../rocket_auth"
-features = ["sqlx-sqlite", "sqlx-postgres", "sqlx-mysql", "redis", "tokio-postgres"]
+features = ["sqlx-sqlite", "sqlx-postgres", "sqlx-mysql", "redis", "tokio-postgres", "rusqlite"]
