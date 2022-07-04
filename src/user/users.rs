@@ -189,9 +189,9 @@ impl Users {
 
     /// Inserts a new user in the database. It will fail if the user already exists.
     /// ```rust
-    /// # use rocket::{State, get};
+    /// # use rocket::{State, post};
     /// # use rocket_auth::{Error, Users};
-    /// #[get("/create_admin/<email>/<password>")]
+    /// #[post("/create_admin/<email>/<password>")]
     /// async fn create_admin(email: String, password: String, users: &State<Users>) -> Result<String, Error> {
     ///     users.create_user(&email, &password, true).await?;
     ///     Ok("User created successfully".into())

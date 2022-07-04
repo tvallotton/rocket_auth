@@ -12,12 +12,12 @@ impl User {
     /// In case the user is authenticated,
     /// you can change it more easily with [`change_password`](`super::auth::Auth::change_password`).
     /// This function will fail in case the password is not secure enough.
+    /// 
     /// ```rust
-    /// # use rocket::{State, get};
+    /// # use rocket::{State, post};
     /// # use rocket_auth::{Error, Users};
-    /// #[get("/reset-password/<id>/<new_password>")]
-    /// async fn reset_password(id: i32, new_password: String, users: &State<Users>) -> Result<(), Error> {
-    ///     let mut user = users.get_by_id(id).await?;
+    /// #[post("/reset-password/<new_password>")]
+    /// async fn reset_password(mut user: User, users: &State<Users>, new_password: String) -> Result<(), Error> {
     ///     user.set_password(&new_password);
     ///     users.modify(&user).await?;
     ///     Ok(())
