@@ -28,7 +28,6 @@ version = "0.27.0"
 optional = true
 
 
-
 [dependencies]
 rand = "0.8.5"
 rust-argon2 = "1.0.0"
@@ -41,8 +40,6 @@ async-trait = "0.1.56"
 fehler = "1.0.0"
 chrono = "0.4.19"
 validator = { version = "0.15.0", features = ["derive"] }
-rocket-sessions = "0.0.1"
-futures= "0.3.21"
 
 
 [dependencies.sqlx]
@@ -61,7 +58,6 @@ features = ["derive"]
 [dependencies.tokio-postgres]
 version = "0.7.6"
 optional = true
-
 
 
 [dependencies.redis]
@@ -97,4 +93,11 @@ features = ["runtime-tokio-rustls"]
 
 [dev-dependencies.rocket_auth]
 path = "../rocket_auth"
-features = ["sqlx-sqlite", "sqlx-postgres", "sqlx-mysql", "redis", "tokio-postgres", "rusqlite"]
+features = [
+    "sqlx-sqlite",
+    "sqlx-postgres",
+    "sqlx-mysql",
+    "redis",
+    "tokio-postgres",
+    "rusqlite",
+]

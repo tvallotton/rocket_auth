@@ -60,7 +60,7 @@ async fn login(form: Form<Login>, auth: Auth<'_>) -> Result<&'static str, Error>
     Ok("You're logged in.")
 }
 
-#[get("/logout")]
+#[post("/logout")]
 fn logout(auth: Auth<'_>) {
     auth.logout();
 }
