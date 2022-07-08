@@ -31,7 +31,7 @@ impl Users {
             .conn
             .get_user_by_email(&form.email.to_lowercase())
             .await
-            .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
+            .map_err(|_| ValidationError::UserNotFound(form.email.clone()))?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key(user.id).await?

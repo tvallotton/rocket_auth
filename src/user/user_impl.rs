@@ -136,16 +136,18 @@ impl<'r> FromRequest<'r> for AdminUser {
             Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
-            if user.is_admin {
-                return Outcome::Success(AdminUser(user));
-            }
+            return if user.is_admin {
+                Outcome::Success(AdminUser(user))
+            } else {
+                Outcome::Failure((Status::Forbidden, Error::Forbidden))
+            };
         }
         Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
     }
 }
 
-use std::ops::*;
 use argon2::verify_encoded;
+use std::ops::*;
 
 impl Deref for AdminUser {
     type Target = User;

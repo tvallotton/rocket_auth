@@ -3,12 +3,22 @@ use crate::prelude::*;
 use crate::Error; 
 
 
-fn message(error: Error, lang: LangCode) -> &'static str {
-    match lang {
-        _ => en::message(error), 
-        
-    }
+
+
+
+const fn unauthorized() -> &'static str {
+    "unauthorized"
 }
+
+
+
+// fn message(error: ValidationError, lang: LangCode) -> &'static str {
+//     match lang {
+//         _ => en::message(error), 
+//         Pt => pt::message(error), 
+        
+//     }
+// }
 
 
 mod en; 

@@ -3,6 +3,8 @@ use thiserror::Error;
 /// The vaidation error
 #[derive(Error, Debug)]
 pub enum ValidationError {
+    #[error("The email \"{0}\" does not belog to a registered user.")]
+    UserNotFound(String), 
     #[error("The email address is not valid.")]
     InvalidEmailAddressError, 
     #[error("That email already exists, try logging in.")]
@@ -15,4 +17,6 @@ pub enum ValidationError {
     PasswordMissingLowercase,
     #[error("The password should have at least one number.")]
     PasswordMissingNumber,
+    #[error("Incorrect email or password.")]
+    InvalidCredentials, 
 }
