@@ -28,7 +28,7 @@ use std::time::Duration;
 ///     auth.login(&form);
 /// }
 ///
-/// #[get("/logout")]
+/// #[post("/logout")]
 /// fn logout(auth: Auth) {
 ///     auth.logout();
 /// }
@@ -211,9 +211,9 @@ impl<'a> Auth<'a> {
 
     /// Logs the currently authenticated user out.
     /// ```rust
-    /// # use rocket::get;
+    /// # use rocket::post;
     /// # use rocket_auth::Auth;
-    /// #[get("/logout")]
+    /// #[post("/logout")]
     /// fn logout(auth: Auth)  {
     ///     auth.logout();
     /// }
@@ -226,9 +226,9 @@ impl<'a> Auth<'a> {
     }
     /// Deletes the account of the currently authenticated user.
     /// ```rust
-    /// # use rocket::get;
+    /// # use rocket::post;
     /// # use rocket_auth::Auth;
-    /// #[get("/delete-my-account")]
+    /// #[post("/delete-my-account")]
     /// fn delete(auth: Auth)  {
     ///     auth.delete();
     /// }
