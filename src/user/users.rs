@@ -91,13 +91,13 @@ impl Users {
     /// ```
     #[cfg(feature = "rusqlite")]
     #[throws(Error)]
-    pub fn open_rusqlite(path: impl AsRef<Path>) -> Self {
+    pub async fn open_rusqlite(path: impl AsRef<Path>) -> Self {
         use tokio::sync::Mutex;
         let users = Users {
             conn: Box::new(Mutex::new(rusqlite::Connection::open(path)?)),
             sess: Box::new(chashmap::CHashMap::new()),
         };
-        futures::executor::block_on(users.conn.init())?;
+        users.conn.init().await?; 
         users
     }
 
@@ -207,8 +207,8 @@ impl Users {
     /// Deletes a user from de database. Note that this method won't delete the session.
     /// To do that use [`Auth::delete`](crate::Auth::delete).
     /// ```
-    /// # use rocket_auth::Result; 
-    /// # use rocket::{get, State}; 
+    /// # use rocket_auth::Result;
+    /// # use rocket::{get, State};
     /// # use rocket_auth::Users;
     /// #[get("/delete_user/<id>")]
     /// async fn delete_user(id: i32, users: &State<Users>) -> Result<&'static str> {
