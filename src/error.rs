@@ -1,7 +1,8 @@
 use self::Error::*;
-pub use crate::forms::ValidationError::{self, IncorrectPassword};
-use crate::language::messages; 
+use crate::language::messages;
 use std::*;
+use thiserror::Error;
+pub use ValidationError::IncorrectPassword;
 
 /// The Error enum represents every possible error that `rocket_aut` may return.
 /// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used
@@ -18,7 +19,7 @@ use std::*;
 /// The code field contains the HTTP status code, and the "messages" field contains a list of
 /// error messages.
 #[non_exhaustive]
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
     /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
@@ -31,54 +32,76 @@ pub enum Error {
     Unauthorized,
 
     /// This error is thrown when attempting to access a resource available for admins only.
-    /// The http status code of this response is Forbidden 403. 
+    /// The http status code of this response is Forbidden 403.
     #[error("Forbidden: you don't have permission to access this resource.")]
     Forbidden,
 
-    /// This error is thrown when the user input for a request isn't valid. 
-    /// The http status code for this response can be either BadRequest 400 or Unauthorized 401. 
+    /// This error is thrown when the user input for a request isn't valid.
+    /// The http status code for this response can be either BadRequest 400 or Unauthorized 401.
     #[error("{0:?}")]
-    Validation(Vec<crate::forms::ValidationError>),
+    Validation(Vec<ValidationError>),
 
     /// A wrapper around [`sqlx::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[cfg(any(feature = "sqlx"))]
     #[error("SQLxError: {0}")]
     SqlxError(#[from] sqlx::Error),
 
     /// A wrapper around [`argon2::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
 
     /// A wrapper around [`rusqlite::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[cfg(feature = "rusqlite")]
     #[error("RusqliteError: {0}")]
     RusqliteError(#[from] rusqlite::Error),
 
     /// A wrapper around [`redis::RedisError`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[cfg(feature = "redis")]
     #[error("RedisError")]
     RedisError(#[from] redis::RedisError),
 
     /// A wrapper around [`serde_json::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
 
     /// A wrapper around [`std::io::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[cfg(feature = "sqlx-postgres")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
 
     /// A wrapper around [`tokio_postgres::Error`].
-    /// The http status code for this response is Internal server error 500. 
+    /// The http status code for this response is Internal server error 500.
     #[cfg(feature = "tokio-postgres")]
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
+}
+
+/// The vaidation error
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum ValidationError {
+    #[error("The email {0:?} does not belong to a registered user.")]
+    UserNotFound(String),
+    #[error("The email address is not valid.")]
+    InvalidEmailAddress,
+    #[error("That email {0:?} already exists, try logging in.")]
+    EmailAlreadyExists(String),
+    #[error("The password should be at least 8 characters long.")]
+    PasswordTooShort,
+    #[error("The password should have at least one upper case letter.")]
+    PasswordMissingUppercase,
+    #[error("The password should have at least one lowercase letter.")]
+    PasswordMissingLowercase,
+    #[error("The password should have at least one number.")]
+    PasswordMissingNumber,
+    #[error("Incorrect email or password.")]
+    IncorrectPassword,
 }
 
 use std::convert::TryFrom;
@@ -104,7 +127,6 @@ impl Error {
             _ => Status::InternalServerError,
         }
     }
-    
 }
 
 use rocket::http::{ContentType, Status};

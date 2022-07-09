@@ -1,6 +1,6 @@
-use crate::error::Error;
-use crate::forms::ValidationError::{self, *};
+pub use crate::prelude::*;
 use std::borrow::Cow;
+use ValidationError::*;
 
 pub fn message(error: &Error) -> Vec<Cow<'static, str>> {
     match error {

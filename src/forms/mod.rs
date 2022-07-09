@@ -1,8 +1,6 @@
 use crate::prelude::*;
-pub use error::ValidationError;
 use validator::validate_email;
 use ValidationError::*;
-mod error;
 
 /// The `Login` form is used along with the [`Auth`] guard to authenticate users.
 #[derive(FromForm, Deserialize, Clone, Hash, PartialEq, Eq)]
