@@ -1,31 +1,15 @@
-use rocket_lang::*; 
-use crate::prelude::*;
-use crate::Error; 
+use std::borrow::Cow;
+use crate::Error;
+use rocket_lang::*;
 
-
-
-
-
-const fn unauthorized() -> &'static str {
-    "unauthorized"
+pub fn messages(error: &Error, lang: LangCode) -> Vec<Cow<'static, str>> {
+    match lang {
+        Es => es::message(error), 
+        _ => en::message(error),
+    }
 }
 
 
-
-// fn message(error: ValidationError, lang: LangCode) -> &'static str {
-//     match lang {
-//         _ => en::message(error), 
-//         Pt => pt::message(error), 
-        
-//     }
-// }
-
-
-mod en; 
-mod es; 
-mod pt; 
-
-
-
-
-
+mod en;
+mod es;
+// mod pt;

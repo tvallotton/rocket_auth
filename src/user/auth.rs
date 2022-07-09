@@ -279,7 +279,7 @@ impl<'a> Auth<'a> {
     pub async fn change_email(&self, email: String) {
         if self.is_auth().await {
             if !validator::validate_email(&email) {
-                throw!(ValidationError::InvalidEmailAddressError)
+                throw!(ValidationError::InvalidEmailAddress)
             }
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id()?).await?;

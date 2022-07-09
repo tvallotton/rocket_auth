@@ -1,15 +1,35 @@
-use super::*;
-// use Error::*;
+use crate::error::Error;
+use crate::forms::ValidationError::{self, *};
+use std::borrow::Cow;
 
-pub fn validation(error: ValidationError) -> &'static str {
+pub fn message(error: &Error) -> Vec<Cow<'static, str>> {
     match error {
-        // UnsafePasswordTooShort => "La clave debe tener al menos 8 caracteres.",
-        // Unauthenticated => "El cliente no esta autentificado.",
-        // Unauthorized => "No autorizado.",
-        // InvalidCredentialsError => "Su correo electónico o contraseña es incorrecta.",
-        // UserNotFoundError => "No se encotró el usuario.",
-        // InvalidEmailAddressError => "Correo inválido.",
-        // EmailAlreadyExists => "Ese correo ya existe.",
-        _ => "Error interno del servidor.",
+        Error::Unauthorized => vec!["No autorizado, intenta registrarte.".into()],
+        Error::Forbidden => {
+            vec!["No permitido, No tienes permiso para acceder a este recurso.".into()]
+        }
+        Error::Validation(errors) => errors.into_iter().map(validation).collect(),
+        _ => vec!["Error interno del servidor.".into()],
+    }
+}
+
+fn validation(error: &ValidationError) -> Cow<'static, str> {
+    match error {
+        PasswordTooShort => "La contraseña debe tener al menos 8 letras.".into(),
+        InvalidEmailAddress => "El correo electrónico no es valido.".into(),
+        PasswordMissingNumber => "La contraseña debe tener al menos un número.".into(),
+        IncorrectPassword => "El correo o la contraseña es incorrecta.".into(),
+        PasswordMissingUppercase => {
+            "La contraseña debe tener al menos una letra mayúscula.".into()
+        }
+        PasswordMissingLowercase => {
+            "La contraseña debe tener al menos una letra minúscula.".into()
+        }
+        EmailAlreadyExists(email) => {
+            format!("El correo electrónico {email:?} ya existe, intenta ingresar.").into()
+        }
+        UserNotFound(email) => {
+            format!("El correo {email:?} no pertenece a ningún usuario registrado.").into()
+        }
     }
 }

@@ -134,12 +134,11 @@
 //! }
 //! ```
 
-
 mod cookies;
 mod db;
 mod error;
 mod forms;
-mod language; 
+mod language;
 pub mod prelude;
 mod session;
 mod user;

@@ -1,16 +1,17 @@
-pub use crate::forms::ValidationError;
+use self::Error::*;
+pub use crate::forms::ValidationError::{self, IncorrectPassword};
+use crate::language::messages; 
 use std::*;
 
-
-/// The Error enum represents every possible error that `rocket_aut` may return. 
-/// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used 
-/// in API endpoints that are expected to return a json response. The structure for the 
-/// json response is the following: 
+/// The Error enum represents every possible error that `rocket_aut` may return.
+/// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used
+/// in API endpoints that are expected to return a json response. The structure for the
+/// json response is the following:
 /// ```json
 /// {
 ///     "status": "error",
 ///     "code": 400
-///     "type": "invalid_credentials", 
+///     "type": "invalid_credentials",
 ///     "messages": ["Incorrect email or password."]
 /// }
 /// ```
@@ -24,12 +25,12 @@ pub enum Error {
     #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
     UnmanagedStateError, // used
 
-    /// This error occurs when a user is trying to access a resource that 
-    /// requires authentication, and they are not logged in. 
+    /// This error occurs when a user is trying to access a resource that
+    /// requires authentication, and they are not logged in.
     #[error("Authentication is needed to access this resource.")]
-    Unauthorized, 
+    Unauthorized,
 
-    /// This error is thrown when attempting to access a resource available for admins only. 
+    /// This error is thrown when attempting to access a resource available for admins only.
     #[error("Forbidden: you don't have permission to access this resource.")]
     Forbidden,
 
@@ -83,33 +84,17 @@ impl From<ValidationError> for Error {
     }
 }
 
-///```
-/// {
-///     "status": "400",
-///     "error": ["internal server "]
-/// }
-///
-/// ```
-
 impl Error {
     fn status(&self) -> Status {
         match self {
-            Error::Unauthorized => Status::Unauthorized,
-            Error::Forbidden => Status::Forbidden,
-            Error::Validation(_) => Status::BadRequest,
+            Unauthorized => Status::Unauthorized,
+            Forbidden => Status::Forbidden,
+            Validation(error) if matches!(error[0], IncorrectPassword) => Status::Unauthorized,
+            Validation(_) => Status::BadRequest,
             _ => Status::InternalServerError,
         }
     }
-    fn message(&self, lang: LangCode) -> Value {
-        match self {
-            Error::Validation(error) => {
-                json!("")
-            }
-            _ => {
-                json!("internal server error")
-            }
-        }
-    }
+    
 }
 
 use rocket::http::{ContentType, Status};
@@ -123,10 +108,11 @@ use std::io::Cursor;
 impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
         let lang = LangCode::try_from(req).unwrap_or(LangCode::En);
-
+        let messages = messages(&self, lang);
         let payload = to_string(&json!({
-            "status": self.status().code,
-            "message": self.message(lang),
+            "status": "error",
+            "code": self.status().code,
+            "message": messages,
         }))
         .unwrap();
 

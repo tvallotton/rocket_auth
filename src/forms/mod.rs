@@ -23,9 +23,9 @@ impl Signup {
         let password = is_secure(&self.password);
         let email = validate_email(&self.email);
         match (password, email) {
-            (Ok(()), false) => Err(vec![InvalidEmailAddressError]),
+            (Ok(()), false) => Err(vec![InvalidEmailAddress]),
             (Err(mut errors), false) => {
-                errors.push(InvalidEmailAddressError);
+                errors.push(InvalidEmailAddress);
                 Err(errors)
             }
             (result, _) => result,
