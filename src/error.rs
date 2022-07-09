@@ -31,41 +31,51 @@ pub enum Error {
     Unauthorized,
 
     /// This error is thrown when attempting to access a resource available for admins only.
+    /// The http status code of this response is Forbidden 403. 
     #[error("Forbidden: you don't have permission to access this resource.")]
     Forbidden,
 
+    /// This error is thrown when the user input for a request isn't valid. 
+    /// The http status code for this response can be either BadRequest 400 or Unauthorized 401. 
     #[error("{0:?}")]
     Validation(Vec<crate::forms::ValidationError>),
 
     /// A wrapper around [`sqlx::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[cfg(any(feature = "sqlx"))]
     #[error("SQLxError: {0}")]
     SqlxError(#[from] sqlx::Error),
 
     /// A wrapper around [`argon2::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[error("Argon2ParsingError: {0}")]
     Argon2ParsingError(#[from] argon2::Error),
 
     /// A wrapper around [`rusqlite::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[cfg(feature = "rusqlite")]
     #[error("RusqliteError: {0}")]
     RusqliteError(#[from] rusqlite::Error),
 
     /// A wrapper around [`redis::RedisError`].
+    /// The http status code for this response is Internal server error 500. 
     #[cfg(feature = "redis")]
     #[error("RedisError")]
     RedisError(#[from] redis::RedisError),
 
     /// A wrapper around [`serde_json::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[error("SerdeError: {0}")]
     SerdeError(#[from] serde_json::Error),
 
     /// A wrapper around [`std::io::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[cfg(feature = "sqlx-postgres")]
     #[error("IOError: {0}")]
     IOError(#[from] std::io::Error),
 
     /// A wrapper around [`tokio_postgres::Error`].
+    /// The http status code for this response is Internal server error 500. 
     #[cfg(feature = "tokio-postgres")]
     #[error("TokioPostgresError: {0}")]
     TokioPostgresError(#[from] tokio_postgres::Error),
