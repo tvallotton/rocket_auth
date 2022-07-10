@@ -2,7 +2,10 @@
 {% block body %}
 {% if user %}
 Hello there, your email is {{ user.email }}.
-<br><a href="/delete">Delete your account.</a>
+<br>
+<form method="post" action="delete" >
+    <button class="btn btn-warning" type="submit">delete your account</button>
+</form>
 
 {% endif %}
 {% if not user %}

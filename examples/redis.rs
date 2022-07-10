@@ -3,9 +3,9 @@ use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
 use sqlx::*;
+
 use std::result::Result;
 use std::*;
-use tokio::sync::*;
 #[get("/login")]
 fn get_login() -> Template {
     Template::render("login", json!({}))
@@ -13,6 +13,8 @@ fn get_login() -> Template {
 
 #[post("/login", data = "<form>")]
 async fn post_login(auth: Auth<'_>, form: Form<Login>) -> Result<Redirect, Error> {
+    let result = auth.login(&form).await;
+    result?;
     Ok(Redirect::to("/"))
 }
 
@@ -25,7 +27,6 @@ async fn get_signup() -> Template {
 async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
-
     Ok(Redirect::to("/"))
 }
 
@@ -34,61 +35,77 @@ async fn index(user: Option<User>) -> Template {
     Template::render("index", json!({ "user": user }))
 }
 
-#[get("/logout")]
-async fn logout(auth: Auth<'_>) -> Result<Template, Error> {
+#[post("/logout")]
+async fn post_logout(auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout().await?;
     Ok(Template::render("logout", json!({})))
 }
-#[get("/delete")]
+
+#[post("/delete")]
 async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
     Ok(Template::render("deleted", json!({})))
 }
 
 #[get("/show_all_users")]
-async fn show_all_users(
-    conn: &State<std::sync::Arc<Mutex<SqliteConnection>>>,
-    user: Option<User>,
-) -> Result<Template, Error> {
-    let users: Vec<User> = query_as("select * from users;")
-        .fetch_all(&mut *conn.lock().await)
-        .await?;
-<<<<<<< HEAD
-=======
-    println!("{:?}", users);
->>>>>>> language
+async fn show_all_users(conn: &State<SqlitePool>, user: Option<User>) -> Result<Template, Error> {
+    let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
     Ok(Template::render(
         "users",
         json!({"users": users, "user": user}),
     ))
 }
-// async fn show_users(auth: Auth<'_>) -> tes
+// #[tokio::main]
+// async fn main() -> Result<(), Error> {
+//     let conn = SqliteConnection::connect("database.db").await?;
+//     let conn: sync::Arc<Mutex<_>> = sync::Arc::new(conn.into());
+//     let mut users: Users = conn.clone().into();
+//     users.open_redis("redis://127.0.0.1/")?;
+//     let _ = rocket::build()
+//         .mount(
+//             "/",
+//             routes![
+//                 index,
+//                 get_login,
+//                 post_signup,
+//                 get_signup,
+//                 post_login,
+//                 logout,
+//                 delete,
+//                 show_all_users
+//             ],
+//         )
+//         .manage(conn)
+//         .manage(users)
+//         .attach(Template::fairing())
+//         .launch()
+//         .await
+//         .unwrap();
+//     Ok(())
+// }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
-    let conn = SqliteConnection::connect("database.db").await?;
-    let conn: sync::Arc<Mutex<_>> = sync::Arc::new(conn.into());
+#[rocket::launch]
+async fn rocket() -> _ {
+    let conn = SqlitePool::connect("database.db").await.unwrap();
     let mut users: Users = conn.clone().into();
-    users.open_redis("redis://127.0.0.1/")?;
-    let _ = rocket::build()
+    users.create_table().await.unwrap();
+    users.open_redis("redis://127.0.0.1/").unwrap();
+
+    rocket::build()
         .mount(
             "/",
             routes![
                 index,
                 get_login,
                 post_signup,
+                post_logout,
                 get_signup,
                 post_login,
-                logout,
                 delete,
-                show_all_users
+                show_all_users,
             ],
         )
         .manage(conn)
         .manage(users)
         .attach(Template::fairing())
-        .launch()
-        .await
-        .unwrap();
-    Ok(())
 }

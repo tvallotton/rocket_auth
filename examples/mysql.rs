@@ -3,6 +3,7 @@ use rocket_auth::{prelude::Error, *};
 use rocket_dyn_templates::Template;
 use serde_json::json;
 use sqlx::*;
+
 use std::result::Result;
 use std::*;
 #[get("/login")]
@@ -26,7 +27,6 @@ async fn get_signup() -> Template {
 async fn post_signup(auth: Auth<'_>, form: Form<Signup>) -> Result<Redirect, Error> {
     auth.signup(&form).await?;
     auth.login(&form.into()).await?;
-
     Ok(Redirect::to("/"))
 }
 
@@ -35,12 +35,13 @@ async fn index(user: Option<User>) -> Template {
     Template::render("index", json!({ "user": user }))
 }
 
-#[get("/logout")]
-async fn logout(auth: Auth<'_>) -> Result<Template, Error> {
+#[post("/logout")]
+async fn post_logout(auth: Auth<'_>) -> Result<Template, Error> {
     auth.logout().await?;
     Ok(Template::render("logout", json!({})))
 }
-#[get("/delete")]
+
+#[post("/delete")]
 async fn delete(auth: Auth<'_>) -> Result<Template, Error> {
     auth.delete().await?;
     Ok(Template::render("deleted", json!({})))
@@ -55,30 +56,27 @@ async fn show_all_users(conn: &State<MySqlPool>, user: Option<User>) -> Result<T
     ))
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
-    let conn = MySqlPool::connect("mysql://test_user:password@localhost/test").await?;
+#[rocket::launch]
+async fn rocket() -> _ {
+    let conn = MySqlPool::connect("mysql://test_user:password@localhost/test").await.unwrap();
     let users: Users = conn.clone().into();
-    users.create_table().await?;
-    let _ = rocket::build()
+    users.create_table().await.unwrap();
+
+    rocket::build()
         .mount(
             "/",
             routes![
                 index,
                 get_login,
                 post_signup,
+                post_logout,
                 get_signup,
                 post_login,
-                logout,
                 delete,
-                show_all_users
+                show_all_users,
             ],
         )
         .manage(conn)
         .manage(users)
         .attach(Template::fairing())
-        .launch()
-        .await
-        .unwrap();
-    Ok(())
 }

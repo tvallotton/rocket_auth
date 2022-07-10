@@ -15,12 +15,14 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Rocket Auth Example</a>
-            <div>
+            <div class="fex-container">
                 {% if not user %}
-                <a class="navbar-brand" href="/login">Login</a>
-                <a class="navbar-brand" href="/signup">Sign up</a>
+                    <a class="navbar-brand" href="/login">Login</a>
+                    <a class="navbar-brand" href="/signup">Sign up</a>
                 {% else %}
-                <a class="navbar-brand" href="/logout">Log out</a>
+                    <form method="post" action="logout">
+                        <button class="navbar-brand btn-danger" style="border: 0px;" type="submit">Log out</button>
+                    </form>
                 {% endif %}
             </div>
         </div>
