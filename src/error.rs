@@ -1,131 +1,214 @@
-use std::*;
+use self::Error::*;
+use crate::language::messages;
+use rocket::http::{ContentType, Status};
+use rocket::request::Request;
+use rocket::response::{self, Responder, Response};
+use rocket_lang::LangCode;
+use serde_json::{json, to_string};
+use std::convert::TryFrom;
+use std::io::Cursor;
+use thiserror::Error;
+use ValidationError::IncorrectPassword;
 
+/// The Error enum represents every possible error that `rocket_aut` may return.
+/// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used
+/// in API endpoints that are expected to return a json response. The structure for the
+/// json response is the following:
+/// ```json
+/// {
+///     "status": "error",
+///     "code": 400
+///     "type": "invalid_credentials",
+///     "messages": ["Incorrect email or password."]
+/// }
+/// ```
+/// The code field contains the HTTP status code, and the "messages" field contains a list of
+/// error messages.
 #[non_exhaustive]
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
-    /// This error occurs when attempting to create a user with an invalid email address.
-    #[error("That is not a valid email address.")]
-    InvalidEmailAddressError,
+    /// This error occurs when a user is trying to access a resource that
+    /// requires authentication, and they are not logged in.
+    #[error("unauthorized: authentication is needed to access this resource")]
+    Unauthorized,
 
-    /// This error only occurs if the application panics while holding a locked mutex.
-    #[cfg(feature = "sqlx-sqlite")]
-    #[error("The mutex guarding the Sqlite connection was posioned.")]
-    MutexPoisonError,
+    /// This error is thrown when attempting to access a resource available for admins only.
+    /// The http status code of this response is Forbidden 403.
+    #[error("forbidden: you don't have permission to access this resource")]
+    Forbidden,
 
-    /// Thrown when the requested user does not exists.
-    #[error("Could not find any user that fits the specified requirements.")]
-    UserNotFoundError,
+    /// This error is thrown when the user input for a request isn't valid.
+    /// The http status code for this response can be either BadRequest 400 or Unauthorized 401.
+    #[error("user input validation failed")]
+    Validation(Vec<ValidationError>),
 
+    /// This error can be thrown for multiple different reasons.
+    /// The http status code for this response is InternalServerError 500.
+    #[error("internal server error")]
+    Server(#[source] InternalServerError),
+}
+
+/// The vaidation error
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum ValidationError {
+    /// the email does not belong to a registered user
+    #[error("the email {0:?} does not belong to a registered user")]
+    UserNotFound(String),
+
+    /// the email address is not valid
+    #[error("the email address is not valid")]
+    InvalidEmailAddress,
+
+    /// that email already exists, try logging in
+    #[error("that email {0:?} already exists, try logging in")]
+    EmailAlreadyExists(String),
+
+    /// the password should be at least 8 characters long
+    #[error("the password should be at least 8 characters long")]
+    PasswordTooShort,
+
+    /// the password should have at least one upper case letter
+    #[error("the password should have at least one upper case letter")]
+    PasswordMissingUppercase,
+    /// the password should have at least one lowercase letter
+    #[error("the password should have at least one lowercase letter")]
+    PasswordMissingLowercase,
+
+    /// the password should have at least one number
+    #[error("the password should have at least one number")]
+    PasswordMissingNumber,
+
+    /// incorrect email or password
+    #[error("incorrect email or password")]
+    IncorrectPassword,
+}
+
+#[derive(Error, Debug)]
+pub enum InternalServerError {
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
     /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
-    #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
-    UnmanagedStateError,
-
-    #[error("UnauthenticatedError: The operation failed because the client is not authenticated.")]
-    UnauthenticatedError,
-    /// This error occurs when a user tries to log in, but their account doesn't exists.
-    #[error("The email \"{0}\" is not registered. Try signing up first.")]
-    EmailDoesNotExist(String),
-    /// This error is thrown when a user tries to sign up with an email that already exists.
-    #[error("That email address already exists. Try logging in.")]
-    EmailAlreadyExists,
-    /// This error occurs when the user does exists, but their password was incorrect.
-    #[error("Incorrect email or password")]
-    UnauthorizedError,
-
-    /// A wrapper around [`validator::ValidationError`].
-    #[error("{0}")]
-    FormValidationError(#[from] validator::ValidationError),
-
-    /// A wrapper around [`validator::ValidationErrors`].
-    #[error("FormValidationErrors: {0}")]
-    FormValidationErrors(#[from] validator::ValidationErrors),
+    #[error("failed to retrieve `Users`. You may be missing `.manage(users)` in your app")]
+    UnmanagedStateError, // used
 
     /// A wrapper around [`sqlx::Error`].
     #[cfg(any(feature = "sqlx"))]
-    #[error("SqlxError: {0}")]
-    SqlxError(#[from] sqlx::Error),
+    #[error("sqlx failure")]
+    SQLx(
+        #[source]
+        #[from]
+        sqlx::Error,
+    ),
+
     /// A wrapper around [`argon2::Error`].
-    #[error("Argon2ParsingError: {0}")]
-    Argon2ParsingError(#[from] argon2::Error),
+    #[error("failed to validate password")]
+    Argon2(
+        #[source]
+        #[from]
+        argon2::Error,
+    ),
 
     /// A wrapper around [`rusqlite::Error`].
     #[cfg(feature = "rusqlite")]
-    #[error("RusqliteError: {0}")]
-    RusqliteError(#[from] rusqlite::Error),
+    #[error("rusqlite failure")]
+    Rusqlite(
+        #[source]
+        #[from]
+        rusqlite::Error,
+    ),
 
     /// A wrapper around [`redis::RedisError`].
     #[cfg(feature = "redis")]
-    #[error("RedisError")]
-    RedisError(#[from] redis::RedisError),
+    #[error("redis failure")]
+    Redis(
+        #[source]
+        #[from]
+        redis::RedisError,
+    ),
 
     /// A wrapper around [`serde_json::Error`].
-    #[error("SerdeError: {0}")]
-    SerdeError(#[from] serde_json::Error),
+    #[error("serde failure")]
+    Serde(
+        #[source]
+        #[from]
+        serde_json::Error,
+    ),
 
     /// A wrapper around [`std::io::Error`].
     #[cfg(feature = "sqlx-postgres")]
-    #[error("IOError: {0}")]
-    IOError(#[from] std::io::Error),
+    #[error("io failure")]
+    IO(
+        #[source]
+        #[from]
+        std::io::Error,
+    ),
 
     /// A wrapper around [`tokio_postgres::Error`].
     #[cfg(feature = "tokio-postgres")]
-    #[error("TokioPostgresError: {0}")]
-    TokioPostgresError(#[from] tokio_postgres::Error),
+    #[error("tokio postgres failure")]
+    TokioPostgres(
+        #[source]
+        #[from]
+        tokio_postgres::Error,
+    ),
 }
 
 /*****  CONVERSIONS  *****/
-#[cfg(feature = "sqlx-sqlite")]
-use std::sync::PoisonError;
-#[cfg(feature = "sqlx-sqlite")]
-impl<T> From<PoisonError<T>> for Error {
-    fn from(_error: PoisonError<T>) -> Error {
-        Error::MutexPoisonError
+impl From<Vec<ValidationError>> for Error {
+    fn from(error: Vec<ValidationError>) -> Error {
+        Error::Validation(error)
+    }
+}
+impl From<ValidationError> for Error {
+    fn from(error: ValidationError) -> Error {
+        Error::Validation(vec![error])
+    }
+}
+impl<E> From<E> for Error
+where
+    E: Into<InternalServerError>,
+{
+    fn from(error: E) -> Self {
+        Error::Server(error.into())
     }
 }
 
-use self::Error::*;
 impl Error {
-    fn message(&self) -> String {
+    #[allow(dead_code)]
+    fn log(&self) {
+        use std::fmt::Write; 
+        let mut msg = format!("{self}");
+        let mut dyn_err: &dyn std::error::Error = self;
+        while let Some(src) = dyn_err.source() {
+            write!(msg, ": {src}").ok();
+            dyn_err = src;
+        }
+        write!(msg, ".").ok();
+        log::error!("{}", msg.to_lowercase());
+    }
+
+    fn status(&self) -> Status {
         match self {
-            InvalidEmailAddressError
-            | EmailAlreadyExists
-            | UnauthorizedError
-            | UserNotFoundError => format!("{}", self),
-            FormValidationErrors(source) => {
-                source
-                    .field_errors()
-                    .into_iter()
-                    .map(|(_, error)| error)
-                    .map(IntoIterator::into_iter)
-                    .map(|errs| {
-                        errs //
-                            .map(|err| &err.code)
-                            .fold(String::new(), |a, b| a + b)
-                    })
-                    .fold(String::new(), |a, b| a + &b)
-            }
-            #[cfg(debug_assertions)]
-            e => return format!("{}", e),
-            #[allow(unreachable_patterns)]
-            _ => "undefined".into(),
+            Unauthorized => Status::Unauthorized,
+            Forbidden => Status::Forbidden,
+            Validation(error) if matches!(error[0], IncorrectPassword) => Status::Unauthorized,
+            Validation(_) => Status::BadRequest,
+            _ => Status::InternalServerError,
         }
     }
 }
 
-use rocket::http::ContentType;
-use rocket::request::Request;
-use rocket::response::{self, Responder, Response};
-use serde_json::*;
-use std::io::Cursor;
-
 impl<'r> Responder<'r, 'static> for Error {
-    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
+    fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
+        let lang = LangCode::try_from(req).unwrap_or(LangCode::En);
+        let messages = messages(&self, lang);
         let payload = to_string(&json!({
             "status": "error",
-            "message": self.message(),
+            "code": self.status().code,
+            "message": messages,
         }))
         .unwrap();
+
         Response::build()
             .sized_body(payload.len(), Cursor::new(payload))
             .header(ContentType::new("application", "json"))

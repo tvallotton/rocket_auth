@@ -12,12 +12,12 @@ impl User {
     /// In case the user is authenticated,
     /// you can change it more easily with [`change_password`](`super::auth::Auth::change_password`).
     /// This function will fail in case the password is not secure enough.
+    /// 
     /// ```rust
-    /// # use rocket::{State, get};
+    /// # use rocket::{State, post};
     /// # use rocket_auth::{Error, Users};
-    /// #[get("/reset-password/<id>/<new_password>")]
-    /// async fn reset_password(id: i32, new_password: String, users: &State<Users>) -> Result<(), Error> {
-    ///     let mut user = users.get_by_id(id).await?;
+    /// #[post("/reset-password/<new_password>")]
+    /// async fn reset_password(mut user: User, users: &State<Users>, new_password: String) -> Result<(), Error> {
     ///     user.set_password(&new_password);
     ///     users.modify(&user).await?;
     ///     Ok(())
@@ -43,7 +43,7 @@ impl User {
     }
 
     /// This is an accessor function for the private `id` field.
-    /// This field is private so it is not modified by accident when updating a user.
+    /// This field is private, so that it is not modified by accident when updating a user.
     /// ```rust
     /// # use rocket::{State, get};
     /// # use rocket_auth::{Error, User};
@@ -86,9 +86,9 @@ impl User {
     #[throws(Error)]
     pub fn set_email(&mut self, email: &str) {
         if validator::validate_email(email) {
-            self.email = email.into();
+            self.email = email.to_lowercase();
         } else {
-            throw!(Error::InvalidEmailAddressError)
+            throw!(ValidationError::InvalidEmailAddress)
         }
     }
 }
@@ -119,7 +119,7 @@ impl<'r> FromRequest<'r> for User {
         if let Some(user) = auth.get_user().await {
             Outcome::Success(user)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
         }
     }
 }
@@ -136,11 +136,13 @@ impl<'r> FromRequest<'r> for AdminUser {
             Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
-            if user.is_admin {
-                return Outcome::Success(AdminUser(user));
-            }
+            return if user.is_admin {
+                Outcome::Success(AdminUser(user))
+            } else {
+                Outcome::Failure((Status::Forbidden, Error::Forbidden))
+            };
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Failure((Status::Unauthorized, Error::Unauthorized))
     }
 }
 
@@ -164,7 +166,7 @@ impl std::convert::TryFrom<User> for AdminUser {
         if value.is_admin {
             Ok(AdminUser(value))
         } else {
-            Err(Error::UnauthorizedError)
+            Err(Error::Unauthorized)
         }
     }
 }

@@ -62,7 +62,7 @@ async fn main() -> Result<(), Error> {
     let users: Users = conn.clone().into();
     users.create_table().await?;
 
-    rocket::build()
+    let _ = rocket::build()
         .mount(
             "/",
             routes![
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Error> {
             ],
         )
         .manage(conn)
-        .manage(users)
+        // .manage(users)
         .attach(Template::fairing())
         .launch()
         .await

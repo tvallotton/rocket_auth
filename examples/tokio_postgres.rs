@@ -78,8 +78,8 @@ async fn main() -> Result<(), Error> {
             eprintln!("TokioPostgresError: {}", e);
         }
     });
-    users.create_table().await?;
-    rocket::build()
+    users.create_table().await?; 
+    let _ = rocket::build()
         .mount(
             "/",
             routes![

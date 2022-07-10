@@ -27,14 +27,14 @@ impl Users {
         let form_pwd = &form.password.as_bytes();
         let user = self
             .conn
-            .get_user_by_email(&form.email)
+            .get_user_by_email(&form.email.to_lowercase())
             .await
-            .map_err(|_| Error::EmailDoesNotExist(form.email.clone()))?;
+            .map_err(|_| ValidationError::UserNotFound(form.email.clone()))?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key(user.id).await?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
     #[throws(Error)]
@@ -61,17 +61,17 @@ impl Users {
     #[throws(Error)]
     async fn signup(&self, form: &Signup) {
         form.validate()?;
-        let email = &form.email;
+        let email = &form.email.to_lowercase();
         let password = &form.password;
         let result = self.create_user(email, password, false).await;
         match result {
             Ok(_) => (),
             #[cfg(feature = "sqlx")]
-            Err(Error::SqlxError(sqlx::Error::Database(error))) => {
+            Err(Error::Server(InternalServerError::SQLx(sqlx::Error::Database(error)))) => {
                 if error.code() == Some("23000".into()) {
-                    throw!(Error::EmailAlreadyExists)
+                    throw!(ValidationError::EmailAlreadyExists(form.email.clone()))
                 } else {
-                    throw!(Error::SqlxError(sqlx::Error::Database(error)))
+                    throw!(sqlx::Error::Database(error))
                 }
             }
             Err(error) => {
@@ -83,12 +83,15 @@ impl Users {
     #[throws(Error)]
     async fn login_for(&self, form: &Login, time: Duration) -> String {
         let form_pwd = &form.password.as_bytes();
-        let user = self.conn.get_user_by_email(&form.email).await?;
+        let user = self
+            .conn
+            .get_user_by_email(&form.email.to_lowercase())
+            .await?;
         let user_pwd = &user.password;
         if verify(user_pwd, form_pwd)? {
             self.set_auth_key_for(user.id, time).await?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 }

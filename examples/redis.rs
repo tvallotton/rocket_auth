@@ -53,6 +53,10 @@ async fn show_all_users(
     let users: Vec<User> = query_as("select * from users;")
         .fetch_all(&mut *conn.lock().await)
         .await?;
+<<<<<<< HEAD
+=======
+    println!("{:?}", users);
+>>>>>>> language
     Ok(Template::render(
         "users",
         json!({"users": users, "user": user}),
@@ -66,7 +70,7 @@ async fn main() -> Result<(), Error> {
     let conn: sync::Arc<Mutex<_>> = sync::Arc::new(conn.into());
     let mut users: Users = conn.clone().into();
     users.open_redis("redis://127.0.0.1/")?;
-    rocket::build()
+    let _ = rocket::build()
         .mount(
             "/",
             routes![

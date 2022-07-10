@@ -67,7 +67,10 @@ impl<'r> FromRequest<'r> for Auth<'r> {
         let users: &State<Users> = if let Outcome::Success(users) = req.guard().await {
             users
         } else {
-            return Outcome::Failure((Status::InternalServerError, Error::UnmanagedStateError));
+            return Outcome::Failure((
+                Status::InternalServerError,
+                InternalServerError::UnmanagedStateError.into(),
+            ));
         };
 
         Outcome::Success(Auth {
@@ -118,7 +121,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn login(&self, form: &Login) {
         let key = self.users.login(form).await?;
-        let user = self.users.get_by_email(&form.email).await?;
+        let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
         let session = Session::Authenticated(cookies::Authenticated {
             id: user.id,
             email: user.email,
@@ -143,7 +146,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn login_for(&self, form: &Login, time: Duration) {
         let key = self.users.login_for(form, time).await?;
-        let user = self.users.get_by_email(&form.email).await?;
+        let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
 
         let session = Session::Authenticated(Authenticated {
             id: user.id,
@@ -238,9 +241,9 @@ impl<'a> Auth<'a> {
 
     /// Logs the currently authenticated user out.
     /// ```rust
-    /// # use rocket::get;
+    /// # use rocket::post;
     /// # use rocket_auth::Auth;
-    /// #[get("/logout")]
+    /// #[post("/logout")]
     /// fn logout(auth: Auth)  {
     ///     auth.logout();
     /// }
@@ -253,9 +256,9 @@ impl<'a> Auth<'a> {
     }
     /// Deletes the account of the currently authenticated user.
     /// ```rust
-    /// # use rocket::get;
+    /// # use rocket::post;
     /// # use rocket_auth::Auth;
-    /// #[get("/delete-my-account")]
+    /// #[post("/delete-my-account")]
     /// fn delete(auth: Auth)  {
     ///     auth.delete();
     /// }
@@ -267,7 +270,7 @@ impl<'a> Auth<'a> {
             self.users.delete(session.id()?).await?;
             self.cookies.remove_private(Cookie::named("rocket_auth"));
         } else {
-            throw!(Error::UnauthenticatedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -288,7 +291,7 @@ impl<'a> Auth<'a> {
             user.set_password(password)?;
             self.users.modify(&user).await?;
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -306,14 +309,14 @@ impl<'a> Auth<'a> {
     pub async fn change_email(&self, email: String) {
         if self.is_auth().await {
             if !validator::validate_email(&email) {
-                throw!(Error::InvalidEmailAddressError)
+                throw!(ValidationError::InvalidEmailAddress)
             }
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id()?).await?;
-            user.email = email;
+            user.email = email.to_lowercase();
             self.users.modify(&user).await?;
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 
@@ -328,7 +331,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub(crate) fn get_session(&self) -> &Session {
-        let session = self.session.as_ref().ok_or(Error::UnauthenticatedError)?;
+        let session = self.session.as_ref().ok_or(Error::Unauthorized)?;
         session
     }
 
@@ -343,7 +346,7 @@ impl<'a> Auth<'a> {
             let user: User = self.users.get_by_id(session.id()?).await?;
             user.compare_password(password)?
         } else {
-            throw!(Error::UnauthorizedError)
+            throw!(Error::Unauthorized)
         }
     }
 }
