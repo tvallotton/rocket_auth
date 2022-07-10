@@ -69,11 +69,11 @@ impl Users {
         match result {
             Ok(_) => (),
             #[cfg(feature = "sqlx")]
-            Err(Error::SqlxError(sqlx::Error::Database(error))) => {
+            Err(Error::Server(InternalServerError::SQLx(sqlx::Error::Database(error)))) => {
                 if error.code() == Some("23000".into()) {
                     throw!(ValidationError::EmailAlreadyExists(form.email.clone()))
                 } else {
-                    throw!(Error::SqlxError(sqlx::Error::Database(error)))
+                    throw!(sqlx::Error::Database(error))
                 }
             }
             Err(error) => {

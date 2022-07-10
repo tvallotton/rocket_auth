@@ -65,7 +65,10 @@ impl<'r> FromRequest<'r> for Auth<'r> {
         let users: &State<Users> = if let Outcome::Success(users) = req.guard().await {
             users
         } else {
-            return Outcome::Failure((Status::InternalServerError, Error::UnmanagedStateError));
+            return Outcome::Failure((
+                Status::InternalServerError,
+                InternalServerError::UnmanagedStateError.into(),
+            ));
         };
 
         Outcome::Success(Auth {
@@ -312,7 +315,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn compare_password(&self, password: &str) -> bool {
         if self.is_auth().await {
-            let session = self.get_session()?; 
+            let session = self.get_session()?;
             let user: User = self.users.get_by_id(session.id()?).await?;
             user.compare_password(password)?
         } else {

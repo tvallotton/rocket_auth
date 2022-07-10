@@ -1,8 +1,14 @@
 use self::Error::*;
 use crate::language::messages;
-use std::*;
+use rocket::http::{ContentType, Status};
+use rocket::request::Request;
+use rocket::response::{self, Responder, Response};
+use rocket_lang::LangCode;
+use serde_json::{json, to_string};
+use std::convert::TryFrom;
+use std::io::Cursor;
 use thiserror::Error;
-pub use ValidationError::IncorrectPassword;
+use ValidationError::IncorrectPassword;
 
 /// The Error enum represents every possible error that `rocket_aut` may return.
 /// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used
@@ -21,90 +27,132 @@ pub use ValidationError::IncorrectPassword;
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum Error {
-    /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
-    /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
-    #[error("UnmanagedStateError: failed retrieving `Users`. You may be missing `.manage(users)` in your app.")]
-    UnmanagedStateError, // used
-
     /// This error occurs when a user is trying to access a resource that
     /// requires authentication, and they are not logged in.
-    #[error("Authentication is needed to access this resource.")]
+    #[error("unauthorized: authentication is needed to access this resource")]
     Unauthorized,
 
     /// This error is thrown when attempting to access a resource available for admins only.
     /// The http status code of this response is Forbidden 403.
-    #[error("Forbidden: you don't have permission to access this resource.")]
+    #[error("forbidden: you don't have permission to access this resource")]
     Forbidden,
 
     /// This error is thrown when the user input for a request isn't valid.
     /// The http status code for this response can be either BadRequest 400 or Unauthorized 401.
-    #[error("{0:?}")]
+    #[error("user input validation failed")]
     Validation(Vec<ValidationError>),
 
-    /// A wrapper around [`sqlx::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[cfg(any(feature = "sqlx"))]
-    #[error("SQLxError: {0}")]
-    SqlxError(#[from] sqlx::Error),
-
-    /// A wrapper around [`argon2::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[error("Argon2ParsingError: {0}")]
-    Argon2ParsingError(#[from] argon2::Error),
-
-    /// A wrapper around [`rusqlite::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[cfg(feature = "rusqlite")]
-    #[error("RusqliteError: {0}")]
-    RusqliteError(#[from] rusqlite::Error),
-
-    /// A wrapper around [`redis::RedisError`].
-    /// The http status code for this response is Internal server error 500.
-    #[cfg(feature = "redis")]
-    #[error("RedisError")]
-    RedisError(#[from] redis::RedisError),
-
-    /// A wrapper around [`serde_json::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[error("SerdeError: {0}")]
-    SerdeError(#[from] serde_json::Error),
-
-    /// A wrapper around [`std::io::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[cfg(feature = "sqlx-postgres")]
-    #[error("IOError: {0}")]
-    IOError(#[from] std::io::Error),
-
-    /// A wrapper around [`tokio_postgres::Error`].
-    /// The http status code for this response is Internal server error 500.
-    #[cfg(feature = "tokio-postgres")]
-    #[error("TokioPostgresError: {0}")]
-    TokioPostgresError(#[from] tokio_postgres::Error),
+    /// This error can be thrown for multiple different reasons.
+    /// The http status code for this response is InternalServerError 500.
+    #[error("internal server error")]
+    Server(#[source] InternalServerError),
 }
 
 /// The vaidation error
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum ValidationError {
-    #[error("The email {0:?} does not belong to a registered user.")]
+    /// the email does not belong to a registered user
+    #[error("the email {0:?} does not belong to a registered user")]
     UserNotFound(String),
-    #[error("The email address is not valid.")]
+
+    /// the email address is not valid
+    #[error("the email address is not valid")]
     InvalidEmailAddress,
-    #[error("That email {0:?} already exists, try logging in.")]
+
+    /// that email already exists, try logging in
+    #[error("that email {0:?} already exists, try logging in")]
     EmailAlreadyExists(String),
-    #[error("The password should be at least 8 characters long.")]
+
+    /// the password should be at least 8 characters long
+    #[error("the password should be at least 8 characters long")]
     PasswordTooShort,
-    #[error("The password should have at least one upper case letter.")]
+
+    /// the password should have at least one upper case letter
+    #[error("the password should have at least one upper case letter")]
     PasswordMissingUppercase,
-    #[error("The password should have at least one lowercase letter.")]
+    /// the password should have at least one lowercase letter
+    #[error("the password should have at least one lowercase letter")]
     PasswordMissingLowercase,
-    #[error("The password should have at least one number.")]
+
+    /// the password should have at least one number
+    #[error("the password should have at least one number")]
     PasswordMissingNumber,
-    #[error("Incorrect email or password.")]
+
+    /// incorrect email or password
+    #[error("incorrect email or password")]
     IncorrectPassword,
 }
 
-use std::convert::TryFrom;
+#[derive(Error, Debug)]
+pub enum InternalServerError {
+    /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
+    /// It can be fixed adding `.manage(users)` to the app, where `users` is of type `Users`.
+    #[error("failed to retrieve `Users`. You may be missing `.manage(users)` in your app")]
+    UnmanagedStateError, // used
+
+    /// A wrapper around [`sqlx::Error`].
+    #[cfg(any(feature = "sqlx"))]
+    #[error("sqlx failure")]
+    SQLx(
+        #[source]
+        #[from]
+        sqlx::Error,
+    ),
+
+    /// A wrapper around [`argon2::Error`].
+    #[error("failed to validate password")]
+    Argon2(
+        #[source]
+        #[from]
+        argon2::Error,
+    ),
+
+    /// A wrapper around [`rusqlite::Error`].
+    #[cfg(feature = "rusqlite")]
+    #[error("rusqlite failure")]
+    Rusqlite(
+        #[source]
+        #[from]
+        rusqlite::Error,
+    ),
+
+    /// A wrapper around [`redis::RedisError`].
+    #[cfg(feature = "redis")]
+    #[error("redis failure")]
+    Redis(
+        #[source]
+        #[from]
+        redis::RedisError,
+    ),
+
+    /// A wrapper around [`serde_json::Error`].
+    #[error("serde failure")]
+    Serde(
+        #[source]
+        #[from]
+        serde_json::Error,
+    ),
+
+    /// A wrapper around [`std::io::Error`].
+    #[cfg(feature = "sqlx-postgres")]
+    #[error("io failure")]
+    IO(
+        #[source]
+        #[from]
+        std::io::Error,
+    ),
+
+    /// A wrapper around [`tokio_postgres::Error`].
+    #[cfg(feature = "tokio-postgres")]
+    #[error("tokio postgres failure")]
+    TokioPostgres(
+        #[source]
+        #[from]
+        tokio_postgres::Error,
+    ),
+}
+
 /*****  CONVERSIONS  *****/
 impl From<Vec<ValidationError>> for Error {
     fn from(error: Vec<ValidationError>) -> Error {
@@ -116,8 +164,29 @@ impl From<ValidationError> for Error {
         Error::Validation(vec![error])
     }
 }
+impl<E> From<E> for Error
+where
+    E: Into<InternalServerError>,
+{
+    fn from(error: E) -> Self {
+        Error::Server(error.into())
+    }
+}
 
 impl Error {
+    #[allow(dead_code)]
+    fn log(&self) {
+        use std::fmt::Write; 
+        let mut msg = format!("{self}");
+        let mut dyn_err: &dyn std::error::Error = self;
+        while let Some(src) = dyn_err.source() {
+            write!(msg, ": {src}").ok();
+            dyn_err = src;
+        }
+        write!(msg, ".").ok();
+        log::error!("{}", msg.to_lowercase());
+    }
+
     fn status(&self) -> Status {
         match self {
             Unauthorized => Status::Unauthorized,
@@ -128,14 +197,6 @@ impl Error {
         }
     }
 }
-
-use rocket::http::{ContentType, Status};
-use rocket::request::Request;
-use rocket::response::{self, Responder, Response};
-
-use rocket_lang::LangCode;
-use serde_json::*;
-use std::io::Cursor;
 
 impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
