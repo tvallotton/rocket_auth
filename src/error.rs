@@ -1,6 +1,7 @@
 use self::Error::*;
 use crate::language::messages;
-use rocket::http::{ContentType, Status};
+use crate::Config;
+use rocket::http::{self, ContentType, Status};
 use rocket::request::Request;
 use rocket::response::{self, Responder, Response};
 use rocket_lang::LangCode;
@@ -46,6 +47,9 @@ pub enum Error {
     /// The http status code for this response is InternalServerError 500.
     #[error("internal server error")]
     Server(#[source] InternalServerError),
+
+    #[error("attempted to perform a stateful action through a safe http method: expected an unsafe http method, got {0}", )]
+    HttpMethod(http::Method),
 }
 
 /// The vaidation error
@@ -176,7 +180,7 @@ where
 impl Error {
     #[allow(dead_code)]
     fn log(&self) {
-        use std::fmt::Write; 
+        use std::fmt::Write;
         let mut msg = format!("{self}");
         let mut dyn_err: &dyn std::error::Error = self;
         while let Some(src) = dyn_err.source() {
@@ -198,20 +202,29 @@ impl Error {
     }
 }
 
+fn default_responder<'r>(err: Error, req: &'r Request<'_>) -> response::Result<'static> {
+    let lang = LangCode::try_from(req).unwrap_or(LangCode::En);
+    let messages = messages(&err, lang);
+    let payload = to_string(&json!({
+        "status": "error",
+        "code": err.status().code,
+        "message": messages,
+    }))
+    .unwrap();
+
+    Response::build()
+        .sized_body(payload.len(), Cursor::new(payload))
+        .header(ContentType::new("application", "json"))
+        .ok()
+}
+
 impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
-        let lang = LangCode::try_from(req).unwrap_or(LangCode::En);
-        let messages = messages(&self, lang);
-        let payload = to_string(&json!({
-            "status": "error",
-            "code": self.status().code,
-            "message": messages,
-        }))
-        .unwrap();
-
-        Response::build()
-            .sized_body(payload.len(), Cursor::new(payload))
-            .header(ContentType::new("application", "json"))
-            .ok()
+        let config = Config::from_request(req);
+        if let Some(f) = config.error_response {
+            f(self, req)
+        } else {
+            default_responder(self, req)
+        }
     }
 }

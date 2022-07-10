@@ -34,5 +34,16 @@ macro_rules! try_outcome {
             }
         }
     };
+    ($outcome: expr, err: $err:expr) => {
+        match $outcome {
+            rocket::outcome::Outcome::Success(success) => success,
+            rocket::outcome::Outcome::Failure(failure) => {
+                return rocket::outcome::Outcome::Failure((failure.0, $err.into()))
+            }
+            rocket::outcome::Outcome::Forward(forward) => {
+                return rocket::outcome::Outcome::Forward(forward)
+            }
+        }
+    };
 }
 pub(crate) use try_outcome;

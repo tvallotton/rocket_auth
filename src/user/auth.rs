@@ -1,8 +1,6 @@
 use crate::cookies::{Authenticated, Unauthenticated};
 use crate::user::rand_string;
-use crate::{cookies, prelude::*, CsrfToken};
-
-use rocket::http::Status;
+use crate::{cookies, prelude::*, Config, CsrfToken};
 use rocket::http::{Cookie, CookieJar};
 use rocket::request::FromRequest;
 use rocket::request::Outcome;
@@ -52,31 +50,27 @@ pub struct Auth<'a> {
     pub users: &'a State<Users>,
     pub cookies: &'a CookieJar<'a>,
     pub(crate) session: Option<Session>,
+    pub(crate) config: &'a Config,
 }
 
 #[async_trait]
 impl<'r> FromRequest<'r> for Auth<'r> {
     type Error = Error;
     async fn from_request(req: &'r Request<'_>) -> Outcome<Auth<'r>, Error> {
-        let session: Option<Session> = if let Outcome::Success(users) = req.guard().await {
-            Some(users)
-        } else {
-            None
-        };
-
-        let users: &State<Users> = if let Outcome::Success(users) = req.guard().await {
-            users
-        } else {
-            return Outcome::Failure((
-                Status::InternalServerError,
-                InternalServerError::UnmanagedStateError.into(),
-            ));
+        let session = req.guard().await.succeeded();
+        let users: &State<Users> = try_outcome!(req.guard().await, err: InternalServerError::UnmanagedStateError);
+        let config = {
+            match req.guard().await {
+                Outcome::Success(config) => config,
+                _ => Config::DEFAULT.into(),
+            }
         };
 
         Outcome::Success(Auth {
             users,
             session,
             cookies: req.cookies(),
+            config,
         })
     }
 }
