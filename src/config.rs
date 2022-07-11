@@ -1,13 +1,10 @@
-
 use derive_builder::Builder;
 use rocket::fairing::{self, Fairing, Info, Kind};
 
 use rocket::request::{FromRequest, Outcome};
+use rocket::Request;
 use rocket::{async_trait, Build, Rocket, State};
 use rocket::{response, Data};
-use rocket::{Request};
-
-
 
 use std::fmt::{self, Debug};
 use std::time::Duration;

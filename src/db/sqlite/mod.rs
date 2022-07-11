@@ -6,13 +6,13 @@ use sql::*;
 use tokio::sync::Mutex;
 
 #[cfg(feature = "rusqlite")]
-use std::convert::{TryFrom, TryInto};
-#[cfg(feature = "rusqlite")]
-use tokio::task::block_in_place;
+use rusqlite::Row;
 #[cfg(feature = "rusqlite")]
 use rusqlite::*;
 #[cfg(feature = "rusqlite")]
-use rusqlite::Row;
+use std::convert::{TryFrom, TryInto};
+#[cfg(feature = "rusqlite")]
+use tokio::task::block_in_place;
 
 #[cfg(feature = "rusqlite")]
 impl<'a> TryFrom<&rusqlite::Row<'a>> for crate::User {

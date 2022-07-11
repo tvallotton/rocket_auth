@@ -3,7 +3,7 @@ mod mysql;
 #[cfg(feature = "sqlx-postgres")]
 mod postgres;
 
-#[cfg(any(feature="sqlx-sqlite", feature="rusqlite"))]
+#[cfg(any(feature = "sqlx-sqlite", feature = "rusqlite"))]
 mod sqlite;
 
 #[cfg(feature = "tokio-postgres")]

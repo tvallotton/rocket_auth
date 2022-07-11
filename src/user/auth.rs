@@ -72,6 +72,11 @@ impl<'r> FromRequest<'r> for Auth<'r> {
 }
 
 impl<'a> Auth<'a> {
+    /// Returns the csrf token for this user. If the user
+    /// does not have a csrf token, one will be created
+    /// for them. It is ok to call this method twice. The
+    /// csrf token will last for as long as the user
+    /// session lasts.
     pub async fn csrf_token(&self) -> CsrfToken {
         match &self.session {
             Some(session) => session.csrf_token(),
@@ -110,7 +115,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login(&self, form: &Login) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         let key = self.users.login(form).await?;
         let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
         let session = Session::Authenticated(cookies::Authenticated {
@@ -136,7 +141,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login_for(&self, form: &Login, time: Duration) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         let key = self.users.login_for(form, time).await?;
         let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
 
@@ -166,7 +171,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup(&self, form: &Signup) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         self.users.signup(form).await?;
     }
 
@@ -184,7 +189,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup_for(&self, form: &Signup, time: Duration) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         self.users.signup(form).await?;
         self.login_for(&form.clone().into(), time).await?;
     }
@@ -244,7 +249,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn logout(&self) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         let session = self.get_session()?;
         self.users.logout(session).await?;
         self.cookies.remove_private(Cookie::named("rocket_auth"));
@@ -260,7 +265,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn delete(&self) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         if self.is_auth().await {
             let session = self.get_session()?;
             self.users.delete(session.id()?).await?;
@@ -281,7 +286,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_password(&self, password: &str) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         if self.is_auth().await {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id()?).await?;
@@ -304,7 +309,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_email(&self, email: String) {
-        self.assert_write_method()?; 
+        self.assert_write_method()?;
         if self.is_auth().await {
             if !validator::validate_email(&email) {
                 throw!(ValidationError::InvalidEmailAddress)
@@ -349,17 +354,17 @@ impl<'a> Auth<'a> {
     }
 
     /// Determines if the http method for this
-    /// handler is safe (read only) or unsafe (read or write). 
+    /// handler is safe (read only) or unsafe (read or write).
     /// This is used to error out stateful actions performed
-    /// through read only endpoints. 
+    /// through read only endpoints.
     /// ```rust
-    /// self.assert_unsafe_method()?; 
+    /// self.assert_unsafe_method()?;
     /// ```
     #[throws(Error)]
     fn assert_write_method(&self) {
         use http::Method::*;
         if let Get | Trace | Options | Head = self.method {
-            throw!(Error::HttpMethod(self.method)); 
+            throw!(Error::HttpMethod(self.method));
         }
     }
 }

@@ -58,7 +58,9 @@ async fn show_all_users(conn: &State<MySqlPool>, user: Option<User>) -> Result<T
 
 #[rocket::launch]
 async fn rocket() -> _ {
-    let conn = MySqlPool::connect("mysql://test_user:password@localhost/test").await.unwrap();
+    let conn = MySqlPool::connect("mysql://test_user:password@localhost/test")
+        .await
+        .unwrap();
     let users: Users = conn.clone().into();
     users.create_table().await.unwrap();
 

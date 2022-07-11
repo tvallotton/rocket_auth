@@ -1,5 +1,5 @@
-use super::{SessionEntry, Auth};
 use super::SessionManager;
+use super::{Auth, SessionEntry};
 use crate::prelude::*;
 use redis::{AsyncCommands, Client};
 use rocket::serde::json::from_str;
@@ -51,4 +51,3 @@ impl SessionManager for Client {
         Ok(())
     }
 }
-

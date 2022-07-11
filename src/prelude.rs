@@ -1,8 +1,6 @@
-
-
 pub use crate::error::Error;
-pub use crate::error::ValidationError; 
-pub use crate::error::InternalServerError; 
+pub use crate::error::InternalServerError;
+pub use crate::error::ValidationError;
 pub use crate::forms::{Login, Signup};
 pub use crate::{AdminUser, Auth, User, Users};
 /// A type alias of result to omit the error type.

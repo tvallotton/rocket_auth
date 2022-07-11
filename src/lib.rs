@@ -133,6 +133,7 @@
 //! }
 //! ```
 
+mod config;
 mod cookies;
 mod csrf_token;
 mod db;
@@ -142,16 +143,14 @@ mod language;
 pub mod prelude;
 mod session;
 mod user;
-mod config; 
 
 #[cfg(test)]
 mod tests;
 
+pub use config::Config;
 pub use csrf_token::CsrfToken;
-pub use config::Config; 
 pub use prelude::*;
 use std::fmt::Debug;
-
 
 // pub use language::Language;
 pub use crate::user::auth::Auth;
@@ -175,7 +174,6 @@ pub struct User {
     pub is_admin: bool,
     #[serde(skip_serializing)]
     password: String,
-   
 }
 
 /// The [`AdminUser`] guard can be used analogously to [`User`].

@@ -5,8 +5,6 @@ pub mod default;
 #[cfg(feature = "redis")]
 pub mod redis;
 
-
-
 #[async_trait]
 pub trait SessionManager: Send + Sync {
     /// This function is available for in-memory session managers that
@@ -19,17 +17,15 @@ pub trait SessionManager: Send + Sync {
     async fn create_unauth(&self, session_id: &str, time: Duration) -> Result;
     /// This is used to retrieve a session.
     async fn get(&self, session_id: &str) -> Option<SessionEntry>;
-    /// Destroys a session from a session_id. 
+    /// Destroys a session from a session_id.
     async fn destroy(&self, session_id: &str) -> Option<SessionEntry>;
-    /// Destroys every session a user might hold. 
-    /// This is used to log a user out from all the active sessions. 
-    async fn destroy_by_user(&self, user_id: i32) -> Result; 
+    /// Destroys every session a user might hold.
+    /// This is used to log a user out from all the active sessions.
+    async fn destroy_by_user(&self, user_id: i32) -> Result;
     /// Destroys all sessions.
     async fn destroy_all(&self) -> Result;
 }
 
-type SessionEntry = Option<i32>; 
-pub(crate)use Some as Auth;
-pub(crate)use None as Unauth; 
-
-
+type SessionEntry = Option<i32>;
+pub(crate) use None as Unauth;
+pub(crate) use Some as Auth;

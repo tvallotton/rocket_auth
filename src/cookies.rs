@@ -86,7 +86,7 @@ impl Session {
     }
 
     #[throws(as Option)]
-    pub(crate)fn from_cookies(cookies: &CookieJar) -> Session {
+    pub(crate) fn from_cookies(cookies: &CookieJar) -> Session {
         let session = cookies.get_private("rocket_auth")?;
         from_str(session.value()).ok()?
     }

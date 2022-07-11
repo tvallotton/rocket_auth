@@ -49,7 +49,7 @@ impl SessionManager for DefaultManager {
 
     async fn destroy_by_user(&self, user_id: i32) -> Result {
         let manager = self.clone();
-        // this may be an expensive operation so we spawn blocking 
+        // this may be an expensive operation so we spawn blocking
         // in case there are too many sessions open
         tokio::task::spawn_blocking(move || async move {
             manager

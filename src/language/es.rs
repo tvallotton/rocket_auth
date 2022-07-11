@@ -1,6 +1,6 @@
-use crate::prelude::*; 
-use ValidationError::*;
+use crate::prelude::*;
 use std::borrow::Cow;
+use ValidationError::*;
 
 pub fn message(error: &Error) -> Vec<Cow<'static, str>> {
     match error {
@@ -19,12 +19,8 @@ fn validation(error: &ValidationError) -> Cow<'static, str> {
         InvalidEmailAddress => "El correo electrónico no es valido.".into(),
         PasswordMissingNumber => "La contraseña debe tener al menos un número.".into(),
         IncorrectPassword => "El correo o la contraseña es incorrecta.".into(),
-        PasswordMissingUppercase => {
-            "La contraseña debe tener al menos una letra mayúscula.".into()
-        }
-        PasswordMissingLowercase => {
-            "La contraseña debe tener al menos una letra minúscula.".into()
-        }
+        PasswordMissingUppercase => "La contraseña debe tener al menos una letra mayúscula.".into(),
+        PasswordMissingLowercase => "La contraseña debe tener al menos una letra minúscula.".into(),
         EmailAlreadyExists(email) => {
             format!("El correo electrónico {email:?} ya existe, intenta ingresar.").into()
         }
