@@ -1,7 +1,7 @@
 use crate::cookies::{Authenticated, Unauthenticated};
 use crate::user::rand_string;
-use crate::{cookies, prelude::*, Config, CsrfToken};
-use rocket::http::{Cookie, CookieJar};
+use crate::{cookies, prelude::*, CsrfToken};
+use rocket::http::{self, Cookie, CookieJar};
 use rocket::request::FromRequest;
 use rocket::request::Outcome;
 use rocket::Request;
@@ -50,7 +50,7 @@ pub struct Auth<'a> {
     pub users: &'a State<Users>,
     pub cookies: &'a CookieJar<'a>,
     pub(crate) session: Option<Session>,
-    pub(crate) config: &'a Config,
+    pub(crate) method: http::Method,
 }
 
 #[async_trait]
@@ -58,19 +58,15 @@ impl<'r> FromRequest<'r> for Auth<'r> {
     type Error = Error;
     async fn from_request(req: &'r Request<'_>) -> Outcome<Auth<'r>, Error> {
         let session = req.guard().await.succeeded();
-        let users: &State<Users> = try_outcome!(req.guard().await, err: InternalServerError::UnmanagedStateError);
-        let config = {
-            match req.guard().await {
-                Outcome::Success(config) => config,
-                _ => Config::DEFAULT.into(),
-            }
-        };
-
+        let users: &State<Users> = try_outcome!(
+            req.guard().await,
+            err: InternalServerError::UnmanagedStateError
+        );
         Outcome::Success(Auth {
             users,
             session,
             cookies: req.cookies(),
-            config,
+            method: req.method(),
         })
     }
 }
@@ -114,6 +110,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login(&self, form: &Login) {
+        self.assert_write_method()?; 
         let key = self.users.login(form).await?;
         let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
         let session = Session::Authenticated(cookies::Authenticated {
@@ -139,6 +136,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn login_for(&self, form: &Login, time: Duration) {
+        self.assert_write_method()?; 
         let key = self.users.login_for(form, time).await?;
         let user = self.users.get_by_email(&form.email.to_lowercase()).await?;
 
@@ -168,6 +166,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup(&self, form: &Signup) {
+        self.assert_write_method()?; 
         self.users.signup(form).await?;
     }
 
@@ -185,6 +184,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn signup_for(&self, form: &Signup, time: Duration) {
+        self.assert_write_method()?; 
         self.users.signup(form).await?;
         self.login_for(&form.clone().into(), time).await?;
     }
@@ -244,6 +244,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn logout(&self) {
+        self.assert_write_method()?; 
         let session = self.get_session()?;
         self.users.logout(session).await?;
         self.cookies.remove_private(Cookie::named("rocket_auth"));
@@ -259,6 +260,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn delete(&self) {
+        self.assert_write_method()?; 
         if self.is_auth().await {
             let session = self.get_session()?;
             self.users.delete(session.id()?).await?;
@@ -279,6 +281,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_password(&self, password: &str) {
+        self.assert_write_method()?; 
         if self.is_auth().await {
             let session = self.get_session()?;
             let mut user = self.users.get_by_id(session.id()?).await?;
@@ -301,6 +304,7 @@ impl<'a> Auth<'a> {
     /// ```
     #[throws(Error)]
     pub async fn change_email(&self, email: String) {
+        self.assert_write_method()?; 
         if self.is_auth().await {
             if !validator::validate_email(&email) {
                 throw!(ValidationError::InvalidEmailAddress)
@@ -309,6 +313,21 @@ impl<'a> Auth<'a> {
             let mut user = self.users.get_by_id(session.id()?).await?;
             user.email = email.to_lowercase();
             self.users.modify(&user).await?;
+        } else {
+            throw!(Error::Unauthorized)
+        }
+    }
+
+    /// Compares the password of the currently authenticated user with another password.
+    /// Useful for checking password before resetting email/password.
+    /// To avoid bruteforcing this function should not be directly accessible from a route.
+    /// Additionally, it is good to implement rate limiting on routes using this function.
+    #[throws(Error)]
+    pub async fn compare_password(&self, password: &str) -> bool {
+        if self.is_auth().await {
+            let session = self.get_session()?;
+            let user: User = self.users.get_by_id(session.id()?).await?;
+            user.compare_password(password)?
         } else {
             throw!(Error::Unauthorized)
         }
@@ -329,18 +348,18 @@ impl<'a> Auth<'a> {
         session
     }
 
-    /// Compares the password of the currently authenticated user with another password.
-    /// Useful for checking password before resetting email/password.
-    /// To avoid bruteforcing this function should not be directly accessible from a route.
-    /// Additionally, it is good to implement rate limiting on routes using this function.
+    /// Determines if the http method for this
+    /// handler is safe (read only) or unsafe (read or write). 
+    /// This is used to error out stateful actions performed
+    /// through read only endpoints. 
+    /// ```rust
+    /// self.assert_unsafe_method()?; 
+    /// ```
     #[throws(Error)]
-    pub async fn compare_password(&self, password: &str) -> bool {
-        if self.is_auth().await {
-            let session = self.get_session()?;
-            let user: User = self.users.get_by_id(session.id()?).await?;
-            user.compare_password(password)?
-        } else {
-            throw!(Error::Unauthorized)
+    fn assert_write_method(&self) {
+        use http::Method::*;
+        if let Get | Trace | Options | Head = self.method {
+            throw!(Error::HttpMethod(self.method)); 
         }
     }
 }

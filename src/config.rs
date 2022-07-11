@@ -1,14 +1,14 @@
-use crate::language::messages;
+
 use derive_builder::Builder;
 use rocket::fairing::{self, Fairing, Info, Kind};
-use rocket::http::SameSite;
+
 use rocket::request::{FromRequest, Outcome};
 use rocket::{async_trait, Build, Rocket, State};
 use rocket::{response, Data};
-use rocket::{Request, Response};
-use rocket_lang::LangCode;
-use serde_json::{json, to_string};
-use std::convert::TryFrom;
+use rocket::{Request};
+
+
+
 use std::fmt::{self, Debug};
 use std::time::Duration;
 
@@ -45,7 +45,7 @@ impl Config {
     /// structure was set, then the result will be the default value for
     /// `Config`
     pub(crate) fn from_request<'r>(req: &'r Request) -> &'r Config {
-        req.local_cache(|| Config::default())
+        req.local_cache(Config::default)
     }
 }
 #[async_trait]
@@ -80,7 +80,7 @@ impl<'r> FromRequest<'r> for &'r Config {
 
         match outcome {
             Outcome::Success(_) => outcome,
-            _ => Outcome::Success(&Config::DEFAULT),
+            _ => Outcome::Success(Config::DEFAULT),
         }
     }
 }

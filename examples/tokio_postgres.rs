@@ -56,8 +56,7 @@ async fn show_all_users(
         .query("select * from users;", &[])
         .await?
         .into_iter()
-        .map(TryInto::try_into)
-        .flatten()
+        .flat_map(TryInto::try_into)
         .collect();
 
     Ok(Template::render(
