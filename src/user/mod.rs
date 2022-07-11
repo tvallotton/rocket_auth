@@ -4,6 +4,10 @@ mod users;
 use crate::prelude::*;
 use argon2::verify_encoded as verify;
 use rand::{distributions::Alphanumeric, Rng};
+#[cfg(feature = "rusqlite")]
+use rusqlite::Error::SqliteFailure;
+#[cfg(feature = "tokio-postgres")]
+use tokio_postgres::error::SqlState;
 
 pub fn rand_string(size: usize) -> String {
     rand::thread_rng()
@@ -67,12 +71,22 @@ impl Users {
         match result {
             Ok(_) => (),
             #[cfg(feature = "sqlx")]
-            Err(Error::Server(InternalServerError::SQLx(sqlx::Error::Database(error)))) => {
-                if error.code() == Some("23000".into()) {
-                    throw!(ValidationError::EmailAlreadyExists(form.email.clone()))
-                } else {
-                    throw!(sqlx::Error::Database(error))
-                }
+            Err(Server(SQLx(sqlx::Error::Database(error))))
+                if Some("23000") == error.code().as_deref() =>
+            {
+                throw!(ValidationError::EmailAlreadyExists(form.email.clone()))
+            }
+            #[cfg(feature = "tokio-postgres")]
+            Err(Server(TokioPostgres(error)))
+                if Some(&SqlState::UNIQUE_VIOLATION) == error.code() =>
+            {
+                throw!(EmailAlreadyExists(form.email.clone()))
+            }
+            #[cfg(feature = "rusqlite")]
+            Err(Server(Rusqlite(SqliteFailure(error, _)))) // .
+                if error.extended_code == 2067 => 
+            {
+                throw!(EmailAlreadyExists(form.email.clone()))
             }
             Err(error) => {
                 throw!(error)

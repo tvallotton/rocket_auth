@@ -115,7 +115,7 @@ impl<'r> FromRequest<'r> for &'r Config {
 impl Debug for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Config")
-            .field("require_csrf_token", &self.require_csrf_token)
+            .field("require_csrf", &self.require_csrf)
             .field("session_expiration", &self.session_expiration)
             .field(
                 "error_response",

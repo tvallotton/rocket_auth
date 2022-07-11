@@ -12,7 +12,7 @@ use thiserror::Error;
 use ValidationError::IncorrectPassword;
 
 /// The Error enum represents every possible error that `rocket_aut` may return.
-/// It implements [`rocket::response::Responder`](Responder), so it can be ealisly used
+/// It implements [`rocket::response::Responder`](Responder), so it can be easily used
 /// in API endpoints that are expected to return a json response. The structure for the
 /// json response is the following:
 /// ```json
@@ -24,7 +24,9 @@ use ValidationError::IncorrectPassword;
 /// }
 /// ```
 /// The code field contains the HTTP status code, and the "messages" field contains a list of
-/// error messages.
+/// error messages in the users preferred language. In order to customize the language resolution
+/// settings check out [rocket_lang::Config]. Additionally, the responder implementation for
+/// [Error] can be overriden in the [Config](crate::Config) structure.
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum Error {
@@ -52,7 +54,7 @@ pub enum Error {
     HttpMethod(http::Method),
 }
 
-/// The vaidation error
+/// The validation error
 #[non_exhaustive]
 #[derive(Error, Debug)]
 pub enum ValidationError {
@@ -87,7 +89,10 @@ pub enum ValidationError {
     #[error("incorrect email or password")]
     IncorrectPassword,
 }
-
+/// This enum holds all the errors which yield a 500 response.
+/// Most of these errors imply there is a bug in the application.
+/// The debug information of these errors should not be
+/// exposed in production.
 #[derive(Error, Debug)]
 pub enum InternalServerError {
     /// This error is thrown when trying to retrieve `Users` but it isn't being managed by the app.
