@@ -6,9 +6,6 @@ pub use crate::{AdminUser, Auth, User, Users};
 /// A type alias of result to omit the error type.
 pub type Result<T = (), E = Error> = std::result::Result<T, E>;
 
-pub(crate) use Error::*; 
-pub(crate) use InternalServerError::*; 
-pub(crate) use ValidationError::*; 
 pub(crate) use crate::cookies::Session;
 pub(crate) use crate::db::DBConnection;
 pub(crate) use crate::session::SessionManager;
@@ -19,6 +16,9 @@ pub(crate) use serde::{Deserialize, Serialize};
 pub(crate) use std::fmt::Debug;
 pub(crate) use std::ops::Deref;
 pub(crate) use std::time::Duration;
+pub(crate) use Error::*;
+pub(crate) use InternalServerError::*;
+pub(crate) use ValidationError::*;
 pub(crate) fn now() -> i64 {
     chrono::Utc::now().timestamp()
 }

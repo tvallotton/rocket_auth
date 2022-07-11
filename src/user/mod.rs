@@ -83,8 +83,8 @@ impl Users {
                 throw!(EmailAlreadyExists(form.email.clone()))
             }
             #[cfg(feature = "rusqlite")]
-            Err(Server(Rusqlite(SqliteFailure(error, _)))) // .
-                if error.extended_code == 2067 => 
+            Err(Server(Rusqlite(SqliteFailure(error, _)))) /****/
+                if error.extended_code == 2067 =>
             {
                 throw!(EmailAlreadyExists(form.email.clone()))
             }

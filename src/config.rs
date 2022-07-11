@@ -12,8 +12,8 @@ use std::time::Duration;
 use crate::Error;
 
 /// # Config
-/// This struct is used to configure the behavior or 
-/// rocket_auth. 
+/// This struct is used to configure the behavior or
+/// rocket_auth.
 /// ```rust
 /// let config = Config::new()
 ///     .require_csrf_token(RequireCsrf::WriteOnly)
@@ -28,21 +28,20 @@ use crate::Error;
 #[builder(pattern = "owned")]
 pub struct Config {
     /// This field is used to specify if csrf tokens
-    /// are required to perform authentication related 
-    /// changing actions. The value for this field 
-    /// defaults to `true`. When set to `true` the 
-    /// following methods will require a csrf token: 
+    /// are required to perform authentication related
+    /// changing actions. The value for this field
+    /// defaults to `true`. When set to `true` the
+    /// following methods will require a csrf token:
     /// `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"`.
-    /// If no csrf token is present the action will fail. 
-    
+    /// If no csrf token is present the action will fail.
+
     /// No authenticated action will require a csrf_token.
     /// Setting this option to never implies that post requests
-    ///  comming from a different origin will be blocked by 
+    ///  comming from a different origin will be blocked by
     /// default. Beware, not all [browsers support same-site]
     /// (https://caniuse.com/same-site-cookie-attribute)
     /// cookies, which would make users of these browsers
     /// vulnerable to cross site request forgery attacks.
-
     pub require_csrf: bool,
     /// defaults to one week.
     pub session_expiration: Duration,
@@ -135,7 +134,7 @@ impl Default for Config {
 pub enum RequiredCsrf {
     /// No authenticated action will require a csrf_token.
     /// Setting this option to never implies that post requests
-    ///  comming from a different origin will be blocked by 
+    ///  comming from a different origin will be blocked by
     /// default. Beware, not all [browsers support same-site]
     /// (https://caniuse.com/same-site-cookie-attribute)
     /// cookies, which would make users of these browsers
@@ -144,5 +143,4 @@ pub enum RequiredCsrf {
     /// Only `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"` methods will require
     /// a csrf_token. This is the default behavior.
     WriteOnly,
-    
 }
