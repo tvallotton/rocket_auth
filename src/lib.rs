@@ -1,12 +1,12 @@
 //! rocket_auth provides a ready-to-use  backend agnostic API for authentication management.
 //! It supports connections for SQLite and Postgresql. It lets you create, delete, and authenticate users.
 //! The available features are:
-//! * `sqlx-sqlite`: for interacting with a SQLite database using `sqlx`.
-//! * `sqlx-postgres`: for interacting with a Postgresql database with `sqlx`.
-//! * `sqlx-mysql`: for interacting with a MySql database with `sqlx`.
-//! * `redis`: for storing sessions on a redis server using `redis`.
-//! * `rusqlite`: for interacting with a SQLite database using `rusqlite`.
-//! * `tokio-postgres`: for interacting with a Postgresql database with `tokio-postgres`.
+//! * `sqlx-sqlite`: for interacting with a SQLite database using [`sqlx`](https://docs.rs/redis/0.21.5/redis/index.html).
+//! * `sqlx-postgres`: for interacting with a Postgresql database with [`sqlx`](https://docs.rs/redis/0.21.5/redis/index.html).
+//! * `sqlx-mysql`: for interacting with a MySql database with [`sqlx`](https://docs.rs/redis/0.21.5/redis/index.html).
+//! * `redis`: for storing sessions on a redis server using [`redis`](https://docs.rs/redis/0.21.5/redis/index.html).
+//! * `rusqlite`: for interacting with a SQLite database using [`rusqlite`](https://docs.rs/rusqlite/0.27.0/rusqlite/index.html).
+//! * `tokio-postgres`: for interacting with a Postgresql database with [`tokio-postgres`](https://docs.rs/redis/0.21.5/redis/index.html).
 //!
 //!
 //! `rocket_auth` uses private cookies to store session data.
@@ -132,8 +132,8 @@
 //!    format!("Hello {}.", user.email())
 //! }
 //! ```
-
-mod config;
+#![allow(non_upper_case_globals)]
+pub mod config;
 mod cookies;
 mod csrf_token;
 mod db;

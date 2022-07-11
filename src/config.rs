@@ -11,19 +11,39 @@ use std::time::Duration;
 
 use crate::Error;
 
+/// # Config
+/// This struct is used to configure the behavior or 
+/// rocket_auth. 
 /// ```rust
 /// let config = Config::new()
 ///     .require_csrf_token(RequireCsrf::WriteOnly)
-///     .session_expiration(Duration::from_secs(15 * 24 * 60i32.powi(2)));
+///     .session_expiration(Duration::from_secs(15 * 24 * 60u64.pow(2)));
 ///     .error_response(|err, req| {
 ///         /* custom responder implementation for rocket_auth::Error */
 ///     });
+/// rocket::build()
+///     .attach(config);
 /// ```
 #[derive(Clone, Builder)]
 #[builder(pattern = "owned")]
 pub struct Config {
-    /// defaults to WriteOnly.
-    pub require_csrf_token: RequiredCsrf,
+    /// This field is used to specify if csrf tokens
+    /// are required to perform authentication related 
+    /// changing actions. The value for this field 
+    /// defaults to `true`. When set to `true` the 
+    /// following methods will require a csrf token: 
+    /// `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"`.
+    /// If no csrf token is present the action will fail. 
+    
+    /// No authenticated action will require a csrf_token.
+    /// Setting this option to never implies that post requests
+    ///  comming from a different origin will be blocked by 
+    /// default. Beware, not all [browsers support same-site]
+    /// (https://caniuse.com/same-site-cookie-attribute)
+    /// cookies, which would make users of these browsers
+    /// vulnerable to cross site request forgery attacks.
+
+    pub require_csrf: bool,
     /// defaults to one week.
     pub session_expiration: Duration,
     pub(crate) error_response:
@@ -33,11 +53,21 @@ pub struct Config {
 struct PrivConfig(Config);
 
 impl Config {
-    pub(crate) const DEFAULT: &'static Config = &Config {
-        require_csrf_token: RequiredCsrf::WriteOnly,
-        session_expiration: Duration::from_secs(7 * 24 * 60 * 60),
-        error_response: None,
-    };
+    const fn const_new() -> Config {
+        const config: Config = Config {
+            require_csrf: true,
+            session_expiration: Duration::from_secs(7 * 24 * 60 * 60),
+            error_response: None,
+        };
+        config
+    }
+    pub(crate) fn static_ref() -> &'static Config {
+        static config: Config = Config::const_new();
+        &config
+    }
+    pub fn new() -> Self {
+        Config::const_new()
+    }
     /// This will return the `Config` struct from a request, if no Config
     /// structure was set, then the result will be the default value for
     /// `Config`
@@ -77,7 +107,7 @@ impl<'r> FromRequest<'r> for &'r Config {
 
         match outcome {
             Outcome::Success(_) => outcome,
-            _ => Outcome::Success(Config::DEFAULT),
+            _ => Outcome::Success(Config::static_ref()),
         }
     }
 }
@@ -97,25 +127,22 @@ impl Debug for Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::DEFAULT.clone()
+        Config::const_new()
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum RequiredCsrf {
     /// No authenticated action will require a csrf_token.
-    /// Setting this option to never implies that the cookies
-    /// containing the session data will be automatically
-    /// set to `"strict"`, and that post requests comming from
-    /// a different origin will be blocked by default. Beware, not
-    /// all [browsers support same-site](https://caniuse.com/same-site-cookie-attribute)
+    /// Setting this option to never implies that post requests
+    ///  comming from a different origin will be blocked by 
+    /// default. Beware, not all [browsers support same-site]
+    /// (https://caniuse.com/same-site-cookie-attribute)
     /// cookies, which would make users of these browsers
     /// vulnerable to cross site request forgery attacks.
     Never,
     /// Only `"POST"`, `"PUT"`, `"PATCH"` and `"DELETE"` methods will require
     /// a csrf_token. This is the default behavior.
     WriteOnly,
-    /// All authetincated actions will require a valid
-    /// csrf_token.
-    Always,
+    
 }
