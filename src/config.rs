@@ -12,7 +12,7 @@ use std::time::Duration;
 use crate::Error;
 
 /// # Config
-/// This struct is used to configure the behavior or
+/// This struct is used to configure the behavior of
 /// rocket_auth.
 /// ```rust
 /// let config = Config::new()
