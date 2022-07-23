@@ -15,6 +15,8 @@ pub enum Language {
     ES,
     #[cfg(feature="lang-pt")]
     PT,
+    #[cfg(feature="lang-fr")]
+    FR,
 }
 
 use Language::*;
@@ -26,6 +28,8 @@ impl Language {
             ES => Language::es_message(error),
             #[cfg(feature="lang-pt")]
             PT => Language::pt_message(error),
+            #[cfg(feature="lang-fr")]
+            FR => Language::fr_message(error),
         }
     }
 }
@@ -35,3 +39,5 @@ mod en;
 mod es;
 #[cfg(feature="lang-pt")]
 mod pt;
+#[cfg(feature="lang-fr")]
+mod fr;
