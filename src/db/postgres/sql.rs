@@ -3,12 +3,13 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR (254) UNIQUE NOT NULL,
 	password VARCHAR ( 255 ) NOT NULL,
-    is_admin BOOL DEFAULT FALSE
+    is_admin BOOL DEFAULT FALSE,
+    totp_secret VARCHAR ( 255 ) NOT NULL
 );
 ";
 
 pub(crate) const INSERT_USER: &str = "
-INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3);
+INSERT INTO users (email, password, is_admin, totp_secret) VALUES ($1, $2, $3, $4);
 ";
 
 pub(crate) const UPDATE_USER: &str = "

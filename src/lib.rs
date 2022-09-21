@@ -174,6 +174,8 @@ pub struct User {
     pub is_admin: bool,
     #[serde(skip_serializing)]
     password: String,
+    #[serde(skip_serializing)]
+    totp_secret: String,
 }
 
 /// The [`AdminUser`] guard can be used analogously to [`User`].

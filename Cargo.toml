@@ -41,6 +41,7 @@ fehler = "1.0.0"
 chrono = "0.4.19"
 validator = { version = "0.15.0", features = ["derive"] }
 futures= "0.3.21"
+google-authenticator = "0.2.0"
 
 
 [dependencies.sqlx]
@@ -73,6 +74,7 @@ features = ["rt", "rt-multi-thread"]
 
 [dev-dependencies]
 tokio-postgres= "0.7.6"
+google-authenticator = "0.2.0"
 
 
 [dev-dependencies.rocket]

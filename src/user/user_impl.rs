@@ -5,6 +5,8 @@ use crate::prelude::*;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 
+use google_authenticator::{GoogleAuthenticator, ErrorCorrectionLevel};
+
 impl User {
     /// This method allows to reset the password of a user.
     /// In order for the new password to be saved, it must be passed to a [`Users`] instance.
@@ -90,6 +92,15 @@ impl User {
         } else {
             throw!(Error::InvalidEmailAddressError)
         }
+    }
+
+    /// This function compares the input totp token, to the stored secret
+    /// it returns a boolean, if true the user may enter.
+    #[throws(Error)]
+    pub fn compare_totp(&self, totp_token: &str) -> bool {
+        let g_auth = GoogleAuthenticator::new();
+        //let code = g_auth.get_code(&self.totp_secret, 0).unwrap();
+        g_auth.verify_code(&self.totp_secret, totp_token, 1, 0)
     }
 }
 

@@ -1,6 +1,7 @@
 use super::rand_string;
 use crate::db::DBConnection;
 use crate::prelude::*;
+use google_authenticator::GoogleAuthenticator;
 
 #[cfg(feature = "rusqlite")]
 use std::path::Path;
@@ -204,7 +205,11 @@ impl Users {
         let salt = rand_string(30);
         let config = argon2::Config::default();
         let hash = argon2::hash_encoded(password, salt.as_bytes(), &config).unwrap();
-        self.conn.create_user(email, &hash, is_admin).await?;
+
+        let g_auth = GoogleAuthenticator::new();
+        let totp_secret: String = g_auth.create_secret(32);
+        
+        self.conn.create_user(email, &hash, is_admin, &totp_secret).await?;
     }
 
     /// Deletes a user from de database. Note that this method won't delete the session.

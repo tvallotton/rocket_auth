@@ -23,6 +23,7 @@ impl<'a> TryFrom<&rusqlite::Row<'a>> for crate::User {
             email: row.get(1)?,
             password: row.get(2)?,
             is_admin: row.get(3)?,
+            totp_secret: row.get(4)?,
         })
     }
 }
@@ -36,9 +37,9 @@ impl DBConnection for Mutex<rusqlite::Connection> {
         Ok(())
     }
 
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool, totp_secret: &str) -> Result<()> {
         let conn = self.lock().await;
-        block_in_place(|| conn.execute(INSERT_USER, params![email, hash, is_admin]))?;
+        block_in_place(|| conn.execute(INSERT_USER, params![email, hash, is_admin, totp_secret]))?;
 
         Ok(())
     }
@@ -102,12 +103,13 @@ impl DBConnection for Mutex<SqliteConnection> {
         println!("table created");
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool, totp_secret: &str) -> Result<()> {
         let mut db = self.lock().await;
         query(INSERT_USER)
             .bind(email)
             .bind(hash)
             .bind(is_admin)
+            .bind(totp_secret)
             .execute(&mut *db)
             .await?;
         Ok(())
@@ -165,11 +167,12 @@ impl DBConnection for SqlitePool {
             .await?;
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool, totp_secret: &str) -> Result<()> {
         query(INSERT_USER)
             .bind(email)
             .bind(hash)
             .bind(is_admin)
+            .bind(totp_secret)
             .execute(self)
             .await?;
         Ok(())

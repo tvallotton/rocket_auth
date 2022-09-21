@@ -8,8 +8,8 @@ impl DBConnection for Client {
         self.execute(sql::CREATE_TABLE, &[]).await?;
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<(), Error> {
-        self.execute(sql::INSERT_USER, &[&email, &hash, &is_admin])
+    async fn create_user(&self, email: &str, hash: &str, is_admin: bool, totp_secret: &str) -> Result<(), Error> {
+        self.execute(sql::INSERT_USER, &[&email, &hash, &is_admin, &totp_secret])
             .await?;
         Ok(())
     }
@@ -48,6 +48,7 @@ impl TryFrom<tokio_postgres::Row> for User {
             email: row.get(1),
             password: row.get(2),
             is_admin: row.get(3),
+            totp_secret: row.get(4),
         })
     }
 }
