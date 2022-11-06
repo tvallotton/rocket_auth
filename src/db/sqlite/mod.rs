@@ -99,7 +99,6 @@ impl DBConnection for Mutex<SqliteConnection> {
     async fn init(&self) -> Result<()> {
         let mut db = self.lock().await;
         query(CREATE_TABLE).execute(&mut *db).await?;
-        println!("table created");
         Ok(())
     }
     async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
@@ -207,7 +206,6 @@ impl DBConnection for SqlitePool {
     }
     async fn get_user_by_email(&self, email: &str) -> Result<User> {
         let user = query_as(SELECT_BY_EMAIL).bind(email).fetch_one(self).await;
-        println!("user: {:?}", user);
         Ok(user?)
     }
 }
