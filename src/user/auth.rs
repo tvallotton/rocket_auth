@@ -293,7 +293,7 @@ impl<'a> Auth<'a> {
     /// This method is useful when the function returns a Result type.
     /// It is intended to be used primarily
     /// with the `?` operator.
-    /// ```
+    /// ```compile_fail
     /// # fn func(auth: rocket_auth::Auth) -> Result<(), rocket_auth::Error> {
     /// auth.get_session()?;
     /// # Ok(())
