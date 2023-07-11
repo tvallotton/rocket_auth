@@ -1,4 +1,8 @@
-on: [push]
+on: 
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 name: build
 
@@ -22,3 +26,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
