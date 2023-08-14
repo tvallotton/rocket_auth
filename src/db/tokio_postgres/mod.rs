@@ -16,7 +16,7 @@ impl DBConnection for Client {
     async fn update_user(&self, user: &User) -> Result<()> {
         self.execute(
             sql::UPDATE_USER,
-            &[&user.email, &user.password, &user.is_admin],
+            &[&user.id, &user.email, &user.password, &user.is_admin],
         )
         .await?;
         Ok(())
