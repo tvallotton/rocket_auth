@@ -34,7 +34,7 @@ impl<'r> FromRequest<'r> for Session {
         if let Some(session) = get_session(cookies) {
             Outcome::Success(session)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            Outcome::Error((Status::Unauthorized, Error::UnauthorizedError))
         }
     }
 }
