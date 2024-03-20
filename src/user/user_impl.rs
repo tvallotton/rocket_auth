@@ -12,7 +12,7 @@ impl User {
     /// In case the user is authenticated,
     /// you can change it more easily with [`change_password`](`super::auth::Auth::change_password`).
     /// This function will fail in case the password is not secure enough.
-    /// 
+    ///
     /// ```rust
     /// # use rocket::{State, post};
     /// # use rocket_auth::{Error, Users};
@@ -113,13 +113,13 @@ impl<'r> FromRequest<'r> for User {
         let guard = request.guard().await;
         let auth: Auth = match guard {
             Success(auth) => auth,
-            Failure(x) => return Failure(x),
+            Error(x) => return Error(x),
             Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
             Outcome::Success(user)
         } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            Outcome::Error((Status::Unauthorized, crate::Error::UnauthorizedError))
         }
     }
 }
@@ -132,7 +132,7 @@ impl<'r> FromRequest<'r> for AdminUser {
         let guard = request.guard().await;
         let auth: Auth = match guard {
             Success(auth) => auth,
-            Failure(x) => return Failure(x),
+            Error(x) => return Error(x),
             Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
@@ -140,12 +140,12 @@ impl<'r> FromRequest<'r> for AdminUser {
                 return Outcome::Success(AdminUser(user));
             }
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Error((Status::Unauthorized, crate::Error::UnauthorizedError))
     }
 }
 
-use std::ops::*;
 use argon2::verify_encoded;
+use std::ops::*;
 
 impl Deref for AdminUser {
     type Target = User;

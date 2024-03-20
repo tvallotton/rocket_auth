@@ -24,7 +24,7 @@ sqlx-mysql = ["sqlx/mysql"]
 
 
 [dependencies.rusqlite]
-version = "0.27.0"
+version = "0.30.0"
 optional = true
 
 
@@ -44,12 +44,12 @@ futures= "0.3.21"
 
 
 [dependencies.sqlx]
-version = "0.6.0"
+version = "0.7.4"
 optional = true
 
 
 [dependencies.rocket]
-version = "0.5.0-rc.2"
+version = "0.5.0"
 features = ["secrets"]
 
 [dependencies.serde]
@@ -75,7 +75,7 @@ tokio-postgres= "0.7.6"
 
 
 [dev-dependencies.rocket]
-version = "0.5.0-rc.2"
+version = "0.5.0"
 features = ["secrets", "json"]
 
 [dev-dependencies.redis]
@@ -84,12 +84,12 @@ features = ["aio", "tokio-comp"]
 
 
 [dev-dependencies.rocket_dyn_templates]
-version = "0.1.0-rc.2"
+version = "0.1.0"
 features = ["tera"]
 
 
 [dev-dependencies.sqlx]
-version = "0.6.0"
+version = "0.7.4"
 features = ["runtime-tokio-rustls"]
 
 [dev-dependencies.rocket_auth]

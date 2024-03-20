@@ -64,7 +64,7 @@ impl<'r> FromRequest<'r> for Auth<'r> {
         let users: &State<Users> = if let Outcome::Success(users) = req.guard().await {
             users
         } else {
-            return Outcome::Failure((Status::InternalServerError, Error::UnmanagedStateError));
+            return Outcome::Error((Status::InternalServerError, Error::UnmanagedStateError));
         };
 
         Outcome::Success(Auth {
@@ -222,7 +222,7 @@ impl<'a> Auth<'a> {
     pub fn logout(&self) {
         let session = self.get_session()?;
         self.users.logout(session)?;
-        self.cookies.remove_private(Cookie::named("rocket_auth"));
+        self.cookies.remove_private(Cookie::from("rocket_auth"));
     }
     /// Deletes the account of the currently authenticated user.
     /// ```rust
@@ -238,7 +238,7 @@ impl<'a> Auth<'a> {
         if self.is_auth() {
             let session = self.get_session()?;
             self.users.delete(session.id).await?;
-            self.cookies.remove_private(Cookie::named("rocket_auth"));
+            self.cookies.remove_private(Cookie::from("rocket_auth"));
         } else {
             throw!(Error::UnauthenticatedError)
         }
@@ -308,7 +308,7 @@ impl<'a> Auth<'a> {
     #[throws(Error)]
     pub async fn compare_password(&self, password: &str) -> bool {
         if self.is_auth() {
-            let session = self.get_session()?; 
+            let session = self.get_session()?;
             let user: User = self.users.get_by_id(session.id).await?;
             user.compare_password(password)?
         } else {
